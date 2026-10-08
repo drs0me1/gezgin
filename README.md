@@ -69,6 +69,15 @@ Work in progress. Until the first Gezgin release this tree is File Browser's las
   duration must be a whole number of seconds, minutes, hours or days of at most 10 years (else
   HTTP 400); 0 means permanent, and the share dialog proposes 7 days. Only what the user may see
   can be shared. Listing links among expired ones no longer fails.
+- WebDAV shares: a folder can also be shared over WebDAV, for Finder, Infuse and other apps, on a
+  port of its own (`--webdavPort`, `FB_WEBDAV_PORT`; off when empty) that serves nothing else.
+  The address is `http://<host>:<port>/<share id>/`, with the username and password the share was
+  made with (Basic authentication; wrong passwords are limited like a link's). A share is
+  read-only unless made read-write by a user who may create, change, rename and delete; then a
+  write takes a file's place only when complete, a delete moves the item into the owner's trash,
+  and a move takes the share links along. The owner's permissions and rules hold, Gezgin's own
+  files are not shown, and a symbolic link does not lead out of the shared folder. The share
+  dialog offers it for folders when the port is set; it lasts 7 days unless told otherwise.
 - The container image keeps generated thumbnails in `/database/cache` (`FB_CACHE_DIR`).
 - Passwords need at least 8 characters by default (File Browser: 12); the admin can change it in
   the global settings. Quick setup's generated admin password stays 16 characters.

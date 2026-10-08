@@ -27,6 +27,10 @@ interface Share {
   userID?: number;
   hasPassword?: boolean;
   username?: string;
+  // Gezgin: a WebDAV share, served to webdavUser.
+  kind?: string;
+  webdavUser?: string;
+  writable?: boolean;
 }
 
 interface SearchParams {

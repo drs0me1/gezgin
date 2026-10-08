@@ -70,6 +70,7 @@ filebrowser config init [flags]
       --tus.chunkSize uint               the tus chunk size (default 10485760)
       --tus.retryCount uint16            the tus retry count (default 5)
       --viewMode string                  view mode for users (default "list")
+      --webdavPort string                port to serve WebDAV shares on (off if empty)
 ```
 
 ## Options inherited from parent commands

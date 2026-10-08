@@ -16,7 +16,17 @@
           </tr>
 
           <tr v-for="link in links" :key="link.hash">
-            <td>{{ link.hash }}</td>
+            <td>
+              {{ link.hash }}
+              <p v-if="link.kind === 'webdav'" class="small">
+                WebDAV · {{ link.webdavUser }} ·
+                {{
+                  link.writable
+                    ? $t("prompts.webdavReadWrite")
+                    : $t("prompts.webdavReadOnly")
+                }}
+              </p>
+            </td>
             <td>
               <template v-if="link.expire !== 0">{{
                 humanTime(link.expire)
@@ -38,7 +48,7 @@
                 class="action"
                 :aria-label="$t('buttons.copyDownloadLinkToClipboard')"
                 :title="$t('buttons.copyDownloadLinkToClipboard')"
-                :disabled="!!link.hasPassword"
+                :disabled="!!link.hasPassword || link.kind === 'webdav'"
                 @click="copyToClipboard(buildDownloadLink(link))"
               >
                 <i class="material-icons">content_paste_go</i>
@@ -83,6 +93,26 @@
 
     <template v-else>
       <div class="card-content">
+        <template v-if="canWebDAV">
+          <p>{{ $t("prompts.shareKind") }}</p>
+          <select
+            class="input input--block"
+            v-model="kind"
+            :aria-label="$t('prompts.shareKind')"
+          >
+            <option value="link">{{ $t("prompts.shareKindLink") }}</option>
+            <option value="webdav">{{ $t("prompts.shareKindWebdav") }}</option>
+          </select>
+        </template>
+        <template v-if="kind === 'webdav'">
+          <p>{{ $t("prompts.webdavUser") }}</p>
+          <input
+            class="input input--block"
+            type="text"
+            autocomplete="off"
+            v-model.trim="webdavUser"
+          />
+        </template>
         <p>{{ $t("settings.shareDuration") }}</p>
         <div class="input-group input">
           <vue-number-input
@@ -108,13 +138,30 @@
           </select>
         </div>
         <p class="small">{{ $t("prompts.sharePermanentHint") }}</p>
-        <p>{{ $t("prompts.optionalPassword") }}</p>
+        <p>
+          {{
+            kind === "webdav"
+              ? $t("prompts.webdavPassword")
+              : $t("prompts.optionalPassword")
+          }}
+        </p>
         <input
           class="input input--block"
           type="password"
           v-model.trim="password"
           tabindex="3"
         />
+        <template v-if="kind === 'webdav' && canWrite">
+          <p>
+            <input type="checkbox" id="share-writable" v-model="writable" />
+            <label for="share-writable">{{
+              $t("prompts.webdavWritable")
+            }}</label>
+          </p>
+          <p v-if="writable" class="small">
+            {{ $t("prompts.webdavWritableWarning") }}
+          </p>
+        </template>
       </div>
 
       <div class="card-action">
@@ -148,7 +195,21 @@ import { useFileStore } from "@/stores/file";
 import * as api from "@/api/index";
 import dayjs from "dayjs";
 import { useLayoutStore } from "@/stores/layout";
+import { useAuthStore } from "@/stores/auth";
 import { copy } from "@/utils/clipboard";
+import { webdavPort } from "@/utils/constants";
+
+// asciiName makes a WebDAV username from a folder's name: some clients send only ASCII in Basic
+// authentication (Gezgin).
+const asciiName = (name) =>
+  (name || "")
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .replace(/ı/g, "i")
+    .toLowerCase()
+    .replace(/[^a-z0-9._-]+/g, "-")
+    .replace(/^-+|-+$/g, "")
+    .slice(0, 64);
 
 export default {
   name: "share",
@@ -160,6 +221,9 @@ export default {
       clip: null,
       password: "",
       listing: true,
+      kind: "link",
+      webdavUser: "",
+      writable: false,
     };
   },
   inject: ["$showError", "$showSuccess"],
@@ -170,6 +234,26 @@ export default {
       "selectedCount",
       "isListing",
     ]),
+    ...mapState(useAuthStore, ["user"]),
+    // item is what is shared.
+    item() {
+      if (!this.isListing) {
+        return this.req;
+      }
+      if (this.selectedCount !== 1) {
+        return null;
+      }
+      return this.req.items[this.selected[0]];
+    },
+    // A folder can be shared over WebDAV when the server has a WebDAV port.
+    canWebDAV() {
+      return webdavPort !== "" && !!this.item?.isDir;
+    },
+    // A share may be written to by those whom the user lets write.
+    canWrite() {
+      const perm = this.user?.perm;
+      return !!perm && perm.create && perm.modify && perm.rename && perm.delete;
+    },
     url() {
       if (!this.isListing) {
         return this.$route.path;
@@ -184,6 +268,7 @@ export default {
     },
   },
   async beforeMount() {
+    this.webdavUser = asciiName(this.item?.name) || "gezgin";
     try {
       const links = await api.share.get(this.url);
       this.links = links;
@@ -220,17 +305,37 @@ export default {
       );
     },
     submit: async function () {
+      const webdav =
+        this.kind === "webdav"
+          ? {
+              kind: "webdav",
+              webdavUser: this.webdavUser,
+              writable: this.writable,
+            }
+          : undefined;
+      if (webdav && (!this.webdavUser || this.password.length < 8)) {
+        this.$showError(this.$t("prompts.webdavIncomplete"));
+        return;
+      }
+
       try {
         let res = null;
 
         if (!this.time) {
-          res = await api.share.create(this.url, this.password);
+          res = await api.share.create(
+            this.url,
+            this.password,
+            "",
+            "hours",
+            webdav
+          );
         } else {
           res = await api.share.create(
             this.url,
             this.password,
             this.time,
-            this.unit
+            this.unit,
+            webdav
           );
         }
 
@@ -240,6 +345,7 @@ export default {
         this.time = 7;
         this.unit = "days";
         this.password = "";
+        this.writable = false;
 
         this.listing = true;
       } catch (e) {

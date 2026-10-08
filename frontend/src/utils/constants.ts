@@ -17,6 +17,8 @@ const tusSettings = window.FileBrowser.TusSettings;
 const origin = window.location.origin;
 const tusEndpoint = `/api/tus`;
 const hideLoginButton = window.FileBrowser.HideLoginButton;
+// The port of the WebDAV shares (Gezgin); empty when they are off.
+const webdavPort: string = window.FileBrowser.WebDAVPort || "";
 
 export {
   name,
@@ -38,4 +40,5 @@ export {
   origin,
   tusEndpoint,
   hideLoginButton,
+  webdavPort,
 };

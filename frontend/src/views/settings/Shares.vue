@@ -22,6 +22,14 @@
             <tr v-for="link in links" :key="link.hash">
               <td>
                 <a :href="buildLink(link)" target="_blank">{{ link.path }}</a>
+                <p v-if="link.kind === 'webdav'" class="small">
+                  WebDAV · {{ link.webdavUser }} ·
+                  {{
+                    link.writable
+                      ? t("prompts.webdavReadWrite")
+                      : t("prompts.webdavReadOnly")
+                  }}
+                </p>
               </td>
               <td>
                 <template v-if="link.expire !== 0">{{

@@ -82,6 +82,8 @@ type Server struct {
 	AuthHook               string `json:"authHook"`
 	TokenExpirationTime    string `json:"tokenExpirationTime"`
 	FollowExternalSymlinks bool   `json:"followExternalSymlinks"`
+	// WebDAVPort is the port the WebDAV shares are served on (Gezgin); empty turns them off.
+	WebDAVPort string `json:"webdavPort"`
 
 	// CaseInsensitiveFs is detected from Root at startup rather than
 	// configured, and tells the rule checker to match paths case-insensitively.

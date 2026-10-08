@@ -67,12 +67,12 @@ filebrowser [flags]
   -l, --log string                   log output (default "stdout")
       --password string              hashed password for the first user when using quick setup
   -p, --port string                  port to listen on (default "8080")
-      --redisCacheUrl string         redis cache URL (for multi-instance deployments), e.g. redis://user:pass@host:port
   -r, --root string                  root to prepend to relative paths (default ".")
       --socket string                socket to listen to (cannot be used with address, port, cert nor key flags)
       --socketPerm uint32            unix socket file permissions (default 438)
       --tokenExpirationTime string   user session timeout (default "2h")
       --username string              username for the first user when using quick setup (default "admin")
+      --webdavPort string            port to serve WebDAV shares on (off if empty)
 ```
 
 ## See Also

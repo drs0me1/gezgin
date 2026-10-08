@@ -161,6 +161,7 @@ func printSettings(ser *settings.Server, set *settings.Settings, auther auth.Aut
 	fmt.Fprintf(w, "\tThumbnails Enabled:\t%t\n", ser.EnableThumbnails)
 	fmt.Fprintf(w, "\tResize Preview:\t%t\n", ser.ResizePreview)
 	fmt.Fprintf(w, "\tFollow External Symlinks:\t%t\n", ser.FollowExternalSymlinks)
+	fmt.Fprintf(w, "\tWebDAV Port:\t%s\n", ser.WebDAVPort)
 
 	fmt.Fprintln(w, "\nTUS:")
 	fmt.Fprintf(w, "\tChunk size:\t%d\n", set.Tus.ChunkSize)
@@ -244,6 +245,8 @@ func getSettings(flags *pflag.FlagSet, set *settings.Settings, ser *settings.Ser
 			ser.ImageResolutionCal = !ser.ImageResolutionCal
 		case "followExternalSymlinks":
 			ser.FollowExternalSymlinks, err = flags.GetBool(flag.Name)
+		case "webdavPort":
+			ser.WebDAVPort, err = flags.GetString(flag.Name)
 
 		// Settings flags from [addConfigFlags]
 		case "signup":

@@ -1,4 +1,5 @@
 import { fetchURL, fetchJSON, removePrefix, createURL } from "./utils";
+import { webdavPort } from "@/utils/constants";
 
 export async function list() {
   return fetchJSON<Share[]>("/api/shares");
@@ -15,11 +16,19 @@ export async function remove(hash: string) {
   });
 }
 
+// WebDAVShare names the user and whether it may write, for a share served over WebDAV (Gezgin).
+export interface WebDAVShare {
+  kind: "webdav";
+  webdavUser: string;
+  writable: boolean;
+}
+
 export async function create(
   url: string,
   password = "",
   expires = "",
-  unit = "hours"
+  unit = "hours",
+  webdav?: WebDAVShare
 ) {
   url = removePrefix(url);
   url = `/api/share${url}`;
@@ -27,11 +36,12 @@ export async function create(
     url += `?expires=${expires}&unit=${unit}`;
   }
   let body = "{}";
-  if (password != "" || expires !== "" || unit !== "hours") {
+  if (password != "" || expires !== "" || unit !== "hours" || webdav) {
     body = JSON.stringify({
       password: password,
       expires: expires.toString(), // backend expects string not number
       unit: unit,
+      ...webdav,
     });
   }
   return fetchJSON(url, {
@@ -40,6 +50,15 @@ export async function create(
   });
 }
 
+// webdavURL is the address a WebDAV client connects to: the host Gezgin is reached by, on the
+// WebDAV port.
+export function webdavURL(hash: string) {
+  return `http://${window.location.hostname}:${webdavPort}/${hash}/`;
+}
+
 export function getShareURL(share: Share) {
+  if (share.kind === "webdav") {
+    return webdavURL(share.hash);
+  }
   return createURL("share/" + share.hash, {});
 }

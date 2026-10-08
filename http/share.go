@@ -7,11 +7,14 @@ import (
 	"errors"
 	"fmt"
 	"net/http"
+	"os"
 	"path/filepath"
 	"sort"
 	"strconv"
 	"strings"
 	"time"
+	"unicode"
+	"unicode/utf8"
 
 	fberrors "github.com/filebrowser/filebrowser/v2/errors"
 	"github.com/filebrowser/filebrowser/v2/share"
@@ -29,6 +32,9 @@ type shareResponse struct {
 	UserID      uint   `json:"userID"`
 	Expire      int64  `json:"expire"`
 	HasPassword bool   `json:"hasPassword"`
+	Kind        string `json:"kind,omitempty"`
+	WebDAVUser  string `json:"webdavUser,omitempty"`
+	Writable    bool   `json:"writable,omitempty"`
 }
 
 func toShareResponse(l *share.Link) *shareResponse {
@@ -38,6 +44,9 @@ func toShareResponse(l *share.Link) *shareResponse {
 		UserID:      l.UserID,
 		Expire:      l.Expire,
 		HasPassword: l.PasswordHash != "",
+		Kind:        l.Kind,
+		WebDAVUser:  l.Username,
+		Writable:    l.Writable,
 	}
 }
 
@@ -169,7 +178,8 @@ var sharePostHandler = withPermShare(func(w http.ResponseWriter, r *http.Request
 	// d.user.Fs is scoped, so Stat also refuses to follow a symlink whose target
 	// escapes the user's scope: that returns a permission error here and so
 	// blocks creating a share that points out of scope.
-	if _, err := d.user.Fs.Stat(r.URL.Path); err != nil {
+	info, err := d.user.Fs.Stat(r.URL.Path)
+	if err != nil {
 		return errToStatus(err), err
 	}
 
@@ -181,10 +191,13 @@ var sharePostHandler = withPermShare(func(w http.ResponseWriter, r *http.Request
 		}
 		defer r.Body.Close()
 	}
+	if status, err := checkWebDAVShare(d, &body, info); status != 0 {
+		return status, err
+	}
 
 	// 96 random bits name the link (Gezgin; File Browser used 48).
 	bytes := make([]byte, 12)
-	_, err := rand.Read(bytes)
+	_, err = rand.Read(bytes)
 	if err != nil {
 		return http.StatusInternalServerError, err
 	}
@@ -196,13 +209,24 @@ var sharePostHandler = withPermShare(func(w http.ResponseWriter, r *http.Request
 		return http.StatusBadRequest, err
 	}
 
-	hash, status, err := getSharePasswordHash(body)
-	if err != nil {
-		return status, err
+	var hash []byte
+	if body.Kind == share.KindWebDAV {
+		// A WebDAV password is held to the account rules (Gezgin).
+		pwd, err := users.ValidateAndHashPwd(body.Password, d.settings.MinimumPasswordLength)
+		if err != nil {
+			return http.StatusBadRequest, err
+		}
+		hash = []byte(pwd)
+	} else {
+		var status int
+		if hash, status, err = getSharePasswordHash(body); err != nil {
+			return status, err
+		}
 	}
 
+	// A link to a page takes its token to the downloads; WebDAV asks for the password every time.
 	var token string
-	if len(hash) > 0 {
+	if len(hash) > 0 && body.Kind == "" {
 		tokenBuffer := make([]byte, 96)
 		if _, err := rand.Read(tokenBuffer); err != nil {
 			return http.StatusInternalServerError, err
@@ -217,6 +241,9 @@ var sharePostHandler = withPermShare(func(w http.ResponseWriter, r *http.Request
 		UserID:       d.user.ID,
 		PasswordHash: string(hash),
 		Token:        token,
+		Kind:         body.Kind,
+		Username:     body.Username,
+		Writable:     body.Writable,
 	}
 
 	if err := d.store.Share.Save(s); err != nil {
@@ -225,6 +252,39 @@ var sharePostHandler = withPermShare(func(w http.ResponseWriter, r *http.Request
 
 	return renderJSON(w, r, toShareResponse(s))
 })
+
+// checkWebDAVShare checks the kind of a share about to be made of the item described by info
+// (Gezgin). A WebDAV share needs the WebDAV port on and a folder, a username Basic authentication
+// can carry (no colon), and a password; only a user who may create, change, rename and delete may
+// let it be written to. It returns 0 when the share may be made.
+func checkWebDAVShare(d *data, body *share.CreateBody, info os.FileInfo) (int, error) {
+	switch body.Kind {
+	case "":
+		if body.Username != "" || body.Writable {
+			return http.StatusBadRequest, fmt.Errorf("only a WebDAV share has a username or is writable: %w", fberrors.ErrInvalidRequestParams)
+		}
+		return 0, nil
+	case share.KindWebDAV:
+	default:
+		return http.StatusBadRequest, fmt.Errorf("unknown share kind %q: %w", body.Kind, fberrors.ErrInvalidRequestParams)
+	}
+
+	if d.server.WebDAVPort == "" {
+		return http.StatusBadRequest, errors.New("WebDAV shares are off")
+	}
+	if !info.IsDir() {
+		return http.StatusBadRequest, errors.New("only a folder is shared over WebDAV")
+	}
+	body.Username = strings.TrimSpace(body.Username)
+	if body.Username == "" || utf8.RuneCountInString(body.Username) > 64 ||
+		strings.Contains(body.Username, ":") || strings.ContainsFunc(body.Username, unicode.IsControl) {
+		return http.StatusBadRequest, errors.New("a WebDAV share needs a username of at most 64 characters, without a colon")
+	}
+	if body.Writable && !davCanWrite(d.user.Perm) {
+		return http.StatusForbidden, errors.New("a writable WebDAV share needs the create, modify, rename and delete permissions")
+	}
+	return 0, nil
+}
 
 // maxShareDuration bounds how long a link may last (Gezgin), as the trash bounds how long it keeps
 // an item.

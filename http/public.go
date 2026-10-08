@@ -23,6 +23,10 @@ func withHashFile(limiter *loginLimiter, fn handleFunc) handleFunc {
 		if err != nil {
 			return errToStatus(err), err
 		}
+		// A WebDAV share is served on the WebDAV port only (Gezgin).
+		if link.Kind != "" {
+			return http.StatusNotFound, nil
+		}
 
 		status, wait, err := authenticateShareRequest(r, link, limiter)
 		if status == http.StatusTooManyRequests {

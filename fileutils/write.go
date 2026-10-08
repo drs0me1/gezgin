@@ -23,9 +23,9 @@ func lstat(afs afero.Fs, name string) (os.FileInfo, error) {
 	return afs.Stat(name)
 }
 
-// tempName returns a hidden, unused name beside name for a file that will
+// TempName returns a hidden, unused name beside name for a file that will
 // take its place.
-func tempName(name string) (string, error) {
+func TempName(name string) (string, error) {
 	random := make([]byte, 8)
 	if _, err := rand.Read(random); err != nil {
 		return "", err
@@ -49,7 +49,7 @@ func WriteAtomic(afs afero.Fs, name string, in io.Reader, perm fs.FileMode) (os.
 		}
 	}
 
-	tmp, err := tempName(name)
+	tmp, err := TempName(name)
 	if err != nil {
 		return nil, err
 	}

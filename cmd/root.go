@@ -109,6 +109,7 @@ func addServerFlags(flags *pflag.FlagSet) {
 	flags.Bool("disableExec", true, "disables Command Runner feature")
 	flags.Bool("disableImageResolutionCalc", false, "disables image resolution calculation by reading image files")
 	flags.Bool("followExternalSymlinks", false, "follow symlinks whose target is outside the user scope (unsafe)")
+	flags.String("webdavPort", "", "port to serve WebDAV shares on (off if empty)")
 }
 
 var rootCmd = &cobra.Command{
@@ -240,6 +241,16 @@ user created with the credentials from options "username" and "password".`,
 			}
 		}
 
+		// The WebDAV shares have a port of their own (Gezgin), with the same TLS as the rest.
+		var davListener net.Listener
+		if server.WebDAVPort != "" {
+			davListener, err = davListen(server)
+			if err != nil {
+				return err
+			}
+			defer davListener.Close()
+		}
+
 		assetsFs, err := fs.Sub(frontend.Assets(), "dist")
 		if err != nil {
 			panic(err)
@@ -268,6 +279,20 @@ user created with the credentials from options "username" and "password".`,
 			log.Println("Stopped serving new connections.")
 		}()
 
+		var davSrv *http.Server
+		if davListener != nil {
+			log.Println("Serving WebDAV shares on", davListener.Addr().String())
+			davSrv = &http.Server{
+				Handler:           fbhttp.NewWebDAVHandler(fileCache, st.Storage, server),
+				ReadHeaderTimeout: 60 * time.Second,
+			}
+			go func() {
+				if err := davSrv.Serve(davListener); !errors.Is(err, http.ErrServerClosed) {
+					log.Fatalf("WebDAV server error: %v", err)
+				}
+			}()
+		}
+
 		sigc := make(chan os.Signal, 1)
 		signal.Notify(sigc,
 			os.Interrupt,
@@ -285,10 +310,31 @@ user created with the credentials from options "username" and "password".`,
 		if err := srv.Shutdown(shutdownCtx); err != nil {
 			log.Fatalf("HTTP shutdown error: %v", err)
 		}
+		if davSrv != nil {
+			if err := davSrv.Shutdown(shutdownCtx); err != nil {
+				log.Printf("WebDAV shutdown error: %v", err)
+			}
+		}
 		log.Println("Graceful shutdown complete.")
 
 		return nil
 	}, storeOptions{allowsNoDatabase: true}),
+}
+
+// davListen opens the port of the WebDAV shares, with TLS when the server has a certificate.
+func davListen(server *settings.Server) (net.Listener, error) {
+	adr := server.Address + ":" + server.WebDAVPort
+	if server.TLSKey == "" || server.TLSCert == "" {
+		return net.Listen("tcp", adr)
+	}
+	cer, err := tls.LoadX509KeyPair(server.TLSCert, server.TLSKey)
+	if err != nil {
+		return nil, err
+	}
+	return tls.Listen("tcp", adr, &tls.Config{
+		MinVersion:   tls.VersionTLS12,
+		Certificates: []tls.Certificate{cer},
+	})
 }
 
 // sweepTrash deletes the trash items whose time is up, at start-up and then every hour (Gezgin).
@@ -381,6 +427,10 @@ func getServerSettings(v *viper.Viper, st *storage.Storage) (*settings.Server, e
 
 	if v.IsSet("followExternalSymlinks") {
 		server.FollowExternalSymlinks = v.GetBool("followExternalSymlinks")
+	}
+
+	if v.IsSet("webdavPort") {
+		server.WebDAVPort = v.GetString("webdavPort")
 	}
 
 	if isAddrSet && isSocketSet {
