@@ -125,8 +125,14 @@
     "wrongCredentials": "Wrong credentials",
     "passwordTooShort": "Password must be at least {min} characters",
     "logout_reasons": {
-      "inactivity": "You have been logged out due to inactivity."
-    }
+      "inactivity": "You have been logged out due to inactivity.",
+      "sessions": "All sessions have been closed."
+    },
+    "passwordChangeRequired": "Choose a new password to continue. The current one was written to the server log.",
+    "changePassword": "Change password",
+    "passwordUnchanged": "The new password must differ from the current one.",
+    "currentPasswordIncorrect": "The current password is incorrect.",
+    "tooManyAttempts": "Too many failed attempts. Try again in {minutes} minutes."
   },
   "permanent": "Permanent",
   "prompts": {
@@ -283,7 +289,12 @@
     "userUpdated": "User updated!",
     "username": "Username",
     "users": "Users",
-    "currentPassword": "Your Current Password"
+    "currentPassword": "Your Current Password",
+    "sessions": "Sessions",
+    "sessionsHelp": "Ends the sessions on every device, this one included.",
+    "closeAllSessions": "Close all sessions",
+    "closeSessions": "Close sessions",
+    "sessionsClosed": "Sessions closed!"
   },
   "sidebar": {
     "diskUsed": "{used} of {total} used",

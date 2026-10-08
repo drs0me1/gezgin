@@ -20,6 +20,16 @@
         <div class="card-action">
           <button
             v-if="!isNew"
+            @click.prevent="closeSessions"
+            type="button"
+            class="button button--flat button--red"
+            :aria-label="$t('settings.closeSessions')"
+            :title="$t('settings.closeSessions')"
+          >
+            {{ $t("settings.closeSessions") }}
+          </button>
+          <button
+            v-if="!isNew"
             @click.prevent="deletePrompt"
             type="button"
             class="button button--flat button--red"
@@ -59,7 +69,7 @@ import { useRoute, useRouter } from "vue-router";
 import { useI18n } from "vue-i18n";
 import { StatusError } from "@/api/utils";
 import { authMethod } from "@/utils/constants";
-import { logout } from "@/utils/auth";
+import { login, logout } from "@/utils/auth";
 
 const error = ref<StatusError>();
 const originalUser = ref<IUser>();
@@ -162,6 +172,21 @@ const deleteUser = async (currentPassword: string) => {
   return true;
 };
 
+const closeSessions = async () => {
+  if (!user.value) return;
+
+  try {
+    await api.closeSessions(user.value.id);
+    if (user.value.id === authStore.user?.id) {
+      logout("sessions");
+    } else {
+      $showSuccess(t("settings.sessionsClosed"));
+    }
+  } catch (e: any) {
+    $showError(e);
+  }
+};
+
 const save = (event: Event) => {
   event.preventDefault();
   if (isCurrentPasswordRequired.value) {
@@ -199,7 +224,12 @@ const send = async (currentPassword: string) => {
       await api.update(user.value, ["all"], currentPassword);
 
       if (user.value.id === authStore.user?.id) {
-        authStore.updateUser(user.value);
+        if (user.value.password) {
+          // A new password ended the admin's own sessions; it opens the next one.
+          await login(user.value.username, user.value.password);
+        } else {
+          authStore.updateUser(user.value);
+        }
       }
 
       $showSuccess(t("settings.userUpdated"));

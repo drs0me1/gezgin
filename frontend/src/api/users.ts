@@ -42,6 +42,12 @@ export async function update(
   });
 }
 
+export async function closeSessions(id: number) {
+  await fetchURL(`/api/users/${id}/sessions`, {
+    method: "DELETE",
+  });
+}
+
 export async function remove(
   id: number,
   currentPassword: string | null = null

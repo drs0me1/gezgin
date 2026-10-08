@@ -76,18 +76,10 @@ The path must be for a json or yaml file.`,
 			var a interface{}
 			a, autherErr = getAuther(auth.JSONAuth{}, rawAuther)
 			auther = a.(*auth.JSONAuth)
-		case auth.MethodNoAuth:
-			var a interface{}
-			a, autherErr = getAuther(auth.NoAuth{}, rawAuther)
-			auther = a.(*auth.NoAuth)
 		case auth.MethodProxyAuth:
 			var a interface{}
 			a, autherErr = getAuther(auth.ProxyAuth{}, rawAuther)
 			auther = a.(*auth.ProxyAuth)
-		case auth.MethodHookAuth:
-			var a interface{}
-			a, autherErr = getAuther(&auth.HookAuth{}, rawAuther)
-			auther = a.(*auth.HookAuth)
 		default:
 			return errors.New("invalid auth method")
 		}

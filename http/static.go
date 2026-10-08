@@ -15,7 +15,6 @@ import (
 	"path/filepath"
 	"strings"
 
-	"github.com/filebrowser/filebrowser/v2/auth"
 	"github.com/filebrowser/filebrowser/v2/settings"
 	"github.com/filebrowser/filebrowser/v2/storage"
 	"github.com/filebrowser/filebrowser/v2/version"
@@ -38,12 +37,10 @@ func handleWithStaticData(w http.ResponseWriter, _ *http.Request, d *data, fSys 
 		"Version":               version.Version,
 		"StaticURL":             path.Join(d.server.BaseURL, "/static"),
 		"Signup":                d.settings.Signup,
-		"NoAuth":                d.settings.AuthMethod == auth.MethodNoAuth,
 		"AuthMethod":            d.settings.AuthMethod,
 		"LogoutPage":            d.settings.LogoutPage,
 		"LoginPage":             auther.LoginPage(),
 		"CSS":                   false,
-		"ReCaptcha":             false,
 		"Theme":                 d.settings.Branding.Theme,
 		"EnableThumbs":          d.server.EnableThumbnails,
 		"ResizePreview":         d.server.ResizePreview,
@@ -62,21 +59,6 @@ func handleWithStaticData(w http.ResponseWriter, _ *http.Request, d *data, fSys 
 
 		if err == nil {
 			data["CSS"] = true
-		}
-	}
-
-	if d.settings.AuthMethod == auth.MethodJSONAuth {
-		raw, err := d.store.Auth.Get(d.settings.AuthMethod)
-		if err != nil {
-			return http.StatusInternalServerError, err
-		}
-
-		auther := raw.(*auth.JSONAuth)
-
-		if auther.ReCaptcha != nil {
-			data["ReCaptcha"] = auther.ReCaptcha.Key != "" && auther.ReCaptcha.Secret != ""
-			data["ReCaptchaHost"] = auther.ReCaptcha.Host
-			data["ReCaptchaKey"] = auther.ReCaptcha.Key
 		}
 	}
 

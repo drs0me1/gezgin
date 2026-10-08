@@ -14,6 +14,15 @@ export class StatusError extends Error {
   }
 }
 
+// LoginLimitError is a login refused because the address or the account used up its attempts;
+// retryAfter is in seconds.
+export class LoginLimitError extends StatusError {
+  constructor(public retryAfter: number) {
+    super("429 Too Many Requests", 429);
+    this.name = "LoginLimitError";
+  }
+}
+
 export async function fetchURL(
   url: string,
   opts: ApiOpts,

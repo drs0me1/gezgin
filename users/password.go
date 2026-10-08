@@ -45,3 +45,12 @@ func RandomPwd(passwordLength uint) (string, error) {
 	var randomPasswordString = base64.URLEncoding.EncodeToString(randomPasswordBytes)
 	return randomPasswordString, nil
 }
+
+// NewSecurityStamp returns a random stamp; see User.SecurityStamp.
+func NewSecurityStamp() (string, error) {
+	stamp := make([]byte, 16)
+	if _, err := rand.Read(stamp); err != nil {
+		return "", err
+	}
+	return base64.RawURLEncoding.EncodeToString(stamp), nil
+}

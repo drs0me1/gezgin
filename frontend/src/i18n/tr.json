@@ -121,10 +121,16 @@
     "username": "Kullanıcı adı",
     "usernameTaken": "Kullanıcı adı mevcut",
     "wrongCredentials": "Yanlış hesap bilgileri",
-    "passwordTooShort": "Password must be at least {min} characters",
+    "passwordTooShort": "Şifre en az {min} karakter olmalı",
     "logout_reasons": {
-      "inactivity": "You have been logged out due to inactivity."
-    }
+      "inactivity": "Uzun süre işlem yapılmadığı için oturumunuz kapatıldı.",
+      "sessions": "Tüm oturumlar kapatıldı."
+    },
+    "passwordChangeRequired": "Devam etmek için yeni bir şifre belirleyin. Mevcut şifre sunucu günlüğüne yazıldı.",
+    "changePassword": "Şifreyi değiştir",
+    "passwordUnchanged": "Yeni şifre mevcut şifreden farklı olmalı.",
+    "currentPasswordIncorrect": "Mevcut şifre yanlış.",
+    "tooManyAttempts": "Çok fazla hatalı deneme. {minutes} dakika sonra yeniden deneyin."
   },
   "permanent": "Kalıcı",
   "prompts": {
@@ -278,7 +284,12 @@
     "userUpdated": "Kullanıcı güncellendi!",
     "username": "Kullanıcı adı",
     "users": "Kullanıcılar",
-    "currentPassword": "Your Current Password"
+    "currentPassword": "Mevcut şifreniz",
+    "sessions": "Oturumlar",
+    "sessionsHelp": "Bu cihaz dahil tüm cihazlardaki oturumları sonlandırır.",
+    "closeAllSessions": "Tüm oturumları kapat",
+    "closeSessions": "Oturumları kapat",
+    "sessionsClosed": "Oturumlar kapatıldı!"
   },
   "sidebar": {
     "help": "Yardım",

@@ -2,8 +2,8 @@ import { useAuthStore } from "@/stores/auth";
 import router from "@/router";
 import type { JwtPayload } from "jwt-decode";
 import { jwtDecode } from "jwt-decode";
-import { authMethod, baseURL, noAuth, logoutPage } from "./constants";
-import { StatusError } from "@/api/utils";
+import { authMethod, baseURL, logoutPage } from "./constants";
+import { LoginLimitError, StatusError } from "@/api/utils";
 import { setSafeTimeout } from "@/api/utils";
 
 export function parseToken(token: string) {
@@ -48,12 +48,8 @@ export async function validateLogin() {
   }
 }
 
-export async function login(
-  username: string,
-  password: string,
-  recaptcha: string
-) {
-  const data = { username, password, recaptcha };
+export async function login(username: string, password: string) {
+  const data = { username, password };
 
   const res = await fetch(`${baseURL}/api/login`, {
     method: "POST",
@@ -67,6 +63,8 @@ export async function login(
 
   if (res.status === 200) {
     parseToken(body);
+  } else if (res.status === 429) {
+    throw new LoginLimitError(Number(res.headers.get("Retry-After")) || 0);
   } else {
     throw new StatusError(
       body || `${res.status} ${res.statusText}`,
@@ -122,9 +120,7 @@ export function logout(reason?: string) {
   authStore.clearUser();
 
   localStorage.setItem("jwt", "");
-  if (noAuth) {
-    window.location.reload();
-  } else if (logoutPage !== "/login") {
+  if (logoutPage !== "/login") {
     document.location.href = `${logoutPage}`;
   } else {
     if (typeof reason === "string" && reason.trim() !== "") {

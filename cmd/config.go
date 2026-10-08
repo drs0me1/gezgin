@@ -42,14 +42,9 @@ func addConfigFlags(flags *pflag.FlagSet) {
 	flags.String("fileMode", fmt.Sprintf("%O", settings.DefaultFileMode), "mode bits that new files are created with")
 	flags.String("dirMode", fmt.Sprintf("%O", settings.DefaultDirMode), "mode bits that new directories are created with")
 
-	flags.String("auth.method", string(auth.MethodJSONAuth), "authentication type")
+	flags.String("auth.method", string(auth.MethodJSONAuth), "authentication type (json or proxy)")
 	flags.String("auth.header", "", "HTTP header for auth.method=proxy")
-	flags.String("auth.command", "", "command for auth.method=hook")
 	flags.String("auth.logoutPage", "", "url of custom logout page")
-
-	flags.String("recaptcha.host", "https://www.google.com", "use another host for ReCAPTCHA. recaptcha.net might be useful in China")
-	flags.String("recaptcha.key", "", "ReCaptcha site key")
-	flags.String("recaptcha.secret", "", "ReCaptcha secret")
 
 	flags.String("branding.name", "", "replace 'File Browser' by this name")
 	flags.String("branding.theme", "", "set the theme")
@@ -110,65 +105,6 @@ func getProxyAuth(flags *pflag.FlagSet, defaultAuther map[string]interface{}) (a
 	return &auth.ProxyAuth{Header: header}, nil
 }
 
-func getNoAuth() auth.Auther {
-	return &auth.NoAuth{}
-}
-
-func getJSONAuth(flags *pflag.FlagSet, defaultAuther map[string]interface{}) (auth.Auther, error) {
-	jsonAuth := &auth.JSONAuth{}
-	host, err := flags.GetString("recaptcha.host")
-	if err != nil {
-		return nil, err
-	}
-
-	key, err := flags.GetString("recaptcha.key")
-	if err != nil {
-		return nil, err
-	}
-
-	secret, err := flags.GetString("recaptcha.secret")
-	if err != nil {
-		return nil, err
-	}
-
-	if key == "" {
-		if kmap, ok := defaultAuther["recaptcha"].(map[string]interface{}); ok {
-			key = kmap["key"].(string)
-		}
-	}
-
-	if secret == "" {
-		if smap, ok := defaultAuther["recaptcha"].(map[string]interface{}); ok {
-			secret = smap["secret"].(string)
-		}
-	}
-
-	if key != "" && secret != "" {
-		jsonAuth.ReCaptcha = &auth.ReCaptcha{
-			Host:   host,
-			Key:    key,
-			Secret: secret,
-		}
-	}
-	return jsonAuth, nil
-}
-
-func getHookAuth(flags *pflag.FlagSet, defaultAuther map[string]interface{}) (auth.Auther, error) {
-	command, err := flags.GetString("auth.command")
-	if err != nil {
-		return nil, err
-	}
-	if command == "" {
-		command = defaultAuther["command"].(string)
-	}
-
-	if command == "" {
-		return nil, errors.New("you must set the flag 'auth.command' for method 'hook'")
-	}
-
-	return &auth.HookAuth{Command: command}, nil
-}
-
 func getAuthentication(flags *pflag.FlagSet, defaults ...interface{}) (settings.AuthMethod, auth.Auther, error) {
 	method, defaultAuther, err := getAuthMethod(flags, defaults...)
 	if err != nil {
@@ -179,12 +115,8 @@ func getAuthentication(flags *pflag.FlagSet, defaults ...interface{}) (settings.
 	switch method {
 	case auth.MethodProxyAuth:
 		auther, err = getProxyAuth(flags, defaultAuther)
-	case auth.MethodNoAuth:
-		auther = getNoAuth()
 	case auth.MethodJSONAuth:
-		auther, err = getJSONAuth(flags, defaultAuther)
-	case auth.MethodHookAuth:
-		auther, err = getHookAuth(flags, defaultAuther)
+		auther = &auth.JSONAuth{}
 	default:
 		return "", nil, fberrors.ErrInvalidAuthMethod
 	}

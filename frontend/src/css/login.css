@@ -29,14 +29,6 @@
   width: 90%;
 }
 
-#login.recaptcha form {
-  min-width: 304px;
-}
-
-#login #recaptcha {
-  margin: 0.5em 0 0;
-}
-
 #login .wrong {
   background: var(--red);
   color: #fff;

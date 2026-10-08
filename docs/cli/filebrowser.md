@@ -66,7 +66,6 @@ filebrowser [flags]
       --imageProcessors int            image processors count (default 4)
   -k, --key string                     tls key
   -l, --log string                     log output (default "stdout")
-      --noauth                         use the noauth auther when using quick setup
       --password string                hashed password for the first user when using quick setup
   -p, --port string                    port to listen on (default "8080")
       --redisCacheUrl string           redis cache URL (for multi-instance deployments), e.g. redis://user:pass@host:port

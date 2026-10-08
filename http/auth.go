@@ -1,12 +1,17 @@
 package fbhttp
 
 import (
+	"bytes"
+	"crypto/subtle"
 	"encoding/json"
 	"errors"
+	"io"
 	"log"
 	"net/http"
 	"os"
+	"strconv"
 	"strings"
+	"sync"
 	"time"
 
 	"github.com/golang-jwt/jwt/v5"
@@ -37,10 +42,13 @@ type userInfo struct {
 	DateFormat            bool              `json:"dateFormat"`
 	Username              string            `json:"username"`
 	AceEditorTheme        string            `json:"aceEditorTheme"`
+	MustChangePassword    bool              `json:"mustChangePassword"`
 }
 
 type authToken struct {
 	User userInfo `json:"user"`
+	// Stamp is the user's security stamp when the token was issued (users.User.SecurityStamp).
+	Stamp string `json:"stamp,omitempty"`
 	jwt.RegisteredClaims
 }
 
@@ -114,6 +122,16 @@ func proxyAsserts(r *http.Request, d *data, id uint) bool {
 }
 
 func withUser(fn handleFunc) handleFunc {
+	return authenticate(fn, false)
+}
+
+// withPasswordChange is withUser for the requests a user who must change their password may still
+// make: renewing the token and the change itself.
+func withPasswordChange(fn handleFunc) handleFunc {
+	return authenticate(fn, true)
+}
+
+func authenticate(fn handleFunc, passwordChange bool) handleFunc {
 	return func(w http.ResponseWriter, r *http.Request, d *data) (int, error) {
 		keyFunc := func(_ *jwt.Token) (interface{}, error) {
 			return d.settings.Key, nil
@@ -126,16 +144,29 @@ func withUser(fn handleFunc) handleFunc {
 			return http.StatusUnauthorized, nil
 		}
 
+		d.user, err = d.store.Users.Get(d.server.Root, d.server.FollowExternalSymlinks, tk.User.ID)
+		if errors.Is(err, fberrors.ErrNotExist) {
+			// A deleted user's sessions end with the account.
+			return http.StatusUnauthorized, nil
+		}
+		if err != nil {
+			return http.StatusInternalServerError, err
+		}
+
+		// A new security stamp ends every session issued before it.
+		if subtle.ConstantTimeCompare([]byte(tk.Stamp), []byte(d.user.SecurityStamp)) != 1 {
+			return http.StatusUnauthorized, nil
+		}
+
+		if d.user.MustChangePassword && !passwordChange {
+			return http.StatusForbidden, nil
+		}
+
 		expiresSoon := tk.ExpiresAt != nil && time.Until(tk.ExpiresAt.Time) < time.Hour
 		updated := tk.IssuedAt != nil && tk.IssuedAt.Unix() < d.store.Users.LastUpdate(tk.User.ID)
 
 		if expiresSoon || updated {
 			w.Header().Add("X-Renew-Token", "true")
-		}
-
-		d.user, err = d.store.Users.Get(d.server.Root, d.server.FollowExternalSymlinks, tk.User.ID)
-		if err != nil {
-			return http.StatusInternalServerError, err
 		}
 
 		canonicalizeRequestPath(r)
@@ -153,7 +184,7 @@ func withAdmin(fn handleFunc) handleFunc {
 	})
 }
 
-func loginHandler(tokenExpireTime time.Duration) handleFunc {
+func loginHandler(tokenExpireTime time.Duration, limiter *loginLimiter) handleFunc {
 	return func(w http.ResponseWriter, r *http.Request, d *data) (int, error) {
 		if r.Body != nil {
 			r.Body = http.MaxBytesReader(w, r.Body, maxAuthBodySize)
@@ -164,6 +195,31 @@ func loginHandler(tokenExpireTime time.Duration) handleFunc {
 			return http.StatusInternalServerError, err
 		}
 
+		// A password login spends an attempt from the budget of the client's address and of the
+		// address and username together; the proxy method checks no password.
+		limited := d.settings.AuthMethod == fbAuth.MethodJSONAuth && r.Body != nil
+		var address, username string
+		var attempt time.Time
+		if limited {
+			body, err := io.ReadAll(r.Body)
+			if err != nil {
+				return http.StatusBadRequest, err
+			}
+			r.Body = io.NopCloser(bytes.NewReader(body))
+
+			var cred struct {
+				Username string `json:"username"`
+			}
+			_ = json.Unmarshal(body, &cred) // a malformed body still costs an attempt
+			address, username = loginAddress(r), cred.Username
+
+			var wait time.Duration
+			if attempt, wait = limiter.begin(address, username); wait > 0 {
+				w.Header().Set("Retry-After", strconv.Itoa(int((wait+time.Second-1)/time.Second)))
+				return http.StatusTooManyRequests, nil
+			}
+		}
+
 		user, err := auther.Auth(r, d.store.Users, d.settings, d.server)
 		switch {
 		case errors.Is(err, os.ErrPermission):
@@ -172,6 +228,9 @@ func loginHandler(tokenExpireTime time.Duration) handleFunc {
 			return http.StatusInternalServerError, err
 		}
 
+		if limited {
+			limiter.succeeded(address, username, attempt)
+		}
 		return printToken(w, r, d, user, tokenExpireTime)
 	}
 }
@@ -243,13 +302,49 @@ var signupHandler = func(w http.ResponseWriter, r *http.Request, d *data) (int, 
 }
 
 func renewHandler(tokenExpireTime time.Duration) handleFunc {
-	return withUser(func(w http.ResponseWriter, r *http.Request, d *data) (int, error) {
+	return withPasswordChange(func(w http.ResponseWriter, r *http.Request, d *data) (int, error) {
 		w.Header().Set("X-Renew-Token", "false")
 		return printToken(w, r, d, d.user, tokenExpireTime)
 	})
 }
 
+// stampMu serialises giving users without a security stamp their first one, so that two first
+// logins cannot each store a different stamp and end the other's session.
+var stampMu sync.Mutex
+
+// securityStamp returns the user's security stamp, storing a first one for a user saved before
+// stamps existed.
+func securityStamp(d *data, user *users.User) (string, error) {
+	if user.SecurityStamp != "" {
+		return user.SecurityStamp, nil
+	}
+
+	stampMu.Lock()
+	defer stampMu.Unlock()
+
+	stored, err := d.store.Users.Get(d.server.Root, d.server.FollowExternalSymlinks, user.ID)
+	if err != nil {
+		return "", err
+	}
+	if stored.SecurityStamp == "" {
+		if stored.SecurityStamp, err = users.NewSecurityStamp(); err != nil {
+			return "", err
+		}
+		if err = d.store.Users.Update(stored, "SecurityStamp"); err != nil {
+			return "", err
+		}
+	}
+
+	user.SecurityStamp = stored.SecurityStamp
+	return user.SecurityStamp, nil
+}
+
 func printToken(w http.ResponseWriter, _ *http.Request, d *data, user *users.User, tokenExpirationTime time.Duration) (int, error) {
+	stamp, err := securityStamp(d, user)
+	if err != nil {
+		return http.StatusInternalServerError, err
+	}
+
 	claims := &authToken{
 		User: userInfo{
 			ID:                    user.ID,
@@ -264,7 +359,9 @@ func printToken(w http.ResponseWriter, _ *http.Request, d *data, user *users.Use
 			DateFormat:            user.DateFormat,
 			Username:              user.Username,
 			AceEditorTheme:        user.AceEditorTheme,
+			MustChangePassword:    user.MustChangePassword,
 		},
+		Stamp: stamp,
 		RegisteredClaims: jwt.RegisteredClaims{
 			IssuedAt:  jwt.NewNumericDate(time.Now()),
 			ExpiresAt: jwt.NewNumericDate(time.Now().Add(tokenExpirationTime)),

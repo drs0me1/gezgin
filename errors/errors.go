@@ -24,6 +24,7 @@ var (
 	ErrRootUserDeletion         = errors.New("the sole admin can't be deleted")
 	ErrCurrentPasswordIncorrect = errors.New("the current password is incorrect")
 	ErrShareRequiresDownload    = errors.New("permission to share requires permission to download")
+	ErrPasswordUnchanged        = errors.New("the new password must differ from the current one")
 )
 
 type ErrShortPassword struct {

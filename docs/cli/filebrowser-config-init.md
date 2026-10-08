@@ -19,10 +19,9 @@ filebrowser config init [flags]
 ```
       --aceEditorTheme string            ace editor's syntax highlighting theme for users
   -a, --address string                   address to listen on (default "127.0.0.1")
-      --auth.command string              command for auth.method=hook
       --auth.header string               HTTP header for auth.method=proxy
       --auth.logoutPage string           url of custom logout page
-      --auth.method string               authentication type (default "json")
+      --auth.method string               authentication type (json or proxy) (default "json")
   -b, --baseURL string                   base url
       --branding.color string            set the theme color
       --branding.disableExternal         disable external links such as GitHub links
@@ -59,9 +58,6 @@ filebrowser config init [flags]
       --perm.rename                      rename perm for users (default true)
       --perm.share                       share perm for users (default true)
   -p, --port string                      port to listen on (default "8080")
-      --recaptcha.host string            use another host for ReCAPTCHA. recaptcha.net might be useful in China (default "https://www.google.com")
-      --recaptcha.key string             ReCaptcha site key
-      --recaptcha.secret string          ReCaptcha secret
       --redirectAfterCopyMove            redirect to destination after copy/move
   -r, --root string                      root to prepend to relative paths (default ".")
       --scope string                     scope for users (default ".")

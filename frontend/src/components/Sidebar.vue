@@ -128,7 +128,6 @@ import {
   hideLoginButton,
   disableExternal,
   disableUsedPercentage,
-  noAuth,
   logoutPage,
   loginPage,
 } from "@/utils/constants";
@@ -160,7 +159,7 @@ export default {
     version: () => version,
     disableExternal: () => disableExternal,
     disableUsedPercentage: () => disableUsedPercentage,
-    canLogout: () => !noAuth && (loginPage || logoutPage !== "/login"),
+    canLogout: () => loginPage || logoutPage !== "/login",
   },
   methods: {
     ...mapActions(useLayoutStore, ["closeHovers", "showHover"]),

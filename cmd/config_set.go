@@ -1,7 +1,11 @@
 package cmd
 
 import (
+	"errors"
+
 	"github.com/spf13/cobra"
+
+	fberrors "github.com/filebrowser/filebrowser/v2/errors"
 )
 
 func init() {
@@ -29,8 +33,9 @@ you want to change. Other options will remain unchanged.`,
 			return err
 		}
 
+		// A method Gezgin dropped (noauth, hook) can only be replaced, with --auth.method.
 		auther, err := st.Auth.Get(set.AuthMethod)
-		if err != nil {
+		if err != nil && (!errors.Is(err, fberrors.ErrInvalidAuthMethod) || !flags.Changed("auth.method")) {
 			return err
 		}
 

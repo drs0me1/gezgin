@@ -85,7 +85,6 @@ func init() {
 
 	// Runtime flags for the root command
 	flags := rootCmd.Flags()
-	flags.Bool("noauth", false, "use the noauth auther when using quick setup")
 	flags.String("username", "admin", "username for the first user when using quick setup")
 	flags.String("password", "", "hashed password for the first user when using quick setup")
 	flags.Uint32("socketPerm", 0666, "unix socket file permissions")
@@ -191,6 +190,16 @@ user created with the credentials from options "username" and "password".`,
 			return err
 		}
 		setupLog(server.Log)
+
+		// A database written by File Browser may still name an auth method Gezgin dropped (noauth,
+		// hook): refuse to serve rather than answer every request with an error.
+		set, err := st.Settings.Get()
+		if err != nil {
+			return err
+		}
+		if _, err = st.Auth.Get(set.AuthMethod); err != nil {
+			return fmt.Errorf("auth method %q: %w; choose json or proxy with 'config set --auth.method'", set.AuthMethod, err)
+		}
 
 		log.Println("NOTICE: File Browser is being wound down.")
 		log.Println("NOTICE: The project is archived on 2026-09-01, after which there will be no")
@@ -458,14 +467,8 @@ func quickSetup(v *viper.Viper, s *storage.Storage) error {
 		Rules:    nil,
 	}
 
-	var err error
-	if v.GetBool("noauth") {
-		set.AuthMethod = auth.MethodNoAuth
-		err = s.Auth.Save(&auth.NoAuth{})
-	} else {
-		set.AuthMethod = auth.MethodJSONAuth
-		err = s.Auth.Save(&auth.JSONAuth{})
-	}
+	set.AuthMethod = auth.MethodJSONAuth
+	err := s.Auth.Save(&auth.JSONAuth{})
 	if err != nil {
 		return err
 	}
@@ -499,15 +502,16 @@ func quickSetup(v *viper.Viper, s *storage.Storage) error {
 
 	username := v.GetString("username")
 	password := v.GetString("password")
+	generated := password == ""
 
-	if password == "" {
+	if generated {
 		var pwd string
 		pwd, err = users.RandomPwd(set.MinimumPasswordLength)
 		if err != nil {
 			return err
 		}
 
-		log.Printf("User '%s' initialized with randomly generated password: %s\n", username, pwd)
+		log.Printf("User '%s' initialized with randomly generated password: %s (to be changed at the first login)\n", username, pwd)
 		password, err = users.ValidateAndHashPwd(pwd, set.MinimumPasswordLength)
 		if err != nil {
 			return err
@@ -524,6 +528,8 @@ func quickSetup(v *viper.Viper, s *storage.Storage) error {
 		Username:     username,
 		Password:     password,
 		LockPassword: false,
+		// The generated password stays in the log; the first login replaces it.
+		MustChangePassword: generated,
 	}
 
 	set.Defaults.Apply(user)

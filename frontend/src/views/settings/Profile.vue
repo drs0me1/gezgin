@@ -52,7 +52,7 @@
       </form>
     </div>
 
-    <div v-if="!noAuth" class="column">
+    <div class="column">
       <form
         class="card"
         v-if="!authStore.user?.lockPassword"
@@ -97,6 +97,27 @@
           />
         </div>
       </form>
+
+      <div class="card">
+        <div class="card-title">
+          <h2>{{ t("settings.sessions") }}</h2>
+        </div>
+
+        <div class="card-content">
+          <p>{{ t("settings.sessionsHelp") }}</p>
+        </div>
+
+        <div class="card-action">
+          <button
+            class="button button--flat button--red"
+            type="button"
+            name="closeSessions"
+            @click="closeSessions"
+          >
+            {{ t("settings.closeAllSessions") }}
+          </button>
+        </div>
+      </div>
     </div>
   </div>
 </template>
@@ -109,7 +130,8 @@ import AceEditorTheme from "@/components/settings/AceEditorTheme.vue";
 import Languages from "@/components/settings/Languages.vue";
 import { computed, inject, onMounted, ref } from "vue";
 import { useI18n } from "vue-i18n";
-import { authMethod, noAuth } from "@/utils/constants";
+import { authMethod } from "@/utils/constants";
+import * as auth from "@/utils/auth";
 
 const layoutStore = useLayoutStore();
 const authStore = useAuthStore();
@@ -177,7 +199,8 @@ const updatePassword = async (event: Event) => {
       password: password.value,
     };
     await api.update(data, ["password"], currentPassword.value);
-    authStore.updateUser(data);
+    // The change ended every session, this one too; the new password opens the next one.
+    await auth.login(authStore.user.username, password.value);
     $showSuccess(t("settings.passwordUpdated"));
   } catch (e: any) {
     $showError(e);
@@ -185,6 +208,17 @@ const updatePassword = async (event: Event) => {
     password.value = passwordConf.value = "";
   }
 };
+const closeSessions = async () => {
+  if (authStore.user === null) return;
+
+  try {
+    await api.closeSessions(authStore.user.id);
+    auth.logout("sessions");
+  } catch (e: any) {
+    $showError(e);
+  }
+};
+
 const updateSettings = async (event: Event) => {
   event.preventDefault();
 

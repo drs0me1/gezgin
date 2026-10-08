@@ -99,6 +99,11 @@ options you want to change.`,
 			if err != nil {
 				return err
 			}
+			// A new password ends the sessions issued with the old one.
+			user.SecurityStamp, err = users.NewSecurityStamp()
+			if err != nil {
+				return err
+			}
 		}
 
 		err = st.Users.Update(user)

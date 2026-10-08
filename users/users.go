@@ -36,6 +36,13 @@ type User struct {
 	HideDotfiles          bool          `json:"hideDotfiles"`
 	DateFormat            bool          `json:"dateFormat"`
 	AceEditorTheme        string        `json:"aceEditorTheme"`
+	// SecurityStamp is carried by every token issued to the user, which is valid only while the
+	// stamp is unchanged: a password change or "close all sessions" gives a new stamp and ends
+	// the sessions issued before it. Empty until the first login after it was introduced.
+	SecurityStamp string `json:"securityStamp"`
+	// MustChangePassword holds every request but the user's own password change; quick setup sets
+	// it for the admin whose generated password was written to the log.
+	MustChangePassword bool `json:"mustChangePassword"`
 }
 
 // GetRules implements rules.Provider.
