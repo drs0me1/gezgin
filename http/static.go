@@ -44,7 +44,6 @@ func handleWithStaticData(w http.ResponseWriter, _ *http.Request, d *data, fSys 
 		"Theme":                 d.settings.Branding.Theme,
 		"EnableThumbs":          d.server.EnableThumbnails,
 		"ResizePreview":         d.server.ResizePreview,
-		"EnableExec":            d.server.EnableExec,
 		"TusSettings":           d.settings.Tus,
 		"HideLoginButton":       d.settings.HideLoginButton,
 		"WebDAVPort":            d.server.WebDAVPort,

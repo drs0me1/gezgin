@@ -5,6 +5,5 @@ import * as settings from "./settings";
 import * as pub from "./pub";
 import * as trash from "./trash";
 import search from "./search";
-import commands from "./commands";
 
-export { files, share, users, settings, pub, commands, search, trash };
+export { files, share, users, settings, pub, search, trash };

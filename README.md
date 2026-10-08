@@ -78,6 +78,11 @@ Work in progress. Until the first Gezgin release this tree is File Browser's las
   and a move takes the share links along. The owner's permissions and rules hold, Gezgin's own
   files are not shown, and a symbolic link does not lead out of the shared folder. The share
   dialog offers it for folders when the port is set; it lasts 7 days unless told otherwise.
+- Command runner and hooks: removed (File Browser kept them off by default as unsafe). There is no
+  terminal, `/api/command`, execute permission, per-user command list, `shell` or `commands`
+  setting, command on file events or `cmds` command, and Gezgin starts no other program.
+  `--disableExec` is still accepted and changes nothing; settings and users saved with these
+  fields load as before, without them.
 - The container image keeps generated thumbnails in `/database/cache` (`FB_CACHE_DIR`).
 - Passwords need at least 8 characters by default (File Browser: 12); the admin can change it in
   the global settings. Quick setup's generated admin password stays 16 characters.

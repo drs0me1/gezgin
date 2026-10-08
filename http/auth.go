@@ -36,7 +36,6 @@ type userInfo struct {
 	SingleClick           bool              `json:"singleClick"`
 	RedirectAfterCopyMove bool              `json:"redirectAfterCopyMove"`
 	Perm                  users.Permissions `json:"perm"`
-	Commands              []string          `json:"commands"`
 	LockPassword          bool              `json:"lockPassword"`
 	HideDotfiles          bool              `json:"hideDotfiles"`
 	DateFormat            bool              `json:"dateFormat"`
@@ -271,12 +270,6 @@ var signupHandler = func(w http.ResponseWriter, r *http.Request, d *data) (int, 
 	// if that is the default permission.
 	user.Perm.Admin = false
 
-	// Self-registered users should not inherit execution capabilities from
-	// default settings, regardless of what the administrator has configured
-	// as the default. Execution rights must be explicitly granted by an admin.
-	user.Perm.Execute = false
-	user.Commands = []string{}
-
 	pwd, err := users.ValidateAndHashPwd(info.Password, d.settings.MinimumPasswordLength)
 	if err != nil {
 		return http.StatusBadRequest, err
@@ -354,7 +347,6 @@ func printToken(w http.ResponseWriter, _ *http.Request, d *data, user *users.Use
 			RedirectAfterCopyMove: user.RedirectAfterCopyMove,
 			Perm:                  user.Perm,
 			LockPassword:          user.LockPassword,
-			Commands:              user.Commands,
 			HideDotfiles:          user.HideDotfiles,
 			DateFormat:            user.DateFormat,
 			Username:              user.Username,

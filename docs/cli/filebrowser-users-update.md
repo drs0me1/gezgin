@@ -15,7 +15,6 @@ filebrowser users update <id|username> [flags]
 
 ```
       --aceEditorTheme string   ace editor's syntax highlighting theme for users
-      --commands strings        a list of the commands a user can execute
       --dateFormat              use date format (true for absolute time, false for relative)
   -h, --help                    help for update
       --hideDotfiles            hide dotfiles in file listings
@@ -26,7 +25,6 @@ filebrowser users update <id|username> [flags]
       --perm.create             create perm for users (default true)
       --perm.delete             delete perm for users (default true)
       --perm.download           download perm for users (default true)
-      --perm.execute            execute perm for users (default true)
       --perm.modify             modify perm for users (default true)
       --perm.rename             rename perm for users (default true)
       --perm.share              share perm for users (default true)

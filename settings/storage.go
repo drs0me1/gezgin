@@ -61,14 +61,6 @@ func (s *Storage) Get() (*Settings, error) {
 	return set, nil
 }
 
-var defaultEvents = []string{
-	"save",
-	"copy",
-	"rename",
-	"upload",
-	"delete",
-}
-
 // Save saves the settings for the current instance.
 func (s *Storage) Save(set *Settings) error {
 	if len(set.Key) == 0 {
@@ -77,10 +69,6 @@ func (s *Storage) Save(set *Settings) error {
 
 	if set.Defaults.Locale == "" {
 		set.Defaults.Locale = "tr"
-	}
-
-	if set.Defaults.Commands == nil {
-		set.Defaults.Commands = []string{}
 	}
 
 	if set.Defaults.ViewMode == "" {
@@ -93,24 +81,6 @@ func (s *Storage) Save(set *Settings) error {
 
 	if err := rules.Validate(set.Rules); err != nil {
 		return err
-	}
-
-	if set.Shell == nil {
-		set.Shell = []string{}
-	}
-
-	if set.Commands == nil {
-		set.Commands = map[string][]string{}
-	}
-
-	for _, event := range defaultEvents {
-		if _, ok := set.Commands["before_"+event]; !ok {
-			set.Commands["before_"+event] = []string{}
-		}
-
-		if _, ok := set.Commands["after_"+event]; !ok {
-			set.Commands["after_"+event] = []string{}
-		}
 	}
 
 	err := s.back.Save(set)

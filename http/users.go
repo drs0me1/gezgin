@@ -27,7 +27,7 @@ var (
 	SelfModifiableFields = []string{"Password", "Locale", "ViewMode", "SingleClick", "RedirectAfterCopyMove",
 		"Sorting", "HideDotfiles", "DateFormat", "AceEditorTheme"}
 	AdminModifiableFields = append(slices.Clone(SelfModifiableFields),
-		"Username", "Scope", "LockPassword", "Perm", "Commands", "Rules")
+		"Username", "Scope", "LockPassword", "Perm", "Rules")
 )
 
 type modifyUserRequest struct {
@@ -220,7 +220,6 @@ var userPutHandler = withPasswordChange(selfOrAdmin(func(w http.ResponseWriter, 
 			"password":     {},
 			"scope":        {},
 			"lockpassword": {},
-			"commands":     {},
 			"perm":         {},
 		}
 

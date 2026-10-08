@@ -27,11 +27,9 @@ filebrowser config set [flags]
       --branding.name string             replace 'File Browser' by this name
       --branding.theme string            set the theme
   -t, --cert string                      tls certificate
-      --commands strings                 a list of the commands a user can execute
       --createUserDir                    generate user's home directory automatically
       --dateFormat                       use date format (true for absolute time, false for relative)
       --dirMode string                   mode bits that new directories are created with (default "0o750")
-      --disableExec                      disables Command Runner feature (default true)
       --disableImageResolutionCalc       disables image resolution calculation by reading image files
       --disablePreviewResize             disable resize of image previews
       --disableThumbnails                disable image thumbnails
@@ -49,7 +47,6 @@ filebrowser config set [flags]
       --perm.create                      create perm for users (default true)
       --perm.delete                      delete perm for users (default true)
       --perm.download                    download perm for users (default true)
-      --perm.execute                     execute perm for users (default true)
       --perm.modify                      modify perm for users (default true)
       --perm.rename                      rename perm for users (default true)
       --perm.share                       share perm for users (default true)
@@ -57,7 +54,6 @@ filebrowser config set [flags]
       --redirectAfterCopyMove            redirect to destination after copy/move
   -r, --root string                      root to prepend to relative paths (default ".")
       --scope string                     scope for users (default ".")
-      --shell string                     shell command to which other commands should be appended
   -s, --signup                           allow users to signup
       --singleClick                      use single clicks only
       --socket string                    socket to listen to (cannot be used with address, port, cert nor key flags)

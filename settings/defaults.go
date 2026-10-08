@@ -15,7 +15,6 @@ type UserDefaults struct {
 	RedirectAfterCopyMove bool              `json:"redirectAfterCopyMove"`
 	Sorting               files.Sorting     `json:"sorting"`
 	Perm                  users.Permissions `json:"perm"`
-	Commands              []string          `json:"commands"`
 	HideDotfiles          bool              `json:"hideDotfiles"`
 	DateFormat            bool              `json:"dateFormat"`
 	AceEditorTheme        string            `json:"aceEditorTheme"`
@@ -30,7 +29,6 @@ func (d *UserDefaults) Apply(u *users.User) {
 	u.RedirectAfterCopyMove = d.RedirectAfterCopyMove
 	u.Perm = d.Perm
 	u.Sorting = d.Sorting
-	u.Commands = d.Commands
 	u.HideDotfiles = d.HideDotfiles
 	u.DateFormat = d.DateFormat
 	u.AceEditorTheme = d.AceEditorTheme

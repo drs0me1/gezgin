@@ -17,7 +17,6 @@ import (
 	"golang.org/x/net/webdav"
 
 	"github.com/filebrowser/filebrowser/v2/files"
-	"github.com/filebrowser/filebrowser/v2/runner"
 	"github.com/filebrowser/filebrowser/v2/settings"
 	"github.com/filebrowser/filebrowser/v2/share"
 	"github.com/filebrowser/filebrowser/v2/storage"
@@ -94,7 +93,6 @@ func (s *davServer) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	d := &data{
-		Runner:   &runner.Runner{Enabled: s.server.EnableExec, Settings: set},
 		settings: set,
 		server:   s.server,
 		store:    s.store,

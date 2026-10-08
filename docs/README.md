@@ -15,7 +15,6 @@ File Browser provides a file managing interface within a specified directory and
 - [Installation](installation.md)
 - [Customization](customization.md)
 - [Authentication](authentication.md)
-- [Command Execution](command-execution.md)
 - [Deployment](deployment.md)
 - [Troubleshooting](troubleshooting.md)
 - [Command Line Usage](cli/filebrowser.md)
@@ -39,10 +38,6 @@ Project-level documents live in the repository root: [README](../README.md), [Bu
 - **File Editing**
 
   ![File editor](static/4.jpg)
-
-- **Custom Commands**
-
-  ![Command runner](static/5.jpg)
 
 - **Customization**
 

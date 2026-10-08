@@ -63,7 +63,6 @@ func TestProxyAuthCreateUserRestrictsDefaults(t *testing.T) {
 		Defaults: settings.UserDefaults{
 			Perm: users.Permissions{
 				Admin:    true,
-				Execute:  true,
 				Create:   true,
 				Rename:   true,
 				Modify:   true,
@@ -71,7 +70,6 @@ func TestProxyAuthCreateUserRestrictsDefaults(t *testing.T) {
 				Share:    true,
 				Download: true,
 			},
-			Commands: []string{"git", "ls", "cat", "id"},
 		},
 	}
 
@@ -86,12 +84,6 @@ func TestProxyAuthCreateUserRestrictsDefaults(t *testing.T) {
 
 	if user.Perm.Admin {
 		t.Error("auto-provisioned proxy user should not have Admin permission")
-	}
-	if user.Perm.Execute {
-		t.Error("auto-provisioned proxy user should not have Execute permission")
-	}
-	if len(user.Commands) != 0 {
-		t.Errorf("auto-provisioned proxy user should have empty Commands, got %v", user.Commands)
 	}
 	if !user.Perm.Create {
 		t.Error("auto-provisioned proxy user should retain Create permission from defaults")

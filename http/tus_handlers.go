@@ -351,11 +351,7 @@ func finishUpload(r *http.Request, d *data, cache *UploadCache, fileCache FileCa
 	if old != nil && old.Mode.IsRegular() {
 		perm = old.Mode.Perm()
 	}
-	err = d.RunHook(func() error {
-		_, placeErr := fileutils.Place(d.user.Fs, up.staged, r.URL.Path, d.user.FullPath(r.URL.Path), perm)
-		return placeErr
-	}, "upload", r.URL.Path, "", d.user)
-	if err != nil {
+	if _, err = fileutils.Place(d.user.Fs, up.staged, r.URL.Path, d.user.FullPath(r.URL.Path), perm); err != nil {
 		return errToStatus(err), err
 	}
 

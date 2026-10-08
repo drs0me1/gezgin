@@ -41,7 +41,7 @@ vi.mock("@/api", () => ({
   users: {},
   files: {},
 }));
-vi.mock("@/utils/constants", () => ({ enableExec: false }));
+vi.mock("@/utils/constants", () => ({}));
 vi.mock("@/utils/auth", () => ({}));
 vi.mock("@/router", () => ({ default: {} }));
 vi.mock("@/i18n", () => ({ default: {} }));
