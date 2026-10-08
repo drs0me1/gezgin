@@ -44,7 +44,7 @@ filebrowser config set [flags]
       --locale string                    locale for users (default "tr")
       --lockPassword                     lock password
   -l, --log string                       log output (default "stdout")
-      --minimumPasswordLength uint       minimum password length for new users (default 12)
+      --minimumPasswordLength uint       minimum password length for new users (default 8)
       --perm.admin                       admin perm for users
       --perm.create                      create perm for users (default true)
       --perm.delete                      delete perm for users (default true)

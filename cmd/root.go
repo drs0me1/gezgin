@@ -444,6 +444,9 @@ func setupLog(logMethod string) {
 	}
 }
 
+// generatedPasswordBytes is the randomness of quick setup's admin password: 16 characters.
+const generatedPasswordBytes = 12
+
 func quickSetup(v *viper.Viper, s *storage.Storage) error {
 	log.Println("Performing quick setup")
 
@@ -520,7 +523,8 @@ func quickSetup(v *viper.Viper, s *storage.Storage) error {
 
 	if generated {
 		var pwd string
-		pwd, err = users.RandomPwd(set.MinimumPasswordLength)
+		// The generated password does not follow the minimum length, which may be lower.
+		pwd, err = users.RandomPwd(generatedPasswordBytes)
 		if err != nil {
 			return err
 		}

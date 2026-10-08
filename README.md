@@ -49,6 +49,8 @@ Work in progress. Until the first Gezgin release this tree is File Browser's las
   opened at and is refused (409, the editor asks before overwriting) when the file changed since;
   Ctrl+S without a change writes nothing. Windows-1254 subtitles reach the player as UTF-8.
 - The container image keeps generated thumbnails in `/database/cache` (`FB_CACHE_DIR`).
+- Passwords need at least 8 characters by default (File Browser: 12); the admin can change it in
+  the global settings. Quick setup's generated admin password stays 16 characters.
 
 Details: [docs/authentication.md](docs/authentication.md).
 

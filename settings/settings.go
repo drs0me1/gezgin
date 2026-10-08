@@ -12,7 +12,10 @@ import (
 
 const DefaultUsersHomeBasePath = "/users"
 const DefaultLogoutPage = "/login"
-const DefaultMinimumPasswordLength = 12
+
+// DefaultMinimumPasswordLength is 8 in Gezgin (File Browser used 12); the admin can change it in
+// the global settings.
+const DefaultMinimumPasswordLength = 8
 const DefaultFileMode = 0640
 const DefaultDirMode = 0750
 
