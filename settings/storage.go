@@ -76,7 +76,7 @@ func (s *Storage) Save(set *Settings) error {
 	}
 
 	if set.Defaults.Locale == "" {
-		set.Defaults.Locale = "en"
+		set.Defaults.Locale = "tr"
 	}
 
 	if set.Defaults.Commands == nil {
@@ -89,6 +89,10 @@ func (s *Storage) Save(set *Settings) error {
 
 	if set.Rules == nil {
 		set.Rules = []rules.Rule{}
+	}
+
+	if err := rules.Validate(set.Rules); err != nil {
+		return err
 	}
 
 	if set.Shell == nil {

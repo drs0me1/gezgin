@@ -20,10 +20,13 @@ import (
 )
 
 var (
-	NonModifiableFieldsForNonAdmin = []string{"Username", "Scope", "LockPassword", "Perm", "Commands", "Rules"}
-
-	// NonModifiableFields follow the password and the sessions; no request sets them.
-	NonModifiableFields = []string{"SecurityStamp", "MustChangePassword"}
+	// SelfModifiableFields are the fields users change on their own account; an admin changes
+	// AdminModifiableFields on any account. No request sets the others (the ID, the security
+	// stamp, the forced password change): they follow the server's own rules.
+	SelfModifiableFields = []string{"Password", "Locale", "ViewMode", "SingleClick", "RedirectAfterCopyMove",
+		"Sorting", "HideDotfiles", "DateFormat", "AceEditorTheme"}
+	AdminModifiableFields = append(slices.Clone(SelfModifiableFields),
+		"Username", "Scope", "LockPassword", "Perm", "Commands", "Rules")
 )
 
 type modifyUserRequest struct {
@@ -114,7 +117,8 @@ var userGetHandler = withSelfOrAdmin(func(w http.ResponseWriter, r *http.Request
 	return renderJSON(w, r, u)
 })
 
-var userDeleteHandler = withSelfOrAdmin(func(_ http.ResponseWriter, r *http.Request, d *data) (int, error) {
+// userDeleteHandler deletes a user; only an admin deletes accounts, their own included.
+var userDeleteHandler = withAdmin(selfOrAdmin(func(_ http.ResponseWriter, r *http.Request, d *data) (int, error) {
 	if r.Body == nil {
 		return http.StatusBadRequest, fberrors.ErrEmptyRequest
 	}
@@ -139,7 +143,7 @@ var userDeleteHandler = withSelfOrAdmin(func(_ http.ResponseWriter, r *http.Requ
 	}
 
 	return http.StatusOK, nil
-})
+}))
 
 var userPostHandler = withAdmin(func(w http.ResponseWriter, r *http.Request, d *data) (int, error) {
 	req, err := getUser(w, r)
@@ -183,7 +187,7 @@ var userPostHandler = withAdmin(func(w http.ResponseWriter, r *http.Request, d *
 
 	err = d.store.Users.Save(req.Data)
 	if err != nil {
-		return http.StatusInternalServerError, err
+		return errToStatus(err), err
 	}
 
 	w.Header().Set("Location", "/settings/users/"+strconv.FormatUint(uint64(req.Data.ID), 10))
@@ -210,7 +214,7 @@ var userPutHandler = withPasswordChange(selfOrAdmin(func(w http.ResponseWriter, 
 			"username":     {},
 			"password":     {},
 			"scope":        {},
-			"lockPassword": {},
+			"lockpassword": {},
 			"commands":     {},
 			"perm":         {},
 		}
@@ -242,6 +246,16 @@ var userPutHandler = withPasswordChange(selfOrAdmin(func(w http.ResponseWriter, 
 		}
 	}
 
+	// A new scope gets its folder as on creation, so that it can be used at once.
+	makeScope := func(username string) error {
+		scope, err := d.settings.MakeUserDir(username, req.Data.Scope, d.server.Root)
+		if err != nil {
+			return err
+		}
+		req.Data.Scope = scope
+		return nil
+	}
+
 	if len(req.Which) == 0 || (len(req.Which) == 1 && req.Which[0] == "all") {
 		if !d.user.Perm.Admin {
 			return http.StatusForbidden, nil
@@ -253,6 +267,10 @@ var userPutHandler = withPasswordChange(selfOrAdmin(func(w http.ResponseWriter, 
 		}
 		req.Data.SecurityStamp = suser.SecurityStamp
 		req.Data.MustChangePassword = suser.MustChangePassword
+
+		if err = makeScope(req.Data.Username); err != nil {
+			return http.StatusInternalServerError, err
+		}
 
 		if req.Data.Password != "" {
 			req.Data.Password, err = users.ValidateAndHashPwd(req.Data.Password, d.settings.MinimumPasswordLength)
@@ -275,11 +293,16 @@ var userPutHandler = withPasswordChange(selfOrAdmin(func(w http.ResponseWriter, 
 		v = cases.Title(language.English, cases.NoLower).String(v)
 		req.Which[k] = v
 
-		if slices.Contains(NonModifiableFields, v) {
+		allowed := SelfModifiableFields
+		if d.user.Perm.Admin {
+			allowed = AdminModifiableFields
+		}
+		if !slices.Contains(allowed, v) {
 			return http.StatusForbidden, nil
 		}
 
-		if v == "Password" {
+		switch v {
+		case "Password":
 			if !d.user.Perm.Admin && d.user.LockPassword {
 				return http.StatusForbidden, nil
 			}
@@ -296,18 +319,24 @@ var userPutHandler = withPasswordChange(selfOrAdmin(func(w http.ResponseWriter, 
 			if self {
 				followers = append(followers, "MustChangePassword")
 			}
-		}
-
-		for _, f := range NonModifiableFieldsForNonAdmin {
-			if !d.user.Perm.Admin && v == f {
-				return http.StatusForbidden, nil
+		case "Scope":
+			name := req.Data.Username
+			if name == "" {
+				stored, err := d.store.Users.Get(d.server.Root, d.server.FollowExternalSymlinks, d.raw.(uint))
+				if err != nil {
+					return errToStatus(err), err
+				}
+				name = stored.Username
+			}
+			if err = makeScope(name); err != nil {
+				return http.StatusInternalServerError, err
 			}
 		}
 	}
 
 	err = d.store.Users.Update(req.Data, append(req.Which, followers...)...)
 	if err != nil {
-		return http.StatusInternalServerError, err
+		return errToStatus(err), err
 	}
 
 	if self && stampChanged {

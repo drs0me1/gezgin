@@ -2,10 +2,13 @@ package users
 
 import (
 	"errors"
+	"slices"
+	"strings"
 	"sync"
 	"time"
 
 	fberrors "github.com/filebrowser/filebrowser/v2/errors"
+	"github.com/filebrowser/filebrowser/v2/rules"
 )
 
 // StorageBackend is the interface to implement for a users storage.
@@ -40,6 +43,10 @@ type Storage struct {
 	// provision serializes the scope-collision check and the save of newly
 	// provisioned users, which must not interleave. See SaveProvisioned.
 	provision sync.Mutex
+
+	// guard serializes the checks that look at other users (a free username,
+	// the last admin) with the write they allow.
+	guard sync.Mutex
 }
 
 // NewStorage creates a users storage from a backend.
@@ -87,11 +94,41 @@ func (s *Storage) Gets(baseScope string, followExternalSymlinks bool) ([]*User, 
 	return users, err
 }
 
-// Update updates a user in the database.
+// Update updates a user in the database. Without fields every field is
+// written.
 func (s *Storage) Update(user *User, fields ...string) error {
 	err := user.Clean("", false, fields...)
 	if err != nil {
 		return err
+	}
+
+	writes := func(field string) bool {
+		return len(fields) == 0 || slices.Contains(fields, field)
+	}
+
+	if writes("Rules") {
+		if err = rules.Validate(user.Rules); err != nil {
+			return err
+		}
+	}
+
+	s.guard.Lock()
+	defer s.guard.Unlock()
+
+	if writes("Username") {
+		if err = s.nameTaken(user); err != nil {
+			return err
+		}
+	}
+
+	if writes("Perm") && !user.Perm.Admin {
+		stored, err := s.back.GetBy(user.ID)
+		if err != nil {
+			return err
+		}
+		if stored.Perm.Admin && s.IsUniqueAdmin(stored) {
+			return fberrors.ErrLastAdmin
+		}
 	}
 
 	err = s.back.Update(user, fields...)
@@ -111,7 +148,38 @@ func (s *Storage) Save(user *User) error {
 		return err
 	}
 
+	if err := rules.Validate(user.Rules); err != nil {
+		return err
+	}
+
+	s.guard.Lock()
+	defer s.guard.Unlock()
+
+	if err := s.nameTaken(user); err != nil {
+		return err
+	}
+
 	return s.back.Save(user)
+}
+
+// nameTaken reports, as ErrExist, a username another user already has in any
+// case: logins match names exactly, so names that differ only in case would
+// be easy to confuse.
+func (s *Storage) nameTaken(user *User) error {
+	all, err := s.back.Gets()
+	if errors.Is(err, fberrors.ErrNotExist) {
+		return nil
+	}
+	if err != nil {
+		return err
+	}
+
+	for _, other := range all {
+		if other.ID != user.ID && strings.EqualFold(other.Username, user.Username) {
+			return fberrors.ErrExist
+		}
+	}
+	return nil
 }
 
 // SaveProvisioned saves a user that is being provisioned (via signup or proxy
@@ -144,6 +212,9 @@ func (s *Storage) SaveProvisioned(user *User, derivedScope bool) error {
 // id must be a string for username lookup or a uint for id lookup. If id
 // is neither, a ErrInvalidDataType will be returned.
 func (s *Storage) Delete(id interface{}) error {
+	s.guard.Lock()
+	defer s.guard.Unlock()
+
 	switch id := id.(type) {
 	case string:
 		user, err := s.back.GetBy(id)

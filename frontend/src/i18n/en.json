@@ -294,7 +294,8 @@
     "sessionsHelp": "Ends the sessions on every device, this one included.",
     "closeAllSessions": "Close all sessions",
     "closeSessions": "Close sessions",
-    "sessionsClosed": "Sessions closed!"
+    "sessionsClosed": "Sessions closed!",
+    "lastAdmin": "The only admin can't lose the admin permission."
   },
   "sidebar": {
     "diskUsed": "{used} of {total} used",

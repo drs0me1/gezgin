@@ -18,7 +18,7 @@ filebrowser users add <username> <password> [flags]
       --dateFormat              use date format (true for absolute time, false for relative)
   -h, --help                    help for add
       --hideDotfiles            hide dotfiles in file listings
-      --locale string           locale for users (default "en")
+      --locale string           locale for users (default "tr")
       --lockPassword            lock password
       --perm.admin              admin perm for users
       --perm.create             create perm for users (default true)

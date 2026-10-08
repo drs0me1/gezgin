@@ -42,7 +42,7 @@ filebrowser config set [flags]
       --hideDotfiles                     hide dotfiles in file listings
       --hideLoginButton                  hide login button from public pages
   -k, --key string                       tls key
-      --locale string                    locale for users (default "en")
+      --locale string                    locale for users (default "tr")
       --lockPassword                     lock password
   -l, --log string                       log output (default "stdout")
       --minimumPasswordLength uint       minimum password length for new users (default 12)

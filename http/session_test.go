@@ -31,6 +31,7 @@ type sessionEnv struct {
 	t       *testing.T
 	st      *storage.Storage
 	handler http.Handler
+	root    string
 }
 
 func newSessionEnv(t *testing.T) *sessionEnv {
@@ -56,11 +57,12 @@ func newSessionEnv(t *testing.T) *sessionEnv {
 		t.Fatalf("failed to save auther: %v", err)
 	}
 
-	handler, err := NewHandler(nil, diskcache.NewNoOp(), nil, st, &settings.Server{Root: t.TempDir()}, fstest.MapFS{})
+	root := t.TempDir()
+	handler, err := NewHandler(nil, diskcache.NewNoOp(), nil, st, &settings.Server{Root: root}, fstest.MapFS{})
 	if err != nil {
 		t.Fatalf("failed to build the handler: %v", err)
 	}
-	return &sessionEnv{t: t, st: st, handler: handler}
+	return &sessionEnv{t: t, st: st, handler: handler, root: root}
 }
 
 func (e *sessionEnv) addUser(name, password string, admin, mustChange bool) *users.User {

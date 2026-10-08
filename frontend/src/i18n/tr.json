@@ -289,7 +289,8 @@
     "sessionsHelp": "Bu cihaz dahil tüm cihazlardaki oturumları sonlandırır.",
     "closeAllSessions": "Tüm oturumları kapat",
     "closeSessions": "Oturumları kapat",
-    "sessionsClosed": "Oturumlar kapatıldı!"
+    "sessionsClosed": "Oturumlar kapatıldı!",
+    "lastAdmin": "Tek admin, admin yetkisini kaybedemez."
   },
   "sidebar": {
     "help": "Yardım",

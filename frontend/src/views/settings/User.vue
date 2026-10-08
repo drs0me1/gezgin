@@ -235,7 +235,13 @@ const send = async (currentPassword: string) => {
       $showSuccess(t("settings.userUpdated"));
     }
   } catch (e: any) {
-    $showError(e);
+    if (e instanceof StatusError && e.status === 409) {
+      $showError(t("login.usernameTaken"));
+    } else if (e instanceof StatusError && e.message.includes("sole admin")) {
+      $showError(t("settings.lastAdmin"));
+    } else {
+      $showError(e);
+    }
   }
 };
 </script>

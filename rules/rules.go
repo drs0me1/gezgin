@@ -1,9 +1,12 @@
 package rules
 
 import (
+	"fmt"
 	"path/filepath"
 	"regexp"
 	"strings"
+
+	fberrors "github.com/filebrowser/filebrowser/v2/errors"
 )
 
 // Checker is a Rules checker.
@@ -17,6 +20,25 @@ type Rule struct {
 	Allow  bool    `json:"allow"`
 	Path   string  `json:"path"`
 	Regexp *Regexp `json:"regexp"`
+}
+
+// Validate checks rules before they are saved: a path rule needs a path and a regex rule an
+// expression that compiles. A broken expression would otherwise fail every request it is matched
+// in, and an empty path matches every path.
+func Validate(rs []Rule) error {
+	for i, r := range rs {
+		switch {
+		case r.Regex && (r.Regexp == nil || r.Regexp.Raw == ""):
+			return fmt.Errorf("%w: rule %d: the expression is empty", fberrors.ErrInvalidRule, i+1)
+		case r.Regex:
+			if _, err := regexp.Compile(r.Regexp.Raw); err != nil {
+				return fmt.Errorf("%w: rule %d: %v", fberrors.ErrInvalidRule, i+1, err)
+			}
+		case r.Path == "":
+			return fmt.Errorf("%w: rule %d: the path is empty", fberrors.ErrInvalidRule, i+1)
+		}
+	}
+	return nil
 }
 
 // MatchHidden matches paths with a basename

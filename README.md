@@ -26,6 +26,10 @@ Work in progress. Until the first Gezgin release this tree is File Browser's las
 - Password logins are limited per address and username (HTTP 429 with `Retry-After`).
 - Sessions end when the password changes, with "Close all sessions" and when the user is deleted.
 - The admin whose password quick setup generated chooses a new one at the first login.
+- Users: the sole admin cannot lose the admin permission; only an admin deletes accounts; users
+  change only their own preferences and password; usernames are unique in any letter case; rules
+  are checked when saved (an expression must compile, a path must not be empty); a new scope gets
+  its folder; the default language is Turkish.
 
 Details: [docs/authentication.md](docs/authentication.md).
 
