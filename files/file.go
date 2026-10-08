@@ -51,6 +51,10 @@ type FileInfo struct {
 	Token      string            `json:"token,omitempty"`
 	currentDir []os.FileInfo     `json:"-"`
 	Resolution *ImageResolution  `json:"resolution,omitempty"`
+	// Encoding is the encoding Content was read in, empty when no supported encoding reads the
+	// file back unchanged; Version identifies the file's content (see Version).
+	Encoding string `json:"encoding,omitempty"`
+	Version  string `json:"version,omitempty"`
 }
 
 // FileOptions are the options when getting a file info.
@@ -275,7 +279,13 @@ func (i *FileInfo) detectType(modify, saveContent, readHeader bool, calcImgRes b
 				return err
 			}
 
-			i.Content = string(content)
+			var ok bool
+			i.Content, i.Encoding, ok = DecodeText(content)
+			i.Version = Version(content)
+			// A text no supported encoding reads back unchanged would be damaged by a save.
+			if !ok {
+				i.Type = "textImmutable"
+			}
 		}
 		return nil
 	default:

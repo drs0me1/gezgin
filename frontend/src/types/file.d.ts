@@ -22,6 +22,8 @@ interface Resource extends ResourceBase {
   subtitles?: string[];
   content?: string;
   rawContent?: ArrayBuffer;
+  encoding?: string;
+  version?: string;
 }
 
 interface ResourceItem extends ResourceBase {

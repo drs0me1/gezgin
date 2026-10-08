@@ -43,6 +43,12 @@ Work in progress. Until the first Gezgin release this tree is File Browser's las
   another disk. Items expire after 30 days by default (global settings, 0 = never); an admin sees
   how much every trash holds and can empty them all. Shares of a trashed item end and do not come
   back with a restore.
+- Editor: Ace's modes, themes and workers ship with Gezgin (no CDN). Texts in UTF-8 and in the
+  Turkish code page (Windows-1254) open decoded and save back in their encoding; a text no
+  supported encoding reads back unchanged opens read-only. A save names the version the file was
+  opened at and is refused (409, the editor asks before overwriting) when the file changed since;
+  Ctrl+S without a change writes nothing. Windows-1254 subtitles reach the player as UTF-8.
+- The container image keeps generated thumbnails in `/database/cache` (`FB_CACHE_DIR`).
 
 Details: [docs/authentication.md](docs/authentication.md).
 

@@ -29,6 +29,7 @@ var (
 	ErrInvalidRule              = errors.New("invalid rule")
 	ErrTypeMismatch             = errors.New("a file and a folder cannot replace each other")
 	ErrTrashOtherDisk           = errors.New("the item is on another disk than the trash; delete it permanently instead")
+	ErrFileChanged              = errors.New("the file changed since it was opened")
 )
 
 type ErrShortPassword struct {

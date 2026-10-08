@@ -344,5 +344,12 @@
     "keepDaysHelp": "Deleted items are deleted for good after this many days; 0 keeps them until the trash is emptied.",
     "usage": "Every user's trash: {count} items",
     "emptyAll": "Empty every trash"
+  },
+  "editor": {
+    "encodingTitle": "This file is in the Turkish code page (Windows-1254); it is saved in the same encoding.",
+    "unknownEncoding": "This file's character encoding is not recognised; it is opened read-only so that a save cannot damage it.",
+    "conflict": "The file changed while you were editing it. Saving now overwrites the other change.",
+    "overwrite": "Save anyway",
+    "unencodable": "The text has characters {encoding} cannot hold; it was not saved."
   }
 }

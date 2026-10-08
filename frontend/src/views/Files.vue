@@ -158,7 +158,12 @@ const fetchData = async () => {
   fetchDataController.abort();
   fetchDataController = new AbortController();
   try {
-    const res = await api.fetch(url, fetchDataController.signal);
+    // The editor needs the server's reading of a CSV file (its encoding and version), not the bytes.
+    const res = await api.fetch(
+      url,
+      fetchDataController.signal,
+      route.query.edit === "true" ? false : undefined
+    );
     fileStore.updateRequest(res);
     document.title = `${res.name || t("sidebar.myFiles")} - ${t("files.files")} - ${name}`;
     layoutStore.loading = false;

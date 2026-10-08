@@ -23,6 +23,7 @@ export {
   disableExternal,
   disableUsedPercentage,
   baseURL,
+  staticURL,
   logoURL,
   signup,
   version,

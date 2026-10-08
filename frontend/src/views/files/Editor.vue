@@ -43,6 +43,12 @@
     <template v-else>
       <div class="editor-header">
         <Breadcrumbs base="/files" noLink />
+        <span
+          v-if="encoding === 'windows-1254'"
+          class="editor-encoding"
+          :title="t('editor.encodingTitle')"
+          >Windows-1254</span
+        >
 
         <div>
           <button
@@ -66,6 +72,10 @@
         </div>
       </div>
 
+      <p v-if="unknownEncoding" class="editor-notice">
+        {{ t("editor.unknownEncoding") }}
+      </p>
+
       <div
         v-show="isPreview && isMarkdownFile"
         id="preview-container"
@@ -79,9 +89,11 @@
 
 <script setup lang="ts">
 import { files as api } from "@/api";
+import { StatusError } from "@/api/utils";
 import buttons from "@/utils/buttons";
+import { staticURL } from "@/utils/constants";
 import url from "@/utils/url";
-import ace, { Ace, version as ace_version } from "ace-builds";
+import ace, { Ace } from "ace-builds";
 import "ace-builds/src-noconflict/ext-language_tools";
 import modelist from "ace-builds/src-noconflict/ext-modelist";
 import DOMPurify from "dompurify";
@@ -116,6 +128,15 @@ const fontSize = ref(parseInt(localStorage.getItem("editorFontSize") || "14"));
 
 const isPreview = ref(false);
 const previewContent = ref("");
+
+// The server reads the text in its encoding and names the version it read; a save writes the text
+// back in that encoding, and only over that version.
+const encoding = fileStore.req?.encoding ?? "";
+const version = ref(fileStore.req?.version ?? "");
+const unknownEncoding =
+  fileStore.req?.type === "textImmutable" &&
+  authStore.user?.perm.modify === true &&
+  encoding === "";
 const isMarkdownFile =
   fileStore.req?.name.endsWith(".md") ||
   fileStore.req?.name.endsWith(".markdown");
@@ -172,9 +193,12 @@ onMounted(() => {
     }
   });
 
+  // The editor's modes, themes and workers come with Gezgin (see vite.config.ts), not from a CDN.
   ace.config.set(
     "basePath",
-    `https://cdn.jsdelivr.net/npm/ace-builds@${ace_version}/src-min-noconflict/`
+    import.meta.env.DEV
+      ? "/node_modules/ace-builds/src-min-noconflict/"
+      : `${staticURL}/ace/`
   );
 
   if (!layoutStore.loading) {
@@ -266,17 +290,38 @@ const handlePageChange = (event: BeforeUnloadEvent) => {
   }
 };
 
-const save = async (throwError?: boolean) => {
+// save writes the text if it changed. When the file changed since it was opened, it asks before
+// overwriting (force).
+const save = async (throwError?: boolean, force = false) => {
   const button = "save";
+  if (editor.value?.session.getUndoManager().isClean()) {
+    return;
+  }
   buttons.loading("save");
 
   try {
-    await api.put(route.path, editor.value?.getValue());
+    const saved = await api.save(route.path, editor.value?.getValue() ?? "", {
+      encoding,
+      version: force ? "" : version.value,
+    });
+    if (saved) version.value = saved;
     editor.value?.session.getUndoManager().markClean();
     buttons.success(button);
   } catch (e: any) {
     buttons.done(button);
-    $showError(e);
+    if (e instanceof StatusError && e.status === 409 && !force) {
+      layoutStore.showHover({
+        prompt: "editorConflict",
+        confirm: async () => {
+          layoutStore.closeHovers();
+          await save(throwError, true);
+        },
+      });
+    } else if (e instanceof StatusError && e.message.includes("cannot hold")) {
+      $showError(t("editor.unencodable", { encoding: "Windows-1254" }));
+    } else {
+      $showError(e);
+    }
     if (throwError) throw e;
   }
 };
@@ -358,5 +403,23 @@ const preview = () => {
 
 .editor-header > div > button > span > i {
   font-size: 1.2rem;
+}
+
+.editor-encoding {
+  margin-left: auto;
+  margin-right: 1em;
+  padding: 0.1em 0.5em;
+  border: 1px solid var(--borderPrimary);
+  border-radius: 0.3em;
+  font-size: 0.8em;
+  color: var(--textSecondary);
+}
+
+.editor-notice {
+  margin: 0;
+  padding: 0.5em 1em;
+  background: var(--surfaceSecondary);
+  color: var(--textSecondary);
+  font-size: 0.9em;
 }
 </style>

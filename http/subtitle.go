@@ -49,16 +49,21 @@ func subtitleFileHandler(w http.ResponseWriter, r *http.Request, file *files.Fil
 	}
 	defer fd.Close()
 
+	raw, err := io.ReadAll(fd)
+	if err != nil {
+		return http.StatusInternalServerError, err
+	}
+	// The player reads WebVTT as UTF-8; subtitles in the Turkish code page are common (Gezgin).
+	text, _, _ := files.DecodeText(raw)
+	content := []byte(text)
+
 	// load subtitle for conversion to vtt
 	var sub *astisub.Subtitles
-	if strings.HasSuffix(file.Name, ".srt") {
-		content, readErr := io.ReadAll(fd)
-		if readErr != nil {
-			return http.StatusInternalServerError, readErr
-		}
+	name := strings.ToLower(file.Name)
+	if strings.HasSuffix(name, ".srt") {
 		sub, err = astisub.ReadFromSRT(bytes.NewReader(normalizeSRTLineBreaks(content)))
-	} else if strings.HasSuffix(file.Name, ".ass") || strings.HasSuffix(file.Name, ".ssa") {
-		sub, err = astisub.ReadFromSSA(fd)
+	} else if strings.HasSuffix(name, ".ass") || strings.HasSuffix(name, ".ssa") {
+		sub, err = astisub.ReadFromSSA(bytes.NewReader(content))
 	}
 	if err != nil {
 		return http.StatusInternalServerError, err
@@ -72,7 +77,7 @@ func subtitleFileHandler(w http.ResponseWriter, r *http.Request, file *files.Fil
 
 	// serve vtt file directly
 	if sub == nil {
-		http.ServeContent(w, r, file.Name, file.ModTime, fd)
+		http.ServeContent(w, r, file.Name, file.ModTime, bytes.NewReader(content))
 		return 0, nil
 	}
 

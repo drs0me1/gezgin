@@ -1,7 +1,10 @@
 package fbhttp
 
 import (
+	"bytes"
 	"context"
+	"crypto/sha256"
+	"encoding/hex"
 	"errors"
 	"fmt"
 	"io"
@@ -13,6 +16,7 @@ import (
 	"path"
 	"path/filepath"
 	"strings"
+	"sync"
 	"time"
 
 	fberrors "github.com/filebrowser/filebrowser/v2/errors"
@@ -186,6 +190,16 @@ func resourcePostHandler(fileCache FileCache) handleFunc {
 	})
 }
 
+// maxEncodedSave bounds a save that is re-encoded, which is read whole.
+const maxEncodedSave = 64 << 20
+
+// saveMu keeps a save that checks the file's version from interleaving with another one.
+var saveMu sync.Mutex
+
+// resourcePutHandler saves a file. The editor (Gezgin) names the encoding the text was read in,
+// which the text is written back in, and the version it was opened at: when the file changed
+// since, the save is refused with 409 rather than overwrite the other change. The new version is
+// returned in X-Version.
 var resourcePutHandler = withUser(func(w http.ResponseWriter, r *http.Request, d *data) (int, error) {
 	if !d.user.Perm.Modify || !d.Check(r.URL.Path) {
 		return http.StatusForbidden, nil
@@ -204,14 +218,45 @@ var resourcePutHandler = withUser(func(w http.ResponseWriter, r *http.Request, d
 		return http.StatusNotFound, nil
 	}
 
+	body := io.Reader(r.Body)
+	if encoding := r.URL.Query().Get("encoding"); encoding != "" && encoding != files.EncodingUTF8 {
+		text, err := io.ReadAll(io.LimitReader(r.Body, maxEncodedSave+1))
+		if err != nil {
+			return http.StatusBadRequest, err
+		}
+		if len(text) > maxEncodedSave {
+			return http.StatusRequestEntityTooLarge, nil
+		}
+		raw, err := files.EncodeText(string(text), encoding)
+		if err != nil {
+			return errToStatus(err), err
+		}
+		body = bytes.NewReader(raw)
+	}
+
+	if version := r.URL.Query().Get("version"); version != "" {
+		saveMu.Lock()
+		defer saveMu.Unlock()
+
+		current, err := afero.ReadFile(d.user.Fs, r.URL.Path)
+		if err != nil {
+			return errToStatus(err), err
+		}
+		if files.Version(current) != version {
+			return errToStatus(fberrors.ErrFileChanged), fberrors.ErrFileChanged
+		}
+	}
+
+	hash := sha256.New()
 	err = d.RunHook(func() error {
-		info, writeErr := writeFile(d.user.Fs, r.URL.Path, r.Body, d.settings.FileMode, d.settings.DirMode)
+		info, writeErr := writeFile(d.user.Fs, r.URL.Path, io.TeeReader(body, hash), d.settings.FileMode, d.settings.DirMode)
 		if writeErr != nil {
 			return writeErr
 		}
 
 		etag := fmt.Sprintf(`"%x%x"`, info.ModTime().UnixNano(), info.Size())
 		w.Header().Set("ETag", etag)
+		w.Header().Set("X-Version", hex.EncodeToString(hash.Sum(nil)))
 		return nil
 	}, "save", r.URL.Path, "", d.user)
 

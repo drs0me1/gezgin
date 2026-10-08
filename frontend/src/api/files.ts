@@ -5,8 +5,14 @@ import { upload as postTus, useTus } from "./tus";
 import { createURL, fetchURL, removePrefix, StatusError } from "./utils";
 import { isEncodableResponse, makeRawResource } from "@/utils/encodings";
 
-export async function fetch(url: string, signal?: AbortSignal) {
-  const encoding = isEncodableResponse(url);
+// fetch reads a file or a folder. raw asks for a text file's bytes (the CSV viewer decodes them
+// itself); otherwise the server decodes the text and names its encoding and version.
+export async function fetch(
+  url: string,
+  signal?: AbortSignal,
+  raw = isEncodableResponse(url)
+) {
+  const encoding = raw;
   url = removePrefix(url);
   const res = await fetchURL(`/api/resources${url}`, {
     signal,
@@ -78,6 +84,25 @@ export async function remove(url: string, permanent = false) {
 
 export async function put(url: string, content = "") {
   return resourceAction(url, "PUT", content);
+}
+
+// save writes the editor's text back in the encoding it was read in, if the file is still at the
+// version it was opened at (409 otherwise; no version overwrites). It returns the new version.
+export async function save(
+  url: string,
+  content: string,
+  opts: { encoding?: string; version?: string }
+) {
+  const params = new URLSearchParams();
+  if (opts.encoding) params.set("encoding", opts.encoding);
+  if (opts.version) params.set("version", opts.version);
+  const query = params.toString();
+  const res = await resourceAction(
+    url + (query ? `?${query}` : ""),
+    "PUT",
+    content
+  );
+  return res.headers.get("X-Version") ?? "";
 }
 
 export function download(format: any, ...files: string[]) {

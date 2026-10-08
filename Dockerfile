@@ -36,6 +36,9 @@ RUN mkdir -p /config /database /srv && \
 # Define healthcheck script
 HEALTHCHECK --start-period=2s --interval=5s --timeout=3s CMD /healthcheck.sh
 
+# Gezgin: keep generated thumbnails with the database, so that a folder's thumbnails are made once
+ENV FB_CACHE_DIR=/database/cache
+
 # Set the user, volumes and exposed ports
 USER user
 

@@ -340,5 +340,12 @@
     "keepDaysHelp": "Silinen öğeler bu kadar gün sonra kalıcı silinir; 0 verilirse çöp boşaltılana kadar kalır.",
     "usage": "Bütün kullanıcıların çöpü: {count} öğe",
     "emptyAll": "Bütün çöpleri boşalt"
+  },
+  "editor": {
+    "encodingTitle": "Bu dosya Türkçe kod sayfasında (Windows-1254); aynı kodlamayla kaydedilir.",
+    "unknownEncoding": "Bu dosyanın karakter kodlaması tanınamadı; bir kayıt bozmasın diye salt okunur açıldı.",
+    "conflict": "Dosya siz düzenlerken değişti. Şimdi kaydederseniz diğer değişiklik kaybolur.",
+    "overwrite": "Yine de kaydet",
+    "unencodable": "Metinde {encoding} kodlamasının yazamadığı karakterler var; kaydedilmedi."
   }
 }
