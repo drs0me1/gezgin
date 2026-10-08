@@ -1,6 +1,7 @@
 package share
 
 import (
+	"errors"
 	"time"
 
 	fberrors "github.com/filebrowser/filebrowser/v2/errors"
@@ -36,16 +37,7 @@ func (s *Storage) All() ([]*Link, error) {
 		return nil, err
 	}
 
-	for i, link := range links {
-		if link.Expire != 0 && link.Expire <= time.Now().Unix() {
-			if err := s.Delete(link.Hash); err != nil {
-				return nil, err
-			}
-			links = append(links[:i], links[i+1:]...)
-		}
-	}
-
-	return links, nil
+	return s.live(links)
 }
 
 // FindByUserID wraps a StorageBackend.FindByUserID.
@@ -56,16 +48,25 @@ func (s *Storage) FindByUserID(id uint) ([]*Link, error) {
 		return nil, err
 	}
 
-	for i, link := range links {
-		if link.Expire != 0 && link.Expire <= time.Now().Unix() {
+	return s.live(links)
+}
+
+// live drops the links that expired, deleting them. (Gezgin: the loops this
+// replaces skipped the link after a deleted one, kept it although it had
+// expired, and could slice past the shortened list and panic.)
+func (s *Storage) live(links []*Link) ([]*Link, error) {
+	now := time.Now().Unix()
+	kept := links[:0]
+	for _, link := range links {
+		if link.Expire != 0 && link.Expire <= now {
 			if err := s.Delete(link.Hash); err != nil {
 				return nil, err
 			}
-			links = append(links[:i], links[i+1:]...)
+			continue
 		}
+		kept = append(kept, link)
 	}
-
-	return links, nil
+	return kept, nil
 }
 
 // GetByHash wraps a StorageBackend.GetByHash.
@@ -98,16 +99,7 @@ func (s *Storage) Gets(path string, id uint) ([]*Link, error) {
 		return nil, err
 	}
 
-	for i, link := range links {
-		if link.Expire != 0 && link.Expire <= time.Now().Unix() {
-			if err := s.Delete(link.Hash); err != nil {
-				return nil, err
-			}
-			links = append(links[:i], links[i+1:]...)
-		}
-	}
-
-	return links, nil
+	return s.live(links)
 }
 
 // Save wraps a StorageBackend.Save
@@ -122,4 +114,21 @@ func (s *Storage) Delete(hash string) error {
 
 func (s *Storage) DeleteWithPathPrefix(path string, userID uint) error {
 	return s.back.DeleteWithPathPrefix(path, userID)
+}
+
+// DeleteByUserID deletes the links the user made (Gezgin).
+func (s *Storage) DeleteByUserID(id uint) error {
+	links, err := s.back.FindByUserID(id)
+	if errors.Is(err, fberrors.ErrNotExist) {
+		return nil
+	}
+	if err != nil {
+		return err
+	}
+	for _, link := range links {
+		if err := s.Delete(link.Hash); err != nil {
+			return err
+		}
+	}
+	return nil
 }

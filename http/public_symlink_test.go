@@ -78,9 +78,9 @@ func TestPublicShareSymlinkDescendantDisclosure(t *testing.T) {
 		handler handleFunc
 		path    string
 	}{
-		"direct file download via dl handler": {handler: publicDlHandler, path: "h/link/secret.txt"},
-		"share info via share handler":        {handler: publicShareHandler, path: "h/link/secret.txt"},
-		"listing of linked dir":               {handler: publicShareHandler, path: "h/link/"},
+		"direct file download via dl handler": {handler: publicDlHandler(newLoginLimiter()), path: "h/link/secret.txt"},
+		"share info via share handler":        {handler: publicShareHandler(newLoginLimiter()), path: "h/link/secret.txt"},
+		"listing of linked dir":               {handler: publicShareHandler(newLoginLimiter()), path: "h/link/"},
 	}
 
 	for name, tc := range cases {
@@ -112,7 +112,7 @@ func TestPublicShareSymlinkListingOmitsEscapingLink(t *testing.T) {
 
 	req := newHTTPRequest(t, func(r *http.Request) { r.URL.Path = "h/" })
 	recorder := httptest.NewRecorder()
-	handler := handle(publicShareHandler, "", st, &settings.Server{})
+	handler := handle(publicShareHandler(newLoginLimiter()), "", st, &settings.Server{})
 	handler.ServeHTTP(recorder, req)
 
 	result := recorder.Result()
@@ -180,7 +180,7 @@ func TestPublicShareSymlinkFollowedWhenEnabled(t *testing.T) {
 	// The file behind the symlink downloads.
 	req := newHTTPRequest(t, func(r *http.Request) { r.URL.Path = "h/link/data.txt" })
 	recorder := httptest.NewRecorder()
-	handle(publicDlHandler, "", st, srv).ServeHTTP(recorder, req)
+	handle(publicDlHandler(newLoginLimiter()), "", st, srv).ServeHTTP(recorder, req)
 	result := recorder.Result()
 	defer result.Body.Close()
 	body, _ := io.ReadAll(result.Body)
@@ -194,7 +194,7 @@ func TestPublicShareSymlinkFollowedWhenEnabled(t *testing.T) {
 	// The link shows up in the share root listing.
 	req = newHTTPRequest(t, func(r *http.Request) { r.URL.Path = "h/" })
 	recorder = httptest.NewRecorder()
-	handle(publicShareHandler, "", st, srv).ServeHTTP(recorder, req)
+	handle(publicShareHandler(newLoginLimiter()), "", st, srv).ServeHTTP(recorder, req)
 	result = recorder.Result()
 	defer result.Body.Close()
 	body, _ = io.ReadAll(result.Body)
@@ -215,7 +215,7 @@ func TestPublicShareSymlinkArchiveDisclosure(t *testing.T) {
 	// Request the whole share root as an archive.
 	req := newHTTPRequest(t, func(r *http.Request) { r.URL.Path = "h/" })
 	recorder := httptest.NewRecorder()
-	handler := handle(publicDlHandler, "", st, &settings.Server{})
+	handler := handle(publicDlHandler(newLoginLimiter()), "", st, &settings.Server{})
 	handler.ServeHTTP(recorder, req)
 
 	result := recorder.Result()

@@ -15,3 +15,16 @@ type Storage struct {
 	Auth     *auth.Storage
 	Settings *settings.Storage
 }
+
+// DeleteUser deletes a user, named by id or username, and the share links they
+// made (Gezgin): a link would outlive its owner otherwise.
+func (s *Storage) DeleteUser(id interface{}) error {
+	user, err := s.Users.Get("", false, id)
+	if err != nil {
+		return err
+	}
+	if err := s.Users.Delete(user.ID); err != nil {
+		return err
+	}
+	return s.Share.DeleteByUserID(user.ID)
+}

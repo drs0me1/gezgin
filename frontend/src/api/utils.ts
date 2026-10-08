@@ -55,6 +55,11 @@ export async function fetchURL(
     await renew(authStore.jwt);
   }
 
+  // A password refused for too many attempts (a share's, Gezgin) says how long to wait.
+  if (res.status === 429) {
+    throw new LoginLimitError(Number(res.headers.get("Retry-After")) || 0);
+  }
+
   if (res.status < 200 || res.status > 299) {
     const body = await res.text();
     const error = new StatusError(

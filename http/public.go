@@ -7,14 +7,16 @@ import (
 	"net/url"
 	"path"
 	"path/filepath"
+	"strconv"
 	"strings"
+	"time"
 
 	"github.com/filebrowser/filebrowser/v2/files"
 	"github.com/filebrowser/filebrowser/v2/share"
 	"golang.org/x/crypto/bcrypt"
 )
 
-var withHashFile = func(fn handleFunc) handleFunc {
+func withHashFile(limiter *loginLimiter, fn handleFunc) handleFunc {
 	return func(w http.ResponseWriter, r *http.Request, d *data) (int, error) {
 		id, ifPath := ifPathWithName(r)
 		link, err := d.store.Share.GetByHash(id)
@@ -22,7 +24,10 @@ var withHashFile = func(fn handleFunc) handleFunc {
 			return errToStatus(err), err
 		}
 
-		status, err := authenticateShareRequest(r, link)
+		status, wait, err := authenticateShareRequest(r, link, limiter)
+		if status == http.StatusTooManyRequests {
+			w.Header().Set("Retry-After", strconv.Itoa(int((wait+time.Second-1)/time.Second)))
+		}
 		if status != 0 || err != nil {
 			return status, err
 		}
@@ -115,52 +120,66 @@ func ifPathWithName(r *http.Request) (id, filePath string) {
 	}
 }
 
-var publicShareHandler = withHashFile(func(w http.ResponseWriter, r *http.Request, d *data) (int, error) {
-	file := d.raw.(*files.FileInfo)
+func publicShareHandler(limiter *loginLimiter) handleFunc {
+	return withHashFile(limiter, func(w http.ResponseWriter, r *http.Request, d *data) (int, error) {
+		file := d.raw.(*files.FileInfo)
 
-	if file.IsDir {
-		file.Sorting = files.Sorting{By: "name", Asc: false}
-		file.ApplySort()
+		if file.IsDir {
+			file.Sorting = files.Sorting{By: "name", Asc: false}
+			file.ApplySort()
+			return renderJSON(w, r, file)
+		}
+
 		return renderJSON(w, r, file)
-	}
+	})
+}
 
-	return renderJSON(w, r, file)
-})
+func publicDlHandler(limiter *loginLimiter) handleFunc {
+	return withHashFile(limiter, func(w http.ResponseWriter, r *http.Request, d *data) (int, error) {
+		file := d.raw.(*files.FileInfo)
+		if !file.IsDir {
+			return rawFileHandler(w, r, file)
+		}
 
-var publicDlHandler = withHashFile(func(w http.ResponseWriter, r *http.Request, d *data) (int, error) {
-	file := d.raw.(*files.FileInfo)
-	if !file.IsDir {
-		return rawFileHandler(w, r, file)
-	}
+		return rawDirHandler(w, r, d, file)
+	})
+}
 
-	return rawDirHandler(w, r, d, file)
-})
-
-func authenticateShareRequest(r *http.Request, l *share.Link) (int, error) {
+// authenticateShareRequest lets a request into a password-protected link with the link's token or
+// its password. Password attempts are limited like logins, per address and per link (Gezgin); a
+// refused one returns 429 and how long to wait.
+func authenticateShareRequest(r *http.Request, l *share.Link, limiter *loginLimiter) (int, time.Duration, error) {
 	if l.PasswordHash == "" {
-		return 0, nil
+		return 0, 0, nil
 	}
 
 	if subtle.ConstantTimeCompare([]byte(r.URL.Query().Get("token")), []byte(l.Token)) == 1 {
-		return 0, nil
+		return 0, 0, nil
 	}
 
 	password := r.Header.Get("X-SHARE-PASSWORD")
 	password, err := url.QueryUnescape(password)
 	if err != nil {
-		return 0, err
+		return 0, 0, err
 	}
 	if password == "" {
-		return http.StatusUnauthorized, nil
+		return http.StatusUnauthorized, 0, nil
+	}
+
+	address, account := loginAddress(r), "share\x00"+l.Hash
+	attempt, wait := limiter.begin(address, account)
+	if wait > 0 {
+		return http.StatusTooManyRequests, wait, nil
 	}
 	if err := bcrypt.CompareHashAndPassword([]byte(l.PasswordHash), []byte(password)); err != nil {
 		if errors.Is(err, bcrypt.ErrMismatchedHashAndPassword) {
-			return http.StatusUnauthorized, nil
+			return http.StatusUnauthorized, 0, nil
 		}
-		return 0, err
+		return 0, 0, err
 	}
+	limiter.succeeded(address, account, attempt)
 
-	return 0, nil
+	return 0, 0, nil
 }
 
 func healthHandler(w http.ResponseWriter, _ *http.Request) {

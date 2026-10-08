@@ -87,7 +87,7 @@ func TestPublicShareHandlerAuthentication(t *testing.T) {
 	}
 
 	for name, tc := range testCases {
-		for handlerName, handler := range map[string]handleFunc{"public share handler": publicShareHandler, "public dl handler": publicDlHandler} {
+		for handlerName, handler := range map[string]handleFunc{"public share handler": publicShareHandler(newLoginLimiter()), "public dl handler": publicDlHandler(newLoginLimiter())} {
 			name, tc, handlerName, handler := name, tc, handlerName, handler
 			t.Run(fmt.Sprintf("%s: %s", handlerName, name), func(t *testing.T) {
 				t.Parallel()
@@ -157,27 +157,27 @@ func TestPublicShareHandlerRules(t *testing.T) {
 		expectedStatusCode int
 	}{
 		"blocked file via dl handler, 403": {
-			handler:            publicDlHandler,
+			handler:            publicDlHandler(newLoginLimiter()),
 			path:               "h/private/secret.txt",
 			expectedStatusCode: 403,
 		},
 		"blocked dir listing via share handler, 403": {
-			handler:            publicShareHandler,
+			handler:            publicShareHandler(newLoginLimiter()),
 			path:               "h/private/",
 			expectedStatusCode: 403,
 		},
 		"blocked dir download via dl handler, 403": {
-			handler:            publicDlHandler,
+			handler:            publicDlHandler(newLoginLimiter()),
 			path:               "h/private/",
 			expectedStatusCode: 403,
 		},
 		"allowed file via dl handler, 200": {
-			handler:            publicDlHandler,
+			handler:            publicDlHandler(newLoginLimiter()),
 			path:               "h/public/readme.txt",
 			expectedStatusCode: 200,
 		},
 		"allowed dir listing via share handler, 200": {
-			handler:            publicShareHandler,
+			handler:            publicShareHandler(newLoginLimiter()),
 			path:               "h/public/",
 			expectedStatusCode: 200,
 		},

@@ -39,9 +39,15 @@
       </h2>
     </div>
     <div v-else-if="error">
-      <div v-if="error.status === 401">
+      <div v-if="error.status === 401 || error.status === 429">
         <div class="card floating" id="password" style="z-index: 9999999">
-          <div v-if="attemptedPasswordLogin" class="share__wrong__password">
+          <div v-if="error.status === 429" class="share__wrong__password">
+            {{ t("login.tooManyAttempts", { minutes: retryMinutes }) }}
+          </div>
+          <div
+            v-else-if="attemptedPasswordLogin"
+            class="share__wrong__password"
+          >
             {{ t("login.wrongCredentials") }}
           </div>
           <div class="card-title">
@@ -317,10 +323,16 @@ import { useLayoutStore } from "@/stores/layout";
 import { computed, inject, onMounted, onBeforeUnmount, ref, watch } from "vue";
 import { useRoute } from "vue-router";
 import { useI18n } from "vue-i18n";
-import { StatusError } from "@/api/utils";
+import { LoginLimitError, StatusError } from "@/api/utils";
 import { copy } from "@/utils/clipboard";
 
 const error = ref<StatusError | null>(null);
+// How long a link that refused too many passwords stays closed, in whole minutes.
+const retryMinutes = computed(() =>
+  error.value instanceof LoginLimitError
+    ? Math.max(1, Math.ceil(error.value.retryAfter / 60))
+    : 1
+);
 const showLimit = ref<number>(100);
 const password = ref<string>("");
 const attemptedPasswordLogin = ref<boolean>(false);

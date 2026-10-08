@@ -177,6 +177,7 @@
     "uploadFiles": "Uploading {files} files...",
     "uploadMessage": "Select an option to upload.",
     "optionalPassword": "Optional password",
+    "sharePermanentHint": "0 makes the link permanent.",
     "resolution": "Resolution",
     "discardEditorChanges": "Are you sure you wish to discard the changes you've made?",
     "replaceOrSkip": "Replace or skip files",

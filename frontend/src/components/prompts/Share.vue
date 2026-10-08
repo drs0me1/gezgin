@@ -107,6 +107,7 @@
             <option value="days">{{ $t("time.days") }}</option>
           </select>
         </div>
+        <p class="small">{{ $t("prompts.sharePermanentHint") }}</p>
         <p>{{ $t("prompts.optionalPassword") }}</p>
         <input
           class="input input--block"
@@ -153,8 +154,8 @@ export default {
   name: "share",
   data: function () {
     return {
-      time: 0,
-      unit: "hours",
+      time: 7,
+      unit: "days",
       links: [],
       clip: null,
       password: "",
@@ -236,8 +237,8 @@ export default {
         this.links.push(res);
         this.sort();
 
-        this.time = 0;
-        this.unit = "hours";
+        this.time = 7;
+        this.unit = "days";
         this.password = "";
 
         this.listing = true;

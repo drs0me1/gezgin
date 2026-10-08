@@ -97,9 +97,11 @@ func NewHandler(
 	api.PathPrefix("/search").Handler(monkey(searchHandler, "/api/search")).Methods("GET")
 	api.PathPrefix("/subtitle").Handler(monkey(subtitleHandler, "/api/subtitle")).Methods("GET")
 
+	// Share passwords are limited like logins, in budgets of their own.
+	shareLimiter := newLoginLimiter()
 	public := api.PathPrefix("/public").Subrouter()
-	public.PathPrefix("/dl").Handler(monkey(publicDlHandler, "/api/public/dl/")).Methods("GET")
-	public.PathPrefix("/share").Handler(monkey(publicShareHandler, "/api/public/share/")).Methods("GET")
+	public.PathPrefix("/dl").Handler(monkey(publicDlHandler(shareLimiter), "/api/public/dl/")).Methods("GET")
+	public.PathPrefix("/share").Handler(monkey(publicShareHandler(shareLimiter), "/api/public/share/")).Methods("GET")
 
 	return stripPrefix(server.BaseURL, r), nil
 }

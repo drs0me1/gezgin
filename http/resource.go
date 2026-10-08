@@ -123,9 +123,8 @@ func resourceDeleteHandler(fileCache FileCache) handleFunc {
 			return errToStatus(err), err
 		}
 
-		// The item's shares end with it, and do not come back with a restore.
-		err = d.store.Share.DeleteWithPathPrefix(file.Path, d.user.ID)
-		if err != nil {
+		// The item's shares end with it, everyone's, and do not come back with a restore.
+		if err = dropShares(d, file.Path); err != nil {
 			log.Printf("WARNING: Error(s) occurred while deleting associated shares with file: %s", err)
 		}
 
@@ -325,8 +324,17 @@ func resourcePatchHandler(fileCache FileCache) handleFunc {
 		err = d.RunHook(func() error {
 			return patchAction(r.Context(), action, src, dst, d, fileCache)
 		}, action, src, dst, d.user)
+		if err != nil {
+			return errToStatus(err), err
+		}
 
-		return errToStatus(err), err
+		// A moved item takes its share links along (Gezgin).
+		if action == "rename" {
+			if err := moveShares(d, src, dst); err != nil {
+				log.Printf("WARNING: could not move the shares of %s to %s: %v", src, dst, err)
+			}
+		}
+		return 0, nil
 	})
 }
 

@@ -156,6 +156,12 @@ var shareDeleteHandler = withPermShare(func(_ http.ResponseWriter, r *http.Reque
 })
 
 var sharePostHandler = withPermShare(func(w http.ResponseWriter, r *http.Request, d *data) (int, error) {
+	// Only what the user may see can be shared (Gezgin); a link to anything
+	// else would be refused when it is opened anyway.
+	if !d.Check(r.URL.Path) {
+		return http.StatusForbidden, nil
+	}
+
 	// Only allow sharing paths that currently exist. Otherwise a share could be
 	// created for a non-existent path and would silently start exposing
 	// whatever file later appears there.
@@ -176,7 +182,8 @@ var sharePostHandler = withPermShare(func(w http.ResponseWriter, r *http.Request
 		defer r.Body.Close()
 	}
 
-	bytes := make([]byte, 6)
+	// 96 random bits name the link (Gezgin; File Browser used 48).
+	bytes := make([]byte, 12)
 	_, err := rand.Read(bytes)
 	if err != nil {
 		return http.StatusInternalServerError, err
@@ -184,27 +191,9 @@ var sharePostHandler = withPermShare(func(w http.ResponseWriter, r *http.Request
 
 	str := base64.URLEncoding.EncodeToString(bytes)
 
-	var expire int64 = 0
-
-	if body.Expires != "" {
-		num, err := strconv.Atoi(body.Expires)
-		if err != nil {
-			return http.StatusInternalServerError, err
-		}
-
-		var add time.Duration
-		switch body.Unit {
-		case "seconds":
-			add = time.Second * time.Duration(num)
-		case "minutes":
-			add = time.Minute * time.Duration(num)
-		case "days":
-			add = time.Hour * 24 * time.Duration(num)
-		default:
-			add = time.Hour * time.Duration(num)
-		}
-
-		expire = time.Now().Add(add).Unix()
+	expire, err := shareExpiry(body, time.Now())
+	if err != nil {
+		return http.StatusBadRequest, err
 	}
 
 	hash, status, err := getSharePasswordHash(body)
@@ -236,6 +225,42 @@ var sharePostHandler = withPermShare(func(w http.ResponseWriter, r *http.Request
 
 	return renderJSON(w, r, toShareResponse(s))
 })
+
+// maxShareDuration bounds how long a link may last (Gezgin), as the trash bounds how long it keeps
+// an item.
+const maxShareDuration = 3650 * 24 * time.Hour
+
+var shareUnits = map[string]time.Duration{
+	"seconds": time.Second,
+	"minutes": time.Minute,
+	"hours":   time.Hour,
+	"":        time.Hour,
+	"days":    24 * time.Hour,
+}
+
+// shareExpiry returns when a link created at now with the body's duration ends, as a Unix time; 0
+// is never. A duration that is not a whole number of a known unit, is negative or is longer than
+// maxShareDuration is refused (Gezgin).
+func shareExpiry(body share.CreateBody, now time.Time) (int64, error) {
+	if body.Expires == "" {
+		return 0, nil
+	}
+	num, err := strconv.ParseInt(body.Expires, 10, 64)
+	if err != nil || num < 0 {
+		return 0, fmt.Errorf("invalid share duration %q: %w", body.Expires, fberrors.ErrInvalidRequestParams)
+	}
+	unit, ok := shareUnits[body.Unit]
+	if !ok {
+		return 0, fmt.Errorf("invalid share duration unit %q: %w", body.Unit, fberrors.ErrInvalidRequestParams)
+	}
+	if num == 0 {
+		return 0, nil
+	}
+	if num > int64(maxShareDuration/unit) {
+		return 0, fmt.Errorf("a share lasts at most 10 years: %w", fberrors.ErrInvalidRequestParams)
+	}
+	return now.Add(time.Duration(num) * unit).Unix(), nil
+}
 
 func getSharePasswordHash(body share.CreateBody) (data []byte, statuscode int, err error) {
 	if body.Password == "" {

@@ -137,7 +137,7 @@ var userDeleteHandler = withAdmin(selfOrAdmin(func(_ http.ResponseWriter, r *htt
 		}
 	}
 
-	err := d.store.Users.Delete(d.raw.(uint))
+	err := d.store.DeleteUser(d.raw.(uint))
 	if err != nil {
 		return errToStatus(err), err
 	}
