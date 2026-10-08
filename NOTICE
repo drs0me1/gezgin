@@ -1,0 +1,13 @@
+Gezgin
+Copyright 2026 drs0me1
+
+This product is a modified version of File Browser
+(https://github.com/filebrowser/filebrowser),
+Copyright File Browser Contributors, licensed under the Apache License,
+Version 2.0 (see LICENSE). Files changed from the original carry a notice
+of the change in this repository's history and, where a file is
+substantially rewritten, in the file itself.
+
+Gezgin is not affiliated with or endorsed by the File Browser project.
+"File Browser" and its logo are the File Browser project's; Gezgin does
+not use them for its own builds.
