@@ -366,6 +366,27 @@ func TestRarSetsOldAndNewNaming(t *testing.T) {
 	}
 }
 
+func TestZipsThatEachHoldAPartOfARarSet(t *testing.T) {
+	// Chosen together, the ZIPs open into one folder, where the set they hold together opens.
+	e := newEnv(t)
+	content := strings.Repeat("0123456789", 40)
+	volumes := rarSet(t, 150, false, file{name: "film.mkv", data: content})
+	parts := rarNames("film", len(volumes), false)
+	var zips []string
+	for i, v := range volumes {
+		name := fmt.Sprintf("film%d.zip", i+1)
+		e.put(name, zipOf(t, file{name: parts[i], data: string(v)}, file{name: fmt.Sprintf("file_id%d.diz", i+1), data: "diz"}))
+		zips = append(zips, name)
+	}
+	got, p, err := e.extract(defaults(), zips...)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if got["film/film.mkv"] != content || p.Archives != len(zips)+1 {
+		t.Errorf("result %v, progress %+v", got, p)
+	}
+}
+
 func TestRarSetWithAMissingPart(t *testing.T) {
 	content := strings.Repeat("x", 500)
 	for name, remove := range map[string]int{"first": 0, "middle": 1, "last": -1} {
