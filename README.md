@@ -64,7 +64,7 @@ Work in progress. Until the first Gezgin release this tree is File Browser's las
 - Share links: a link follows the item it shares; a rename or move takes the links of every user
   along (a link whose owner cannot reach the new place ends), and a delete ends them all, so that
   whatever later takes the old place is never served through an old link. Deleting a user deletes
-  their links. Wrong passwords of a protected link are limited like logins (5 per link and 20 per
+  their links and their trash. Wrong passwords of a protected link are limited like logins (5 per link and 20 per
   address in 15 minutes, then HTTP 429). Links are named by 96 random bits (16 characters). A
   duration must be a whole number of seconds, minutes, hours or days of at most 10 years (else
   HTTP 400); 0 means permanent, and the share dialog proposes 7 days. Only what the user may see

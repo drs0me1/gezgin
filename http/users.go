@@ -16,6 +16,7 @@ import (
 
 	"github.com/filebrowser/filebrowser/v2/auth"
 	fberrors "github.com/filebrowser/filebrowser/v2/errors"
+	"github.com/filebrowser/filebrowser/v2/trash"
 	"github.com/filebrowser/filebrowser/v2/users"
 )
 
@@ -137,9 +138,13 @@ var userDeleteHandler = withAdmin(selfOrAdmin(func(_ http.ResponseWriter, r *htt
 		}
 	}
 
-	err := d.store.DeleteUser(d.raw.(uint))
+	id, err := d.store.DeleteUser(d.raw.(uint))
 	if err != nil {
 		return errToStatus(err), err
+	}
+	// The user's trash goes with them (Gezgin).
+	if err := trash.For(d.server.Root, id).Empty(); err != nil {
+		log.Printf("WARNING: could not empty the trash of the deleted user %d: %v", id, err)
 	}
 
 	return http.StatusOK, nil

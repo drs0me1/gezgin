@@ -13,6 +13,7 @@ import (
 
 	"github.com/filebrowser/filebrowser/v2/rules"
 	"github.com/filebrowser/filebrowser/v2/share"
+	"github.com/filebrowser/filebrowser/v2/trash"
 	"github.com/filebrowser/filebrowser/v2/users"
 )
 
@@ -154,11 +155,19 @@ func TestSharesOfEveryUserFollowAndEndWithTheItem(t *testing.T) {
 	}
 }
 
-func TestDeletingAUserEndsTheirShares(t *testing.T) {
+func TestDeletingAUserEndsTheirSharesAndTrash(t *testing.T) {
 	env := newShareEnv(t)
-	ali, u := env.user("ali", "ali-password-1", "/ali", users.Permissions{Share: true, Download: true})
+	ali, u := env.user("ali", "ali-password-1", "/ali", users.Permissions{Share: true, Download: true, Delete: true})
 	env.write("ali/x.txt", "x", 0o644)
 	hash := ali.mustShare("/x.txt", "{}")
+	env.write("ali/old.txt", "old", 0o644)
+	if rec := ali.call(http.MethodDelete, "/api/resources/old.txt", ""); rec.Code != http.StatusNoContent {
+		t.Fatalf("delete: %d", rec.Code)
+	}
+	bin := filepath.Join(env.root, trash.Dir, strconv.FormatUint(uint64(u.ID), 10))
+	if _, err := os.Stat(bin); err != nil {
+		t.Fatalf("ali's trash: %v", err)
+	}
 
 	target := "/api/users/" + strconv.FormatUint(uint64(u.ID), 10)
 	if rec := env.call(http.MethodDelete, target, `{"current_password":"root-password-1"}`); rec.Code != http.StatusOK {
@@ -169,6 +178,9 @@ func TestDeletingAUserEndsTheirShares(t *testing.T) {
 	}
 	if code, _ := env.download(hash); code != http.StatusNotFound {
 		t.Fatalf("the deleted user's link: %d", code)
+	}
+	if _, err := os.Stat(bin); !os.IsNotExist(err) {
+		t.Fatalf("the deleted user's trash is still there: %v", err)
 	}
 }
 
