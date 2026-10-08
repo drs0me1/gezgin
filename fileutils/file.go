@@ -1,43 +1,96 @@
 package fileutils
 
 import (
-	"io"
+	"errors"
 	"io/fs"
 	"os"
 	"path"
 	"path/filepath"
+	"syscall"
 
 	"github.com/spf13/afero"
+
+	fberrors "github.com/filebrowser/filebrowser/v2/errors"
 )
 
-// MoveFile moves file from src to dst.
-// By default the rename filesystem system call is used. If src and dst point to different volumes
-// the file copy is used as a fallback
+// MoveFile moves src to dst (Gezgin). When dst exists (an overwrite was
+// asked) a file replaces a file, a folder is merged into a folder, and a file
+// and a folder never replace each other. The rename system call does the
+// work; copying is only the fallback across file systems, and a failed
+// fallback leaves what was at dst as it was.
 func MoveFile(afs afero.Fs, src, dst string, fileMode, dirMode fs.FileMode) error {
-	if afs.Rename(src, dst) == nil {
-		return nil
-	}
-	// fallback
-	err := Copy(afs, src, dst, fileMode, dirMode)
+	srcInfo, err := lstat(afs, src)
 	if err != nil {
-		_ = afs.Remove(dst)
 		return err
 	}
-	if err := afs.RemoveAll(src); err != nil {
+	if dstInfo, err := lstat(afs, dst); err == nil && !os.SameFile(srcInfo, dstInfo) {
+		switch {
+		case srcInfo.IsDir() != dstInfo.IsDir():
+			return fberrors.ErrTypeMismatch
+		case srcInfo.IsDir():
+			return mergeDir(afs, src, dst, fileMode, dirMode)
+		}
+	}
+
+	err = afs.Rename(src, dst)
+	if err == nil || !errors.Is(err, syscall.EXDEV) {
 		return err
 	}
-	return nil
+	return moveAcross(afs, src, dst, srcInfo, fileMode, dirMode)
 }
 
-// CopyFile copies a file from source to dest and returns
-// an error if any.
-func CopyFile(afs afero.Fs, source, dest string, fileMode, dirMode fs.FileMode) error {
-	// Open the source file.
+// mergeDir moves the entries of the folder src into the folder dst, then
+// removes src.
+func mergeDir(afs afero.Fs, src, dst string, fileMode, dirMode fs.FileMode) error {
+	dir, err := afs.Open(src)
+	if err != nil {
+		return err
+	}
+	names, err := dir.Readdirnames(-1)
+	dir.Close()
+	if err != nil {
+		return err
+	}
+
+	for _, name := range names {
+		if err := MoveFile(afs, path.Join(src, name), path.Join(dst, name), fileMode, dirMode); err != nil {
+			return err
+		}
+	}
+	return afs.Remove(src)
+}
+
+// moveAcross copies src to dst on another file system, then removes src.
+func moveAcross(afs afero.Fs, src, dst string, info os.FileInfo, fileMode, dirMode fs.FileMode) error {
+	if info.IsDir() {
+		// dst does not exist here: an existing folder is merged entry by entry.
+		if err := CopyDir(afs, src, dst, fileMode, dirMode); err != nil {
+			_ = afs.RemoveAll(dst)
+			return err
+		}
+		return afs.RemoveAll(src)
+	}
+
+	// CopyFile replaces dst only once the copy is complete.
+	if err := CopyFile(afs, src, dst, fileMode, dirMode); err != nil {
+		return err
+	}
+	return afs.Remove(src)
+}
+
+// CopyFile copies a file from source to dest with the source's permissions.
+// An existing dest is replaced only once the copy is complete.
+func CopyFile(afs afero.Fs, source, dest string, _, dirMode fs.FileMode) error {
 	src, err := afs.Open(source)
 	if err != nil {
 		return err
 	}
 	defer src.Close()
+
+	info, err := src.Stat()
+	if err != nil {
+		return err
+	}
 
 	// Makes the directory needed to create the dst
 	// file.
@@ -46,30 +99,8 @@ func CopyFile(afs afero.Fs, source, dest string, fileMode, dirMode fs.FileMode) 
 		return err
 	}
 
-	// Create the destination file.
-	dst, err := afs.OpenFile(dest, os.O_RDWR|os.O_CREATE|os.O_TRUNC, fileMode)
-	if err != nil {
-		return err
-	}
-	defer dst.Close()
-
-	// Copy the contents of the file.
-	_, err = io.Copy(dst, src)
-	if err != nil {
-		return err
-	}
-
-	// Copy the mode
-	info, err := afs.Stat(source)
-	if err != nil {
-		return err
-	}
-	err = afs.Chmod(dest, info.Mode())
-	if err != nil {
-		return err
-	}
-
-	return nil
+	_, err = WriteAtomic(afs, dest, src, info.Mode().Perm())
+	return err
 }
 
 // CommonPrefix returns common directory path of provided files

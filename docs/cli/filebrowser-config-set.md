@@ -35,7 +35,6 @@ filebrowser config set [flags]
       --disableImageResolutionCalc       disables image resolution calculation by reading image files
       --disablePreviewResize             disable resize of image previews
       --disableThumbnails                disable image thumbnails
-      --disableTypeDetectionByHeader     disables type detection by reading file headers
       --fileMode string                  mode bits that new files are created with (default "0o640")
       --followExternalSymlinks           follow symlinks whose target is outside the user scope (unsafe)
   -h, --help                             help for set

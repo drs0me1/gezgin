@@ -27,6 +27,7 @@ var (
 	ErrPasswordUnchanged        = errors.New("the new password must differ from the current one")
 	ErrLastAdmin                = errors.New("the sole admin can't lose the admin permission")
 	ErrInvalidRule              = errors.New("invalid rule")
+	ErrTypeMismatch             = errors.New("a file and a folder cannot replace each other")
 )
 
 type ErrShortPassword struct {

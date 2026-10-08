@@ -59,7 +59,6 @@ type FileOptions struct {
 	Path       string
 	Modify     bool
 	Expand     bool
-	ReadHeader bool
 	CalcImgRes bool
 	Token      string
 	Checker    rules.Checker
@@ -91,7 +90,7 @@ func NewFileInfo(opts *FileOptions) (*FileInfo, error) {
 
 	if opts.Expand {
 		if file.IsDir {
-			if err := file.readListing(opts.Checker, opts.ReadHeader, opts.CalcImgRes); err != nil {
+			if err := file.readListing(opts.Checker, opts.CalcImgRes); err != nil {
 				return nil, err
 			}
 			return file, nil
@@ -390,7 +389,10 @@ func (i *FileInfo) addSubtitle(fPath string) {
 	i.Subtitles = append(i.Subtitles, fPath)
 }
 
-func (i *FileInfo) readListing(checker rules.Checker, readHeader bool, calcImgRes bool) error {
+// readListing lists the folder. An entry's type comes from its extension: reading the first bytes
+// of every file made a large folder slow to list (Gezgin), so the content is only looked at when
+// a single file is opened.
+func (i *FileInfo) readListing(checker rules.Checker, calcImgRes bool) error {
 	dir, err := readDir(i.Fs, i.Path)
 	if err != nil {
 		return err
@@ -460,7 +462,7 @@ func (i *FileInfo) readListing(checker rules.Checker, readHeader bool, calcImgRe
 			if isInvalidLink {
 				file.Type = "invalid_link"
 			} else {
-				err := file.detectType(true, false, readHeader, calcImgRes)
+				err := file.detectType(true, false, false, calcImgRes)
 				if err != nil {
 					return err
 				}

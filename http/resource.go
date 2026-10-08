@@ -24,13 +24,12 @@ import (
 
 var resourceGetHandler = withUser(func(w http.ResponseWriter, r *http.Request, d *data) (int, error) {
 	file, err := files.NewFileInfo(&files.FileOptions{
-		Fs:         d.user.Fs,
-		Path:       r.URL.Path,
-		Modify:     d.user.Perm.Modify,
-		Expand:     true,
-		ReadHeader: d.server.TypeDetectionByHeader,
-		Checker:    d,
-		Content:    d.user.Perm.Download,
+		Fs:      d.user.Fs,
+		Path:    r.URL.Path,
+		Modify:  d.user.Perm.Modify,
+		Expand:  true,
+		Checker: d,
+		Content: d.user.Perm.Download,
 	})
 	if err != nil {
 		return errToStatus(err), err
@@ -92,12 +91,11 @@ func resourceDeleteHandler(fileCache FileCache) handleFunc {
 		}
 
 		file, err := files.NewFileInfo(&files.FileOptions{
-			Fs:         d.user.Fs,
-			Path:       r.URL.Path,
-			Modify:     d.user.Perm.Modify,
-			Expand:     false,
-			ReadHeader: d.server.TypeDetectionByHeader,
-			Checker:    d,
+			Fs:      d.user.Fs,
+			Path:    r.URL.Path,
+			Modify:  d.user.Perm.Modify,
+			Expand:  false,
+			Checker: d,
 		})
 		if err != nil {
 			return errToStatus(err), err
@@ -145,12 +143,11 @@ func resourcePostHandler(fileCache FileCache) handleFunc {
 		}
 
 		file, err := files.NewFileInfo(&files.FileOptions{
-			Fs:         d.user.Fs,
-			Path:       r.URL.Path,
-			Modify:     d.user.Perm.Modify,
-			Expand:     false,
-			ReadHeader: d.server.TypeDetectionByHeader,
-			Checker:    d,
+			Fs:      d.user.Fs,
+			Path:    r.URL.Path,
+			Modify:  d.user.Perm.Modify,
+			Expand:  false,
+			Checker: d,
 		})
 		if err == nil {
 			if r.URL.Query().Get("override") != "true" {
@@ -178,10 +175,6 @@ func resourcePostHandler(fileCache FileCache) handleFunc {
 			w.Header().Set("ETag", etag)
 			return nil
 		}, "upload", r.URL.Path, "", d.user)
-
-		if err != nil {
-			_ = d.user.Fs.RemoveAll(r.URL.Path)
-		}
 
 		return errToStatus(err), err
 	})
@@ -343,6 +336,9 @@ func addVersionSuffix(source string, afs afero.Fs) string {
 	return source
 }
 
+// writeFile writes an upload or a saved file. The new content takes the file's
+// place only once it is complete, so a request that fails half way leaves an
+// existing file as it was; a replaced file keeps its permissions.
 func writeFile(afs afero.Fs, dst string, in io.Reader, fileMode, dirMode fs.FileMode) (os.FileInfo, error) {
 	dir, _ := path.Split(dst)
 	err := afs.MkdirAll(dir, dirMode)
@@ -350,30 +346,11 @@ func writeFile(afs afero.Fs, dst string, in io.Reader, fileMode, dirMode fs.File
 		return nil, err
 	}
 
-	file, err := afs.OpenFile(dst, os.O_RDWR|os.O_CREATE|os.O_TRUNC, fileMode)
-	if err != nil {
-		return nil, err
-	}
-	defer file.Close()
-
-	_, err = io.Copy(file, in)
-	if err != nil {
-		return nil, err
+	if info, err := afs.Stat(dst); err == nil && info.Mode().IsRegular() {
+		fileMode = info.Mode().Perm()
 	}
 
-	// Sync the file to ensure all data is written to storage.
-	// to prevent file corruption.
-	if err := file.Sync(); err != nil {
-		return nil, err
-	}
-
-	// Gets the info about the file.
-	info, err := file.Stat()
-	if err != nil {
-		return nil, err
-	}
-
-	return info, nil
+	return fileutils.WriteAtomic(afs, dst, in, fileMode)
 }
 
 func delThumbs(ctx context.Context, fileCache FileCache, file *files.FileInfo) error {
@@ -403,12 +380,11 @@ func patchAction(ctx context.Context, action, src, dst string, d *data, fileCach
 		dst = path.Clean("/" + dst)
 
 		file, err := files.NewFileInfo(&files.FileOptions{
-			Fs:         d.user.Fs,
-			Path:       src,
-			Modify:     d.user.Perm.Modify,
-			Expand:     false,
-			ReadHeader: false,
-			Checker:    d,
+			Fs:      d.user.Fs,
+			Path:    src,
+			Modify:  d.user.Perm.Modify,
+			Expand:  false,
+			Checker: d,
 		})
 		if err != nil {
 			return err
@@ -512,13 +488,12 @@ type DiskUsageResponse struct {
 
 var diskUsage = withUser(func(w http.ResponseWriter, r *http.Request, d *data) (int, error) {
 	file, err := files.NewFileInfo(&files.FileOptions{
-		Fs:         d.user.Fs,
-		Path:       r.URL.Path,
-		Modify:     d.user.Perm.Modify,
-		Expand:     false,
-		ReadHeader: false,
-		Checker:    d,
-		Content:    false,
+		Fs:      d.user.Fs,
+		Path:    r.URL.Path,
+		Modify:  d.user.Perm.Modify,
+		Expand:  false,
+		Checker: d,
+		Content: false,
 	})
 	if err != nil {
 		return errToStatus(err), err

@@ -35,21 +35,20 @@ import (
 
 var (
 	flagNamesMigrations = map[string]string{
-		"file-mode":                        "fileMode",
-		"dir-mode":                         "dirMode",
-		"hide-login-button":                "hideLoginButton",
-		"create-user-dir":                  "createUserDir",
-		"minimum-password-length":          "minimumPasswordLength",
-		"socket-perm":                      "socketPerm",
-		"disable-thumbnails":               "disableThumbnails",
-		"disable-preview-resize":           "disablePreviewResize",
-		"disable-exec":                     "disableExec",
-		"disable-type-detection-by-header": "disableTypeDetectionByHeader",
-		"img-processors":                   "imageProcessors",
-		"cache-dir":                        "cacheDir",
-		"redis-cache-url":                  "redisCacheUrl",
-		"token-expiration-time":            "tokenExpirationTime",
-		"baseurl":                          "baseURL",
+		"file-mode":               "fileMode",
+		"dir-mode":                "dirMode",
+		"hide-login-button":       "hideLoginButton",
+		"create-user-dir":         "createUserDir",
+		"minimum-password-length": "minimumPasswordLength",
+		"socket-perm":             "socketPerm",
+		"disable-thumbnails":      "disableThumbnails",
+		"disable-preview-resize":  "disablePreviewResize",
+		"disable-exec":            "disableExec",
+		"img-processors":          "imageProcessors",
+		"cache-dir":               "cacheDir",
+		"redis-cache-url":         "redisCacheUrl",
+		"token-expiration-time":   "tokenExpirationTime",
+		"baseurl":                 "baseURL",
 	}
 
 	warnedFlags = map[string]bool{}
@@ -109,7 +108,6 @@ func addServerFlags(flags *pflag.FlagSet) {
 	flags.Bool("disableThumbnails", false, "disable image thumbnails")
 	flags.Bool("disablePreviewResize", false, "disable resize of image previews")
 	flags.Bool("disableExec", true, "disables Command Runner feature")
-	flags.Bool("disableTypeDetectionByHeader", false, "disables type detection by reading file headers")
 	flags.Bool("disableImageResolutionCalc", false, "disables image resolution calculation by reading image files")
 	flags.Bool("followExternalSymlinks", false, "follow symlinks whose target is outside the user scope (unsafe)")
 }
@@ -357,10 +355,6 @@ func getServerSettings(v *viper.Viper, st *storage.Storage) (*settings.Server, e
 		server.ResizePreview = !v.GetBool("disablePreviewResize")
 	}
 
-	if v.IsSet("disableTypeDetectionByHeader") {
-		server.TypeDetectionByHeader = !v.GetBool("disableTypeDetectionByHeader")
-	}
-
 	if v.IsSet("disableImageResolutionCalc") {
 		server.ImageResolutionCal = !v.GetBool("disableImageResolutionCalc")
 	}
@@ -490,7 +484,6 @@ func quickSetup(v *viper.Viper, s *storage.Storage) error {
 		EnableThumbnails:       !v.GetBool("disableThumbnails"),
 		ResizePreview:          !v.GetBool("disablePreviewResize"),
 		EnableExec:             !v.GetBool("disableExec"),
-		TypeDetectionByHeader:  !v.GetBool("disableTypeDetectionByHeader"),
 		ImageResolutionCal:     !v.GetBool("disableImageResolutionCalc"),
 		FollowExternalSymlinks: v.GetBool("followExternalSymlinks"),
 	}

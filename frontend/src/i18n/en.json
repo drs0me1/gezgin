@@ -185,7 +185,8 @@
     "skip": "Skip",
     "forbiddenError": "Forbidden Error",
     "currentPassword": "Your password",
-    "currentPasswordMessage": "Enter your password to validate this action."
+    "currentPasswordMessage": "Enter your password to validate this action.",
+    "mergeFolders": "When a folder has the same name, keeping the new one merges them: the other files in the destination folder stay."
   },
   "search": {
     "images": "Images",

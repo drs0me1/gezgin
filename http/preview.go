@@ -50,11 +50,10 @@ func previewHandler(imgSvc ImgService, fileCache FileCache, enableThumbnails, re
 			Fs: d.user.Fs,
 			// Preview reads its path from mux.Vars, not r.URL.Path, so it does
 			// not get the canonicalization withUser applies.
-			Path:       slashClean(vars["path"]),
-			Modify:     d.user.Perm.Modify,
-			Expand:     true,
-			ReadHeader: d.server.TypeDetectionByHeader,
-			Checker:    d,
+			Path:    slashClean(vars["path"]),
+			Modify:  d.user.Perm.Modify,
+			Expand:  true,
+			Checker: d,
 		})
 		if err != nil {
 			return errToStatus(err), err

@@ -63,12 +63,11 @@ func tusPostHandler(cache UploadCache) handleFunc {
 		}
 
 		file, err := files.NewFileInfo(&files.FileOptions{
-			Fs:         d.user.Fs,
-			Path:       r.URL.Path,
-			Modify:     d.user.Perm.Modify,
-			Expand:     false,
-			ReadHeader: d.server.TypeDetectionByHeader,
-			Checker:    d,
+			Fs:      d.user.Fs,
+			Path:    r.URL.Path,
+			Modify:  d.user.Perm.Modify,
+			Expand:  false,
+			Checker: d,
 		})
 		switch {
 		case errors.Is(err, afero.ErrFileNotFound):
@@ -110,13 +109,12 @@ func tusPostHandler(cache UploadCache) handleFunc {
 		defer openFile.Close()
 
 		file, err = files.NewFileInfo(&files.FileOptions{
-			Fs:         d.user.Fs,
-			Path:       r.URL.Path,
-			Modify:     d.user.Perm.Modify,
-			Expand:     false,
-			ReadHeader: false,
-			Checker:    d,
-			Content:    false,
+			Fs:      d.user.Fs,
+			Path:    r.URL.Path,
+			Modify:  d.user.Perm.Modify,
+			Expand:  false,
+			Checker: d,
+			Content: false,
 		})
 		if err != nil {
 			return errToStatus(err), err
@@ -153,12 +151,11 @@ func tusHeadHandler(cache UploadCache) handleFunc {
 		}
 
 		file, err := files.NewFileInfo(&files.FileOptions{
-			Fs:         d.user.Fs,
-			Path:       r.URL.Path,
-			Modify:     d.user.Perm.Modify,
-			Expand:     false,
-			ReadHeader: d.server.TypeDetectionByHeader,
-			Checker:    d,
+			Fs:      d.user.Fs,
+			Path:    r.URL.Path,
+			Modify:  d.user.Perm.Modify,
+			Expand:  false,
+			Checker: d,
 		})
 		if err != nil {
 			return errToStatus(err), err
@@ -203,12 +200,11 @@ func tusPatchUpload(w http.ResponseWriter, r *http.Request, d *data, cache Uploa
 	}
 
 	file, err := files.NewFileInfo(&files.FileOptions{
-		Fs:         d.user.Fs,
-		Path:       r.URL.Path,
-		Modify:     d.user.Perm.Modify,
-		Expand:     false,
-		ReadHeader: d.server.TypeDetectionByHeader,
-		Checker:    d,
+		Fs:      d.user.Fs,
+		Path:    r.URL.Path,
+		Modify:  d.user.Perm.Modify,
+		Expand:  false,
+		Checker: d,
 	})
 
 	switch {
@@ -300,12 +296,11 @@ func tusDeleteHandler(cache UploadCache) handleFunc {
 		}
 
 		file, err := files.NewFileInfo(&files.FileOptions{
-			Fs:         d.user.Fs,
-			Path:       r.URL.Path,
-			Modify:     d.user.Perm.Modify,
-			Expand:     false,
-			ReadHeader: d.server.TypeDetectionByHeader,
-			Checker:    d,
+			Fs:      d.user.Fs,
+			Path:    r.URL.Path,
+			Modify:  d.user.Perm.Modify,
+			Expand:  false,
+			Checker: d,
 		})
 		if err != nil {
 			return errToStatus(err), err

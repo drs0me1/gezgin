@@ -11,6 +11,7 @@
     </div>
 
     <div class="card-content">
+      <p>{{ $t("prompts.mergeFolders") }}</p>
       <template v-if="personalized">
         <p v-if="isUploadAction != true">
           {{ $t("prompts.singleConflictResolve") }}

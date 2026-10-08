@@ -30,6 +30,12 @@ Work in progress. Until the first Gezgin release this tree is File Browser's las
   change only their own preferences and password; usernames are unique in any letter case; rules
   are checked when saved (an expression must compile, a path must not be empty); a new scope gets
   its folder; the default language is Turkish.
+- Files: an upload over a file and a save replace the file only once the new content is complete,
+  keeping its permissions; a file and a folder never replace each other on a move or copy; a
+  folder moved onto a folder of the same name is merged into it, as a copy already was; a move
+  falls back to copying only between file systems and never touches the destination when that
+  fails; listings take an entry's type from its extension (the `disableTypeDetectionByHeader`
+  option is gone).
 
 Details: [docs/authentication.md](docs/authentication.md).
 
