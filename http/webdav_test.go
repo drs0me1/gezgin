@@ -32,7 +32,7 @@ func newDavEnv(t *testing.T) (*fileEnv, *httptest.Server) {
 	t.Helper()
 	env := newShareEnv(t)
 	server := &settings.Server{Root: env.root, WebDAVPort: "8092"}
-	handler, err := NewHandler(nil, diskcache.NewNoOp(), env.uploads, env.st, server, fstest.MapFS{})
+	handler, err := NewHandler(nil, diskcache.NewNoOp(), env.uploads, env.archives, env.st, server, fstest.MapFS{})
 	if err != nil {
 		t.Fatal(err)
 	}

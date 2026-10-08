@@ -65,7 +65,7 @@ func (e *fileEnv) restart(ttl time.Duration) {
 	NewUploadCache(dir).Close() // a starting server empties the staging folder
 	e.uploads = newUploadCache(dir, ttl)
 	e.t.Cleanup(e.uploads.Close)
-	handler, err := NewHandler(nil, diskcache.NewNoOp(), e.uploads, e.st, &settings.Server{Root: e.root}, fstest.MapFS{})
+	handler, err := NewHandler(nil, diskcache.NewNoOp(), e.uploads, e.archives, e.st, &settings.Server{Root: e.root}, fstest.MapFS{})
 	if err != nil {
 		e.t.Fatal(err)
 	}

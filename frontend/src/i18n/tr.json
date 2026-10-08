@@ -53,7 +53,8 @@
     "renameAll": "Hepsini yeniden adlandır (kopya oluştur)",
     "singleDecision": "Her çakışan dosya için ayrı karar ver",
     "resumeTransfer": "Önceki aktarımı sürdür",
-    "resumeTransferTooltip": "Sunucudaki sürümü daha küçük olanlar dışında çakışan bütün dosyaları atlar; onların aktarımının yarıda kaldığı varsayılır."
+    "resumeTransferTooltip": "Sunucudaki sürümü daha küçük olanlar dışında çakışan bütün dosyaları atlar; onların aktarımının yarıda kaldığı varsayılır.",
+    "extract": "Arşivi aç"
   },
   "download": {
     "downloadFile": "Dosyayı indir",
@@ -150,6 +151,9 @@
     "deleteTitle": "Dosyaları sil",
     "displayName": "Görünen Ad:",
     "download": "Dosyaları indir",
+    "extract": "Arşivi aç",
+    "extractMessage": "Her arşiv yanında açılan yeni bir klasöre çıkarılır; içindeki arşivler de açılır.",
+    "extractPassword": "Parola (varsa)",
     "downloadMessage": "İndirmek istediğiniz formatı seçin.",
     "error": "Bir şeyler yanlış gitti",
     "fileInfo": "Dosya bilgisi",
@@ -346,6 +350,30 @@
     "keepDaysHelp": "Silinen öğeler bu kadar gün sonra kalıcı silinir; 0 verilirse çöp boşaltılana kadar kalır.",
     "usage": "Bütün kullanıcıların çöpü: {count} öğe",
     "emptyAll": "Bütün çöpleri boşalt"
+  },
+  "archive": {
+    "title": "Arşivler",
+    "running": "Açılıyor: {size}, {count} öğe",
+    "done": "{name} klasörüne açıldı",
+    "open": "Klasöre git",
+    "cancelled": "İptal edildi",
+    "busy": "Başka bir arşiv açılıyor; bitmesini bekleyin.",
+    "errors": {
+      "notArchive": "Bu bir arşiv değil ya da Gezgin'in açtığı türden değil.",
+      "password": "Arşiv şifreli: parolasını girin.",
+      "wrongPassword": "Parola yanlış.",
+      "corrupt": "Arşiv bozuk.",
+      "missingPart": "RAR parçalarından biri eksik.",
+      "unsafe": "Arşivde izin verilmeyen bir ad, bir bağlantı ya da iki kez aynı ad var.",
+      "unsupported": "Arşiv, Gezgin'in açmadığı bir yöntem kullanıyor (ör. ZIP şifrelemesi).",
+      "entries": "Arşivde 10.000'den fazla dosya ve klasör var.",
+      "layers": "Arşivler 5 katmandan derin iç içe.",
+      "noSpace": "Diskte yeterli boş alan yok.",
+      "changed": "Arşiv açılırken değişti.",
+      "rules": "Kurallarınız arşivdeki bir öğeye izin vermiyor.",
+      "otherDisk": "Arşivin klasörü başka bir diskte.",
+      "internal": "Arşiv açılamadı."
+    }
   },
   "editor": {
     "encodingTitle": "Bu dosya Türkçe kod sayfasında (Windows-1254); aynı kodlamayla kaydedilir.",

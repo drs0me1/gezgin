@@ -53,7 +53,8 @@
     "overrideAll": "Replace all files in destination folder",
     "skipAll": "Skip all conflicting files",
     "renameAll": "Rename all files (create a copy)",
-    "singleDecision": "Decide for each conflicting file"
+    "singleDecision": "Decide for each conflicting file",
+    "extract": "Extract"
   },
   "download": {
     "downloadFile": "Download File",
@@ -150,6 +151,9 @@
     "deleteTitle": "Delete files",
     "displayName": "Display Name:",
     "download": "Download files",
+    "extract": "Extract",
+    "extractMessage": "Each archive opens into a new folder beside it, and so do the archives inside it.",
+    "extractPassword": "Password (if it has one)",
     "downloadMessage": "Choose the format you wish to download.",
     "error": "Something went wrong",
     "fileInfo": "File information",
@@ -350,6 +354,30 @@
     "keepDaysHelp": "Deleted items are deleted for good after this many days; 0 keeps them until the trash is emptied.",
     "usage": "Every user's trash: {count} items",
     "emptyAll": "Empty every trash"
+  },
+  "archive": {
+    "title": "Archives",
+    "running": "Extracting: {size}, {count} items",
+    "done": "Extracted into {name}",
+    "open": "Open the folder",
+    "cancelled": "Cancelled",
+    "busy": "Another archive is being extracted; wait until it ends.",
+    "errors": {
+      "notArchive": "This is not an archive, or not of a kind Gezgin opens.",
+      "password": "The archive is encrypted: enter its password.",
+      "wrongPassword": "The password is wrong.",
+      "corrupt": "The archive is damaged.",
+      "missingPart": "A part of the RAR set is missing.",
+      "unsafe": "The archive holds a name that is not allowed, a link or the same name twice.",
+      "unsupported": "The archive uses a method Gezgin does not open, such as ZIP encryption.",
+      "entries": "The archive holds more than 10,000 files and folders.",
+      "layers": "Archives are nested more than 5 deep.",
+      "noSpace": "There is not enough free space on the disk.",
+      "changed": "The archive changed while it was being extracted.",
+      "rules": "Your rules do not allow something in the archive.",
+      "otherDisk": "The archive's folder is on another disk.",
+      "internal": "The archive could not be extracted."
+    }
   },
   "editor": {
     "encodingTitle": "This file is in the Turkish code page (Windows-1254); it is saved in the same encoding.",

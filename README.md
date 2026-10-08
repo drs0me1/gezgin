@@ -78,6 +78,20 @@ Work in progress. Until the first Gezgin release this tree is File Browser's las
   and a move takes the share links along. The owner's permissions and rules hold, Gezgin's own
   files are not shown, and a symbolic link does not lead out of the shared folder. The share
   dialog offers it for folders when the port is set; it lasts 7 days unless told otherwise.
+- Archives: a user who may create opens ZIP, RAR, 7z and tar archives (plain, `.gz`, `.bz2`,
+  `.xz`, `.zst`) on the server with "Arşivi aç"; a RAR set (`name.part1.rar`, or `name.rar` with
+  `name.r00`, ...) opens by any of its parts. Each archive opens into a new folder beside it (with
+  a number when the name is taken), and the archives that come out of it into folders beside
+  them, up to 5 layers; the archives themselves stay. Gezgin does it in Go, with no other
+  program. A job runs in the background, one at a time, shows its progress and can be cancelled;
+  its folder is built in `<root>/.gezgin-arsiv/` (unreachable through any path) and put in place
+  only when complete. Encrypted RAR and 7z archives open with their password (encrypted ZIPs do
+  not). A job stops and leaves nothing on a name that leads out of its folder or that Gezgin
+  keeps, a link or special file, the same name twice, a missing RAR part, a damaged archive, a
+  source that changes meanwhile, more than 10,000 files and folders, or when less than 1 GiB
+  would be left free on the disk; the user's rules hold for what comes out. Decoding a RAR may
+  take up to 1 GiB of memory; a 7z takes what its dictionary asks. Archives are not made on the
+  server: a download packs folders already.
 - Command runner and hooks: removed (File Browser kept them off by default as unsafe). There is no
   terminal, `/api/command`, execute permission, per-user command list, `shell` or `commands`
   setting, command on file events or `cmds` command, and Gezgin starts no other program.

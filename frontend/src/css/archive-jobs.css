@@ -1,0 +1,67 @@
+.archive-jobs .card.floating {
+  left: auto;
+  top: auto;
+  margin: 0;
+  right: 0;
+  bottom: 0;
+  transform: none;
+}
+
+.archive-jobs.above-uploads .card.floating {
+  bottom: 4.5em;
+}
+
+.archive-jobs .card .card-title {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 0.8em;
+  padding: 1em 1em 0em;
+}
+
+.archive-job {
+  margin-bottom: 0.75em;
+}
+
+.archive-job__name {
+  display: flex;
+  align-items: center;
+  gap: 0.3em;
+  font-weight: 500;
+  word-break: break-all;
+}
+
+.archive-job__name .material-icons {
+  font-size: 1.2em;
+}
+
+.archive-job[data-state="done"] .archive-job__name .material-icons {
+  color: var(--blue, #2196f3);
+}
+
+.archive-job[data-state="failed"] .archive-job__name .material-icons,
+.archive-job__error {
+  color: var(--red, #f44336);
+}
+
+.archive-job__status {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.5em;
+  margin-top: 0.25em;
+  font-size: 0.9em;
+}
+
+.extract-names {
+  margin: 0.5em 0 1em;
+  padding-left: 1.2em;
+  word-break: break-all;
+}
+
+@media (max-width: 450px) {
+  .archive-jobs .card.floating {
+    max-width: 100%;
+    width: 100%;
+  }
+}

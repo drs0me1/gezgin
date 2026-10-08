@@ -13,6 +13,7 @@
     </main>
     <prompts></prompts>
     <upload-files></upload-files>
+    <archive-jobs></archive-jobs>
   </div>
 </template>
 
@@ -23,6 +24,7 @@ import { useUploadStore } from "@/stores/upload";
 import Sidebar from "@/components/Sidebar.vue";
 import Prompts from "@/components/prompts/Prompts.vue";
 import UploadFiles from "@/components/prompts/UploadFiles.vue";
+import ArchiveJobs from "@/components/ArchiveJobs.vue";
 import { computed, watch } from "vue";
 import { useRoute } from "vue-router";
 

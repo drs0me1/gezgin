@@ -28,11 +28,12 @@ var sessionKey = []byte("test-signing-key")
 
 // sessionEnv serves the whole API over a temporary database with JSON auth.
 type sessionEnv struct {
-	t       *testing.T
-	st      *storage.Storage
-	handler http.Handler
-	root    string
-	uploads *UploadCache
+	t        *testing.T
+	st       *storage.Storage
+	handler  http.Handler
+	root     string
+	uploads  *UploadCache
+	archives *ArchiveJobs
 }
 
 func newSessionEnv(t *testing.T) *sessionEnv {
@@ -61,11 +62,13 @@ func newSessionEnv(t *testing.T) *sessionEnv {
 	root := t.TempDir()
 	uploads := newUploadCache(filepath.Join(root, UploadsDir), uploadCacheTTL)
 	t.Cleanup(uploads.Close)
-	handler, err := NewHandler(nil, diskcache.NewNoOp(), uploads, st, &settings.Server{Root: root}, fstest.MapFS{})
+	archives := NewArchiveJobs(filepath.Join(root, ArchiveDir))
+	t.Cleanup(archives.Close)
+	handler, err := NewHandler(nil, diskcache.NewNoOp(), uploads, archives, st, &settings.Server{Root: root}, fstest.MapFS{})
 	if err != nil {
 		t.Fatalf("failed to build the handler: %v", err)
 	}
-	return &sessionEnv{t: t, st: st, handler: handler, root: root, uploads: uploads}
+	return &sessionEnv{t: t, st: st, handler: handler, root: root, uploads: uploads, archives: archives}
 }
 
 func (e *sessionEnv) addUser(name, password string, admin, mustChange bool) *users.User {

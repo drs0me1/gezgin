@@ -39,6 +39,12 @@
             show="move"
           />
           <action
+            v-if="headerButtons.extract"
+            icon="unarchive"
+            :label="t('buttons.extract')"
+            show="extract"
+          />
+          <action
             v-if="headerButtons.delete"
             id="delete-button"
             icon="delete"
@@ -108,6 +114,12 @@
         icon="forward"
         :label="t('buttons.moveFile')"
         show="move"
+      />
+      <action
+        v-if="headerButtons.extract"
+        icon="unarchive"
+        :label="t('buttons.extract')"
+        show="extract"
       />
       <action
         v-if="headerButtons.delete"
@@ -283,6 +295,12 @@
             show="move"
           />
           <action
+            v-if="headerButtons.extract"
+            icon="unarchive"
+            :label="t('buttons.extract')"
+            show="extract"
+          />
+          <action
             v-if="headerButtons.delete"
             id="delete-button"
             icon="delete"
@@ -341,6 +359,7 @@ import { useLayoutStore } from "@/stores/layout";
 
 import { users, files as api } from "@/api";
 import * as upload from "@/utils/upload";
+import { isArchive } from "@/utils/archive";
 import buttons from "@/utils/buttons";
 import css from "@/utils/css";
 import { throttle } from "lodash-es";
@@ -479,6 +498,14 @@ const headerButtons = computed(() => {
       authStore.user?.perm.download,
     move: fileStore.selectedCount > 0 && authStore.user?.perm.rename,
     copy: fileStore.selectedCount > 0 && authStore.user?.perm.create,
+    // Archives on the server (Gezgin): only archives, all of them.
+    extract:
+      fileStore.selectedCount > 0 &&
+      authStore.user?.perm.create &&
+      fileStore.selected.every((i) => {
+        const item = fileStore.req?.items[i];
+        return item !== undefined && !item.isDir && isArchive(item.name);
+      }),
   };
 });
 

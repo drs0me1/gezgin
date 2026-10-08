@@ -30,6 +30,7 @@ import DiscardEditorChanges from "./DiscardEditorChanges.vue";
 import EditorConflict from "./EditorConflict.vue";
 import ResolveConflict from "./ResolveConflict.vue";
 import CurrentPassword from "./CurrentPassword.vue";
+import Extract from "./Extract.vue";
 
 const layoutStore = useLayoutStore();
 
@@ -54,6 +55,7 @@ const components = new Map<string, any>([
   ["editorConflict", EditorConflict],
   ["resolve-conflict", ResolveConflict],
   ["current-password", CurrentPassword],
+  ["extract", Extract],
 ]);
 
 const modal = computed(() => {

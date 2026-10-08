@@ -209,6 +209,8 @@ user created with the credentials from options "username" and "password".`,
 
 		uploadCache := fbhttp.NewUploadCache(filepath.Join(server.Root, fbhttp.UploadsDir))
 		defer uploadCache.Close()
+		archiveJobs := fbhttp.NewArchiveJobs(filepath.Join(server.Root, fbhttp.ArchiveDir))
+		defer archiveJobs.Close()
 
 		adr := server.Address + ":" + server.Port
 
@@ -259,7 +261,7 @@ user created with the credentials from options "username" and "password".`,
 			panic(err)
 		}
 
-		handler, err := fbhttp.NewHandler(imageService, fileCache, uploadCache, st.Storage, server, assetsFs)
+		handler, err := fbhttp.NewHandler(imageService, fileCache, uploadCache, archiveJobs, st.Storage, server, assetsFs)
 		if err != nil {
 			return err
 		}

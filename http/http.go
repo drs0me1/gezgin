@@ -22,6 +22,7 @@ func NewHandler(
 	imgSvc ImgService,
 	fileCache FileCache,
 	uploadCache *UploadCache,
+	archiveJobs *ArchiveJobs,
 	store *storage.Storage,
 	server *settings.Server,
 	assetsFs fs.FS,
@@ -94,6 +95,9 @@ func NewHandler(
 	api.PathPrefix("/preview/{size}/{path:.*}").
 		Handler(monkey(previewHandler(imgSvc, fileCache, server.EnableThumbnails, server.ResizePreview), "/api/preview")).Methods("GET")
 	api.PathPrefix("/search").Handler(monkey(searchHandler, "/api/search")).Methods("GET")
+	api.Handle("/archive", monkey(archiveListHandler(archiveJobs), "")).Methods("GET")
+	api.Handle("/archive", monkey(archiveStartHandler(archiveJobs), "")).Methods("POST")
+	api.Handle("/archive/{id:[0-9a-f]+}", monkey(archiveCancelHandler(archiveJobs), "")).Methods("DELETE")
 	api.PathPrefix("/subtitle").Handler(monkey(subtitleHandler, "/api/subtitle")).Methods("GET")
 
 	// Share passwords are limited like logins, in budgets of their own.

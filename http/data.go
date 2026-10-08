@@ -76,7 +76,7 @@ func (d *data) reserved(p string) bool {
 	if d.server.CaseInsensitiveFs {
 		full = strings.ToLower(full)
 	}
-	for _, dir := range []string{trash.Dir, UploadsDir} {
+	for _, dir := range []string{trash.Dir, UploadsDir, ArchiveDir} {
 		top := "/" + dir
 		if d.server.CaseInsensitiveFs {
 			top = strings.ToLower(top)
