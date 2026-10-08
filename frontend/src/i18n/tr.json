@@ -317,5 +317,28 @@
     "minutes": "Dakika",
     "seconds": "Saniye",
     "unit": "Zaman birimi"
+  },
+  "trash": {
+    "title": "Çöp",
+    "summary": "{count} öğe",
+    "name": "Ad",
+    "origin": "Eski yeri",
+    "deleted": "Silinme",
+    "size": "Boyut",
+    "nothing": "Çöp boş",
+    "empty": "Çöpü boşalt",
+    "confirmEmpty": "Evet, hepsini kalıcı sil",
+    "deletePermanently": "Kalıcı sil",
+    "restore": "Geri yükle",
+    "restored": "{count} öğe geri yüklendi",
+    "purged": "Kalıcı olarak silindi",
+    "emptied": "Çöp boşaltıldı",
+    "moveToTrash": "Çöpe taşı",
+    "deleteHint": "Çöpe taşınanlar Çöp sayfasından geri yüklenebilir.",
+    "otherDisk": "Bu öğe çöpten farklı bir diskte; yalnızca kalıcı silinebilir.",
+    "keepDays": "Saklama süresi (gün)",
+    "keepDaysHelp": "Silinen öğeler bu kadar gün sonra kalıcı silinir; 0 verilirse çöp boşaltılana kadar kalır.",
+    "usage": "Bütün kullanıcıların çöpü: {count} öğe",
+    "emptyAll": "Bütün çöpleri boşalt"
   }
 }

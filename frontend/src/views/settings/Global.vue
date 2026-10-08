@@ -44,6 +44,33 @@
             />
           </p>
 
+          <h3>{{ t("trash.title") }}</h3>
+          <p class="small">{{ t("trash.keepDaysHelp") }}</p>
+          <p>
+            <label for="trashDays">{{ t("trash.keepDays") }}</label>
+            <vue-number-input
+              controls
+              v-model.number="settings.trashDays"
+              id="trashDays"
+              :min="0"
+              :max="3650"
+            />
+          </p>
+          <p v-if="trashUsage" id="trashUsage">
+            {{ t("trash.usage", { count: trashUsage.count }) }} ·
+            {{ filesize(trashUsage.size) }}
+            <button
+              v-if="trashUsage.count > 0"
+              type="button"
+              class="button button--flat button--red"
+              @click="emptyAllTrash"
+            >
+              {{
+                confirmEmptyAll ? t("trash.confirmEmpty") : t("trash.emptyAll")
+              }}
+            </button>
+          </p>
+
           <h3>{{ t("settings.rules") }}</h3>
           <p class="small">{{ t("settings.globalRules") }}</p>
           <rules v-model:rules="settings.rules" />
@@ -246,7 +273,8 @@
 </template>
 
 <script setup lang="ts">
-import { settings as api } from "@/api";
+import { settings as api, trash as trashApi } from "@/api";
+import { filesize } from "@/utils";
 import { StatusError } from "@/api/utils";
 import Rules from "@/components/settings/Rules.vue";
 import Themes from "@/components/settings/Themes.vue";
@@ -263,6 +291,8 @@ const originalSettings = ref<ISettings | null>(null);
 const settings = ref<ISettings | null>(null);
 const debounceTimeout = ref<number | null>(null);
 const pendingChunkSize = ref<string | null>(null);
+const trashUsage = ref<{ count: number; size: number } | null>(null);
+const confirmEmptyAll = ref<boolean>(false);
 
 const commandObject = ref<{
   [key: string]: string[] | string;
@@ -413,6 +443,30 @@ const formatBytes = (bytes: number) => {
   return `${size}${units[unitIndex]}`;
 };
 
+const loadTrashUsage = async () => {
+  try {
+    trashUsage.value = await trashApi.usage();
+  } catch (e: any) {
+    $showError(e);
+  }
+};
+
+// Every bin is emptied only on a second click.
+const emptyAllTrash = async () => {
+  if (!confirmEmptyAll.value) {
+    confirmEmptyAll.value = true;
+    return;
+  }
+  confirmEmptyAll.value = false;
+  try {
+    await trashApi.emptyAll();
+    $showSuccess(t("trash.emptied"));
+  } catch (e: any) {
+    $showError(e);
+  }
+  await loadTrashUsage();
+};
+
 // Define Hooks
 
 onMounted(async () => {
@@ -430,6 +484,7 @@ onMounted(async () => {
     originalSettings.value = original;
     settings.value = newSettings;
     shellValue.value = newSettings.shell.join(" ");
+    await loadTrashUsage();
   } catch (err) {
     if (err instanceof Error) {
       error.value = err;

@@ -11,6 +11,8 @@ import (
 
 	"github.com/spf13/afero"
 
+	fberrors "github.com/filebrowser/filebrowser/v2/errors"
+	"github.com/filebrowser/filebrowser/v2/trash"
 	"github.com/filebrowser/filebrowser/v2/users"
 )
 
@@ -33,6 +35,11 @@ func (s *Settings) MakeUserDir(username, userScope, serverRoot string) (string, 
 	}
 
 	userScope = path.Join("/", userScope)
+
+	// The trash folder holds every user's deleted files; it is nobody's scope.
+	if bin := "/" + trash.Dir; userScope == bin || strings.HasPrefix(userScope, bin+"/") {
+		return "", fmt.Errorf("%w: the trash cannot be a scope", fberrors.ErrInvalidRequestParams)
+	}
 
 	fs := afero.NewBasePathFs(afero.NewOsFs(), serverRoot)
 	if err := fs.MkdirAll(userScope, os.ModePerm); err != nil {

@@ -180,7 +180,7 @@ var userPostHandler = withAdmin(func(w http.ResponseWriter, r *http.Request, d *
 	userHome, err := d.settings.MakeUserDir(req.Data.Username, req.Data.Scope, d.server.Root)
 	if err != nil {
 		log.Printf("create user: failed to mkdir user home dir: [%s]", userHome)
-		return http.StatusInternalServerError, err
+		return errToStatus(err), err
 	}
 	req.Data.Scope = userHome
 	log.Printf("user: %s, home dir: [%s].", req.Data.Username, userHome)
@@ -269,7 +269,7 @@ var userPutHandler = withPasswordChange(selfOrAdmin(func(w http.ResponseWriter, 
 		req.Data.MustChangePassword = suser.MustChangePassword
 
 		if err = makeScope(req.Data.Username); err != nil {
-			return http.StatusInternalServerError, err
+			return errToStatus(err), err
 		}
 
 		if req.Data.Password != "" {
@@ -329,7 +329,7 @@ var userPutHandler = withPasswordChange(selfOrAdmin(func(w http.ResponseWriter, 
 				name = stored.Username
 			}
 			if err = makeScope(name); err != nil {
-				return http.StatusInternalServerError, err
+				return errToStatus(err), err
 			}
 		}
 	}

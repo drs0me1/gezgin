@@ -30,6 +30,7 @@ import (
 	"github.com/filebrowser/filebrowser/v2/img"
 	"github.com/filebrowser/filebrowser/v2/settings"
 	"github.com/filebrowser/filebrowser/v2/storage"
+	"github.com/filebrowser/filebrowser/v2/trash"
 	"github.com/filebrowser/filebrowser/v2/users"
 )
 
@@ -254,6 +255,8 @@ user created with the credentials from options "username" and "password".`,
 			return err
 		}
 
+		go sweepTrash(st.Storage, server.Root)
+
 		defer listener.Close()
 
 		log.Println("Listening on", listener.Addr().String())
@@ -291,6 +294,24 @@ user created with the credentials from options "username" and "password".`,
 
 		return nil
 	}, storeOptions{allowsNoDatabase: true}),
+}
+
+// sweepTrash deletes the trash items whose time is up, at start-up and then every hour (Gezgin).
+func sweepTrash(s *storage.Storage, root string) {
+	for {
+		if set, err := s.Settings.Get(); err != nil {
+			log.Printf("trash sweep: %v", err)
+		} else if days := set.TrashKeepDays(); days > 0 {
+			removed, err := trash.Sweep(root, time.Duration(days)*24*time.Hour, time.Now())
+			if err != nil {
+				log.Printf("trash sweep: %v", err)
+			}
+			if removed > 0 {
+				log.Printf("trash sweep: %d expired items deleted", removed)
+			}
+		}
+		time.Sleep(time.Hour)
+	}
 }
 
 func getServerSettings(v *viper.Viper, st *storage.Storage) (*settings.Server, error) {

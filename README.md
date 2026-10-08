@@ -36,6 +36,13 @@ Work in progress. Until the first Gezgin release this tree is File Browser's las
   falls back to copying only between file systems and never touches the destination when that
   fails; listings take an entry's type from its extension (the `disableTypeDetectionByHeader`
   option is gone).
+- Trash: a delete moves the item into the user's trash (`<root>/.gezgin-cop/<user id>/`, on the
+  same disk, unreachable through any path); the Trash page restores items (into the root when
+  their folder is gone, with a number when the name is taken), deletes them for good or empties
+  the trash. "Delete permanently" stays in the delete dialog, and is the only way for an item on
+  another disk. Items expire after 30 days by default (global settings, 0 = never); an admin sees
+  how much every trash holds and can empty them all. Shares of a trashed item end and do not come
+  back with a restore.
 
 Details: [docs/authentication.md](docs/authentication.md).
 

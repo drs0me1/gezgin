@@ -5,6 +5,7 @@ import (
 	"net/http"
 	gopath "path"
 	"strconv"
+	"strings"
 
 	"github.com/tomasen/realip"
 
@@ -12,6 +13,7 @@ import (
 	"github.com/filebrowser/filebrowser/v2/runner"
 	"github.com/filebrowser/filebrowser/v2/settings"
 	"github.com/filebrowser/filebrowser/v2/storage"
+	"github.com/filebrowser/filebrowser/v2/trash"
 	"github.com/filebrowser/filebrowser/v2/users"
 )
 
@@ -48,6 +50,10 @@ func (d *data) Check(path string) bool {
 func (d *data) CheckRules(path string) bool {
 	path = d.rulePath(path)
 
+	if d.inTrash(path) {
+		return false
+	}
+
 	allow := true
 	for _, rule := range d.settings.Rules {
 		if rule.Matches(path, d.server.CaseInsensitiveFs) {
@@ -62,6 +68,18 @@ func (d *data) CheckRules(path string) bool {
 	}
 
 	return allow
+}
+
+// inTrash reports whether a path the user sees lies in the trash folder at the
+// server root (Gezgin). No path reaches it, whatever the rules: the trash is
+// only handled through its own endpoints.
+func (d *data) inTrash(p string) bool {
+	full := gopath.Join("/", d.user.Scope, p)
+	bin := "/" + trash.Dir
+	if d.server.CaseInsensitiveFs {
+		full, bin = strings.ToLower(full), strings.ToLower(bin)
+	}
+	return full == bin || strings.HasPrefix(full, bin+"/")
 }
 
 // rulePath canonicalizes path into the form the rules are written in.

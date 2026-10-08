@@ -38,6 +38,23 @@ type Settings struct {
 	FileMode              fs.FileMode         `json:"fileMode"`
 	DirMode               fs.FileMode         `json:"dirMode"`
 	HideDotfiles          bool                `json:"hideDotfiles"`
+	// TrashDays is how many days a deleted item stays in the trash (0: until it is emptied);
+	// unset means DefaultTrashDays.
+	TrashDays *uint `json:"trashDays,omitempty"`
+}
+
+// DefaultTrashDays is how long a deleted item stays in the trash unless the settings say otherwise.
+const DefaultTrashDays = 30
+
+// MaxTrashDays bounds the trash setting to ten years.
+const MaxTrashDays = 3650
+
+// TrashKeepDays is how many days a deleted item stays in the trash; 0 keeps it until it is emptied.
+func (s *Settings) TrashKeepDays() uint {
+	if s.TrashDays == nil {
+		return DefaultTrashDays
+	}
+	return *s.TrashDays
 }
 
 // GetRules implements rules.Provider.

@@ -84,6 +84,8 @@ var resourceGetHandler = withUser(func(w http.ResponseWriter, r *http.Request, d
 	return renderJSON(w, r, file)
 })
 
+// resourceDeleteHandler moves the item into the user's trash, or deletes it for good with
+// ?permanent=true.
 func resourceDeleteHandler(fileCache FileCache) handleFunc {
 	return withUser(func(_ http.ResponseWriter, r *http.Request, d *data) (int, error) {
 		if r.URL.Path == "/" || !d.user.Perm.Delete {
@@ -105,23 +107,27 @@ func resourceDeleteHandler(fileCache FileCache) handleFunc {
 			return errToStatus(err), err
 		}
 
+		permanent := r.URL.Query().Get("permanent") == "true"
+		err = d.RunHook(func() error {
+			if permanent {
+				return d.user.Fs.RemoveAll(r.URL.Path)
+			}
+			return moveToTrash(d, r.URL.Path)
+		}, "delete", r.URL.Path, "", d.user)
+
+		if err != nil {
+			return errToStatus(err), err
+		}
+
+		// The item's shares end with it, and do not come back with a restore.
 		err = d.store.Share.DeleteWithPathPrefix(file.Path, d.user.ID)
 		if err != nil {
 			log.Printf("WARNING: Error(s) occurred while deleting associated shares with file: %s", err)
 		}
 
 		// delete thumbnails
-		err = delThumbs(r.Context(), fileCache, file)
-		if err != nil {
-			return errToStatus(err), err
-		}
-
-		err = d.RunHook(func() error {
-			return d.user.Fs.RemoveAll(r.URL.Path)
-		}, "delete", r.URL.Path, "", d.user)
-
-		if err != nil {
-			return errToStatus(err), err
+		if err = delThumbs(r.Context(), fileCache, file); err != nil {
+			log.Printf("WARNING: could not delete the thumbnails of %s: %v", file.Path, err)
 		}
 
 		return http.StatusNoContent, nil

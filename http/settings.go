@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"net/http"
 
+	fberrors "github.com/filebrowser/filebrowser/v2/errors"
 	"github.com/filebrowser/filebrowser/v2/rules"
 	"github.com/filebrowser/filebrowser/v2/settings"
 )
@@ -21,6 +22,7 @@ type settingsData struct {
 	Tus                   settings.Tus          `json:"tus"`
 	Shell                 []string              `json:"shell"`
 	Commands              map[string][]string   `json:"commands"`
+	TrashDays             uint                  `json:"trashDays"`
 }
 
 var settingsGetHandler = withAdmin(func(w http.ResponseWriter, r *http.Request, d *data) (int, error) {
@@ -37,6 +39,7 @@ var settingsGetHandler = withAdmin(func(w http.ResponseWriter, r *http.Request, 
 		Tus:                   d.settings.Tus,
 		Shell:                 d.settings.Shell,
 		Commands:              d.settings.Commands,
+		TrashDays:             d.settings.TrashKeepDays(),
 	}
 
 	return renderJSON(w, r, data)
@@ -47,6 +50,9 @@ var settingsPutHandler = withAdmin(func(_ http.ResponseWriter, r *http.Request, 
 	err := json.NewDecoder(r.Body).Decode(req)
 	if err != nil {
 		return http.StatusBadRequest, err
+	}
+	if req.TrashDays > settings.MaxTrashDays {
+		return http.StatusBadRequest, fberrors.ErrInvalidRequestParams
 	}
 
 	d.settings.Signup = req.Signup
@@ -60,6 +66,7 @@ var settingsPutHandler = withAdmin(func(_ http.ResponseWriter, r *http.Request, 
 	d.settings.Shell = req.Shell
 	d.settings.Commands = req.Commands
 	d.settings.HideLoginButton = req.HideLoginButton
+	d.settings.TrashDays = &req.TrashDays
 
 	err = d.store.Settings.Save(d.settings)
 	return errToStatus(err), err

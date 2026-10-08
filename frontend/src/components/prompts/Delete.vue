@@ -7,6 +7,7 @@
       <p v-else>
         {{ $t("prompts.deleteMessageMultiple", { count: selectedCount }) }}
       </p>
+      <p class="small">{{ $t("trash.deleteHint") }}</p>
     </div>
     <div class="card-action">
       <button
@@ -19,14 +20,23 @@
         {{ $t("buttons.cancel") }}
       </button>
       <button
-        id="focus-prompt"
-        @click="submit"
+        @click="submit(true)"
         class="button button--flat button--red"
-        :aria-label="$t('buttons.delete')"
-        :title="$t('buttons.delete')"
+        :aria-label="$t('trash.deletePermanently')"
+        :title="$t('trash.deletePermanently')"
+        tabindex="3"
+      >
+        {{ $t("trash.deletePermanently") }}
+      </button>
+      <button
+        id="focus-prompt"
+        @click="submit(false)"
+        class="button button--flat"
+        :aria-label="$t('trash.moveToTrash')"
+        :title="$t('trash.moveToTrash')"
         tabindex="1"
       >
-        {{ $t("buttons.delete") }}
+        {{ $t("trash.moveToTrash") }}
       </button>
     </div>
   </div>
@@ -35,6 +45,7 @@
 <script>
 import { mapActions, mapState, mapWritableState } from "pinia";
 import { files as api } from "@/api";
+import { StatusError } from "@/api/utils";
 import buttons from "@/utils/buttons";
 import { useFileStore } from "@/stores/file";
 import { useLayoutStore } from "@/stores/layout";
@@ -54,12 +65,12 @@ export default {
   },
   methods: {
     ...mapActions(useLayoutStore, ["closeHovers"]),
-    submit: async function () {
+    submit: async function (permanent) {
       buttons.loading("delete");
 
       try {
         if (!this.isListing) {
-          await api.remove(this.$route.path);
+          await api.remove(this.$route.path, permanent);
           buttons.success("delete");
 
           this.currentPrompt?.confirm();
@@ -75,7 +86,7 @@ export default {
 
         const promises = [];
         for (const index of this.selected) {
-          promises.push(api.remove(this.req.items[index].url));
+          promises.push(api.remove(this.req.items[index].url, permanent));
         }
 
         await Promise.all(promises);
@@ -89,7 +100,12 @@ export default {
         this.reload = true;
       } catch (e) {
         buttons.done("delete");
-        this.$showError(e);
+        // 409: on another disk than the trash; only a permanent delete can remove it.
+        this.$showError(
+          !permanent && e instanceof StatusError && e.status === 409
+            ? this.$t("trash.otherDisk")
+            : e
+        );
         if (this.isListing) this.reload = true;
       }
     },

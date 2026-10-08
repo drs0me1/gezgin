@@ -28,6 +28,7 @@ var (
 	ErrLastAdmin                = errors.New("the sole admin can't lose the admin permission")
 	ErrInvalidRule              = errors.New("invalid rule")
 	ErrTypeMismatch             = errors.New("a file and a folder cannot replace each other")
+	ErrTrashOtherDisk           = errors.New("the item is on another disk than the trash; delete it permanently instead")
 )
 
 type ErrShortPassword struct {

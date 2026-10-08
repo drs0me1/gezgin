@@ -321,5 +321,28 @@
     "minutes": "Minutes",
     "seconds": "Seconds",
     "unit": "Time Unit"
+  },
+  "trash": {
+    "title": "Trash",
+    "summary": "{count} items",
+    "name": "Name",
+    "origin": "Was in",
+    "deleted": "Deleted",
+    "size": "Size",
+    "nothing": "The trash is empty",
+    "empty": "Empty the trash",
+    "confirmEmpty": "Yes, delete everything for good",
+    "deletePermanently": "Delete permanently",
+    "restore": "Restore",
+    "restored": "{count} items restored",
+    "purged": "Deleted for good",
+    "emptied": "The trash was emptied",
+    "moveToTrash": "Move to trash",
+    "deleteHint": "Items moved to the trash can be restored from the Trash page.",
+    "otherDisk": "This item is on another disk than the trash; it can only be deleted permanently.",
+    "keepDays": "Days to keep",
+    "keepDaysHelp": "Deleted items are deleted for good after this many days; 0 keeps them until the trash is emptied.",
+    "usage": "Every user's trash: {count} items",
+    "emptyAll": "Empty every trash"
   }
 }

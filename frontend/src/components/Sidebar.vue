@@ -15,6 +15,15 @@
         <i class="material-icons">folder</i>
         <span>{{ $t("sidebar.myFiles") }}</span>
       </button>
+      <button
+        class="action"
+        @click="toTrash"
+        :aria-label="$t('trash.title')"
+        :title="$t('trash.title')"
+      >
+        <i class="material-icons">delete</i>
+        <span>{{ $t("trash.title") }}</span>
+      </button>
 
       <div v-if="user.perm.create">
         <button
@@ -189,6 +198,10 @@ export default {
     },
     toRoot() {
       this.$router.push({ path: "/files" });
+      this.closeHovers();
+    },
+    toTrash() {
+      this.$router.push({ path: "/trash" });
       this.closeHovers();
     },
     toAccountSettings() {
