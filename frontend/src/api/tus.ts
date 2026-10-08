@@ -2,6 +2,7 @@ import * as tus from "tus-js-client";
 import { baseURL, tusEndpoint, tusSettings, origin } from "@/utils/constants";
 import { useAuthStore } from "@/stores/auth";
 import { removePrefix } from "@/api/utils";
+import i18n from "@/i18n";
 
 const RETRY_BASE_DELAY = 1000;
 const RETRY_MAX_DELAY = 20000;
@@ -42,8 +43,8 @@ export async function upload(
           ? err.originalResponse.getStatus()
           : 0;
 
-        // Do not retry for file conflict.
-        if (status === 409) {
+        // Do not retry for file conflict, nor when the disk is full.
+        if (status === 409 || status === 507) {
           return false;
         }
 
@@ -60,7 +61,9 @@ export async function upload(
           error instanceof tus.DetailedError
             ? error.originalResponse === null
               ? "000 No connection"
-              : error.originalResponse.getBody()
+              : error.originalResponse.getStatus() === 507
+                ? i18n.global.t("errors.noSpace")
+                : error.originalResponse.getBody()
             : "Upload failed";
 
         console.error(error);

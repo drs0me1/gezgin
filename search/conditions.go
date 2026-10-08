@@ -5,6 +5,9 @@ import (
 	"path/filepath"
 	"regexp"
 	"strings"
+	"unicode"
+
+	"golang.org/x/text/unicode/norm"
 )
 
 var (
@@ -15,7 +18,8 @@ type condition func(path string) bool
 
 func extensionCondition(extension string) condition {
 	return func(path string) bool {
-		return filepath.Ext(path) == "."+extension
+		// A camera's .JPG or a scanner's .PDF is of its type too (Gezgin).
+		return strings.EqualFold(filepath.Ext(path), "."+extension)
 	}
 }
 
@@ -75,9 +79,9 @@ func parseSearch(value string) *searchOptions {
 		value = typeRegexp.ReplaceAllString(value, "")
 	}
 
-	// If it's case insensitive, put everything in lowercase.
+	// If it's case insensitive, the terms are folded as the names are (Gezgin).
 	if !opts.CaseSensitive {
-		value = strings.ToLower(value)
+		value = fold(value)
 	}
 
 	// Remove the spaces from the search value.
@@ -89,7 +93,7 @@ func parseSearch(value string) *searchOptions {
 
 	// if the value starts with " and finishes what that character, we will
 	// only search for that term
-	if value[0] == '"' && value[len(value)-1] == '"' {
+	if len(value) > 1 && value[0] == '"' && value[len(value)-1] == '"' {
 		unique := strings.TrimPrefix(value, "\"")
 		unique = strings.TrimSuffix(unique, "\"")
 
@@ -97,6 +101,26 @@ func parseSearch(value string) *searchOptions {
 		return opts
 	}
 
-	opts.Terms = strings.Split(value, " ")
+	// Every word has to be in the name (Gezgin).
+	opts.Terms = strings.Fields(value)
 	return opts
+}
+
+// fold makes a name or a search term comparable regardless of letter case and
+// accents (Gezgin): "IŞIK", "Işık" and "isik" all become "isik". The dotless ı
+// has no accent to drop and is read as i.
+func fold(s string) string {
+	var b strings.Builder
+	b.Grow(len(s))
+	for _, r := range norm.NFD.String(s) {
+		if unicode.Is(unicode.Mn, r) {
+			continue
+		}
+		r = unicode.ToLower(r)
+		if r == 'ı' {
+			r = 'i'
+		}
+		b.WriteRune(r)
+	}
+	return b.String()
 }

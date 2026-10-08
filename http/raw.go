@@ -75,8 +75,10 @@ func setContentDisposition(w http.ResponseWriter, r *http.Request, file *files.F
 }
 
 var rawHandler = withUser(func(w http.ResponseWriter, r *http.Request, d *data) (int, error) {
+	// Without the download permission no content is served, here as for previews, subtitles and
+	// checksums; File Browser answered 202 with nothing, which reads as a broken file (Gezgin).
 	if !d.user.Perm.Download {
-		return http.StatusAccepted, nil
+		return http.StatusForbidden, nil
 	}
 
 	file, err := files.NewFileInfo(&files.FileOptions{

@@ -28,15 +28,10 @@ const layoutStore = useLayoutStore();
 
 const { t } = useI18n();
 
+// The formats every system opens (Gezgin); the server still makes the others.
 const formats = {
   zip: "zip",
   tar: "tar",
   targz: "tar.gz",
-  tarbz2: "tar.bz2",
-  tarxz: "tar.xz",
-  tarlz4: "tar.lz4",
-  tarsz: "tar.sz",
-  tarbr: "tar.br",
-  tarzst: "tar.zst",
 };
 </script>

@@ -62,13 +62,18 @@
     "downloadSelected": "Download Selected"
   },
   "upload": {
-    "abortUpload": "Are you sure you wish to abort?"
+    "abortUpload": "Are you sure you wish to abort?",
+    "remaining": "{eta} remaining",
+    "completed": "{percent}% Completed",
+    "abort": "Abort upload",
+    "toggle": "Toggle file upload list"
   },
   "errors": {
     "forbidden": "You don't have permissions to access this.",
     "internal": "Something really went wrong.",
     "notFound": "This location can't be reached.",
-    "connection": "The server can't be reached."
+    "connection": "The server can't be reached.",
+    "noSpace": "There is not enough free space on the disk."
   },
   "files": {
     "body": "Body",

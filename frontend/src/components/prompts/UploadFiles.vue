@@ -15,8 +15,12 @@
         </h2>
         <div class="upload-info">
           <div class="upload-speed">{{ speedText }}/s</div>
-          <div class="upload-eta">{{ formattedETA }} remaining</div>
-          <div class="upload-percentage">{{ sentPercent }}% Completed</div>
+          <div class="upload-eta">
+            {{ $t("upload.remaining", { eta: formattedETA }) }}
+          </div>
+          <div class="upload-percentage">
+            {{ $t("upload.completed", { percent: sentPercent }) }}
+          </div>
           <div class="upload-fraction">
             {{ sentMbytes }} /
             {{ totalMbytes }}
@@ -25,16 +29,16 @@
         <button
           class="action"
           @click="abortAll"
-          aria-label="Abort upload"
-          title="Abort upload"
+          :aria-label="$t('upload.abort')"
+          :title="$t('upload.abort')"
         >
           <i class="material-icons">{{ "cancel" }}</i>
         </button>
         <button
           class="action"
           @click="toggle"
-          aria-label="Toggle file upload list"
-          title="Toggle file upload list"
+          :aria-label="$t('upload.toggle')"
+          :title="$t('upload.toggle')"
         >
           <i class="material-icons">{{
             open ? "keyboard_arrow_down" : "keyboard_arrow_up"

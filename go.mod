@@ -16,7 +16,6 @@ require (
 	github.com/marusama/semaphore/v2 v2.5.0
 	github.com/mholt/archives v0.1.5
 	github.com/mitchellh/go-homedir v1.1.0
-	github.com/redis/go-redis/v9 v9.21.0
 	github.com/samber/lo v1.53.0
 	github.com/shirou/gopsutil/v4 v4.26.6
 	github.com/spf13/afero v1.15.0
@@ -41,7 +40,6 @@ require (
 	github.com/bodgit/plumbing v1.3.0 // indirect
 	github.com/bodgit/sevenzip v1.6.5 // indirect
 	github.com/bodgit/windows v1.0.1 // indirect
-	github.com/cespare/xxhash/v2 v2.3.0 // indirect
 	github.com/cpuguy83/go-md2man/v2 v2.0.7 // indirect
 	github.com/davecgh/go-spew v1.1.2-0.20180830191138-d8f796af33cc // indirect
 	github.com/dsnet/compress v0.0.2-0.20230904184137-39efe44ab707 // indirect
@@ -73,7 +71,6 @@ require (
 	github.com/subosito/gotenv v1.6.0 // indirect
 	github.com/ulikunitz/xz v0.5.16 // indirect
 	github.com/yusufpapurcu/wmi v1.2.4 // indirect
-	go.uber.org/atomic v1.11.0 // indirect
 	go.yaml.in/yaml/v3 v3.0.4 // indirect
 	go4.org v0.0.0-20260112195520-a5071408f32f // indirect
 	golang.org/x/net v0.57.0 // indirect

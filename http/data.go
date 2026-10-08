@@ -50,7 +50,7 @@ func (d *data) Check(path string) bool {
 func (d *data) CheckRules(path string) bool {
 	path = d.rulePath(path)
 
-	if d.inTrash(path) {
+	if d.reserved(path) {
 		return false
 	}
 
@@ -70,16 +70,24 @@ func (d *data) CheckRules(path string) bool {
 	return allow
 }
 
-// inTrash reports whether a path the user sees lies in the trash folder at the
-// server root (Gezgin). No path reaches it, whatever the rules: the trash is
-// only handled through its own endpoints.
-func (d *data) inTrash(p string) bool {
+// reserved reports whether a path the user sees lies in one of Gezgin's folders
+// at the server root: the trash and the uploads in progress. No path reaches
+// them, whatever the rules: they are only handled through their own endpoints.
+func (d *data) reserved(p string) bool {
 	full := gopath.Join("/", d.user.Scope, p)
-	bin := "/" + trash.Dir
 	if d.server.CaseInsensitiveFs {
-		full, bin = strings.ToLower(full), strings.ToLower(bin)
+		full = strings.ToLower(full)
 	}
-	return full == bin || strings.HasPrefix(full, bin+"/")
+	for _, dir := range []string{trash.Dir, UploadsDir} {
+		top := "/" + dir
+		if d.server.CaseInsensitiveFs {
+			top = strings.ToLower(top)
+		}
+		if full == top || strings.HasPrefix(full, top+"/") {
+			return true
+		}
+	}
+	return false
 }
 
 // rulePath canonicalizes path into the form the rules are written in.

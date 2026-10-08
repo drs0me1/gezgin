@@ -46,7 +46,7 @@ var resourceGetHandler = withUser(func(w http.ResponseWriter, r *http.Request, d
 		return renderJSON(w, r, file)
 	} else if encoding == "true" {
 		if !d.user.Perm.Download {
-			return http.StatusAccepted, nil
+			return http.StatusForbidden, nil
 		}
 		if file.Type != "text" {
 			return renderJSON(w, r, file)
@@ -71,7 +71,7 @@ var resourceGetHandler = withUser(func(w http.ResponseWriter, r *http.Request, d
 
 	if checksum := r.URL.Query().Get("checksum"); checksum != "" {
 		if !d.user.Perm.Download {
-			return http.StatusAccepted, nil
+			return http.StatusForbidden, nil
 		}
 
 		err := file.Checksum(checksum)
@@ -172,6 +172,17 @@ func resourcePostHandler(fileCache FileCache) handleFunc {
 			err = delThumbs(r.Context(), fileCache, file)
 			if err != nil {
 				return errToStatus(err), err
+			}
+		}
+
+		// A body of known size has to fit on the disk (Gezgin).
+		if r.ContentLength > 0 {
+			free, err := freeSpace(d.user.FullPath(r.URL.Path))
+			if err != nil {
+				return http.StatusInternalServerError, err
+			}
+			if uint64(r.ContentLength) > free {
+				return http.StatusInsufficientStorage, nil
 			}
 		}
 

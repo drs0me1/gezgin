@@ -4,6 +4,7 @@ import { baseURL } from "@/utils/constants";
 import { upload as postTus, useTus } from "./tus";
 import { createURL, fetchURL, removePrefix, StatusError } from "./utils";
 import { isEncodableResponse, makeRawResource } from "@/utils/encodings";
+import i18n from "@/i18n";
 
 // fetch reads a file or a folder. raw asks for a text file's bytes (the CSV viewer decodes them
 // itself); otherwise the server decodes the text and names its encoding and version.
@@ -184,6 +185,8 @@ async function postResources(
         resolve(request.responseText);
       } else if (request.status === 409) {
         reject(new Error(request.status.toString()));
+      } else if (request.status === 507) {
+        reject(new Error(i18n.global.t("errors.noSpace")));
       } else {
         reject(new Error(request.responseText));
       }

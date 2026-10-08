@@ -8,6 +8,7 @@ import (
 	"io/fs"
 	"os"
 	"path"
+	"syscall"
 
 	"github.com/spf13/afero"
 )
@@ -78,6 +79,45 @@ func WriteAtomic(afs afero.Fs, name string, in io.Reader, perm fs.FileMode) (os.
 	}
 
 	return afs.Stat(name)
+}
+
+// Place puts the complete file at the real path staged, outside afs, at name,
+// whose real path is realName (Gezgin). Like WriteAtomic, it replaces an
+// existing file only with the complete content and writes through a symbolic
+// link at name. The file is renamed into place, or copied when it is on
+// another disk.
+func Place(afs afero.Fs, staged, name, realName string, perm fs.FileMode) (os.FileInfo, error) {
+	info, err := lstat(afs, name)
+	switch {
+	case err == nil && info.Mode()&os.ModeSymlink != 0:
+		return placeCopy(afs, staged, name, perm)
+	case err == nil && info.IsDir():
+		return nil, &os.PathError{Op: "write", Path: name, Err: errors.New("is a directory")}
+	case err != nil && !errors.Is(err, fs.ErrNotExist):
+		return nil, err
+	}
+
+	if err = os.Chmod(staged, perm); err != nil {
+		return nil, err
+	}
+	err = os.Rename(staged, realName)
+	if errors.Is(err, syscall.EXDEV) {
+		return placeCopy(afs, staged, name, perm)
+	}
+	if err != nil {
+		return nil, err
+	}
+	return afs.Stat(name)
+}
+
+// placeCopy copies the file at the real path staged to name.
+func placeCopy(afs afero.Fs, staged, name string, perm fs.FileMode) (os.FileInfo, error) {
+	in, err := os.Open(staged)
+	if err != nil {
+		return nil, err
+	}
+	defer in.Close()
+	return WriteAtomic(afs, name, in, perm)
 }
 
 // writeThrough writes in to the file a symbolic link points at, in place.

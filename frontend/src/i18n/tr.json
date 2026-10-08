@@ -62,13 +62,18 @@
     "downloadSelected": "Seçilileri indir"
   },
   "upload": {
-    "abortUpload": "Are you sure you wish to abort?"
+    "abortUpload": "Yüklemeler iptal edilsin mi?",
+    "remaining": "{eta} kaldı",
+    "completed": "%{percent} tamamlandı",
+    "abort": "Yüklemeyi iptal et",
+    "toggle": "Yükleme listesini aç/kapat"
   },
   "errors": {
     "forbidden": "Buna erişim izniniz yok.",
     "internal": "Bir şeyler ters gitti.",
     "notFound": "Bu konuma ulaşılamıyor.",
-    "connection": "Sunucuya ulaşılamıyor."
+    "connection": "Sunucuya ulaşılamıyor.",
+    "noSpace": "Diskte yeterli boş alan yok."
   },
   "files": {
     "body": "Sayfa",
@@ -145,7 +150,7 @@
     "deleteUser": "Are you sure you want to delete this user?",
     "deleteTitle": "Dosyaları sil",
     "displayName": "Görünen Ad:",
-    "download": "Dosyaları indirŞ",
+    "download": "Dosyaları indir",
     "downloadMessage": "İndirmek istediğiniz formatı seçin.",
     "error": "Bir şeyler yanlış gitti",
     "fileInfo": "Dosya bilgisi",
@@ -169,7 +174,7 @@
     "show": "Göster",
     "size": "Boyut",
     "upload": "Gönder",
-    "uploadFiles": "Uploading {files} files...",
+    "uploadFiles": "{files} dosya yükleniyor...",
     "uploadMessage": "Yüklemek için bir seçenek belirleyin.",
     "optionalPassword": "İsteğe bağlı şifre",
     "resolution": "Resolution",

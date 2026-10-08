@@ -5,6 +5,7 @@ import (
 	"net/http/httptest"
 	"os"
 	"path/filepath"
+	"strings"
 	"testing"
 	"time"
 
@@ -12,6 +13,7 @@ import (
 	"github.com/golang-jwt/jwt/v5"
 	"github.com/spf13/afero"
 
+	"github.com/filebrowser/filebrowser/v2/diskcache"
 	"github.com/filebrowser/filebrowser/v2/files"
 	"github.com/filebrowser/filebrowser/v2/settings"
 	"github.com/filebrowser/filebrowser/v2/storage/bolt"
@@ -75,45 +77,73 @@ func TestTusHandlersRejectSymlinkScopeEscape(t *testing.T) {
 		t.Fatalf("failed to sign token: %v", err)
 	}
 
-	cases := map[string]struct {
-		method  string
-		handler handleFunc
-		headers map[string]string
-	}{
-		"POST create through symlinked dir": {
-			method:  http.MethodPost,
-			handler: tusPostHandler(newMemoryUploadCache()),
-			headers: map[string]string{"Upload-Length": "20"},
-		},
-		"PATCH write through symlinked dir": {
-			method:  http.MethodPatch,
-			handler: tusPatchHandler(newMemoryUploadCache()),
-			headers: map[string]string{"Content-Type": "application/offset+octet-stream", "Upload-Offset": "0"},
-		},
+	cache := newUploadCache(filepath.Join(root, UploadsDir), uploadCacheTTL)
+	t.Cleanup(cache.Close)
+	send := func(method, target string, headers map[string]string, body string) int {
+		req, err := http.NewRequest(method, target, strings.NewReader(body))
+		if err != nil {
+			t.Fatal(err)
+		}
+		req.Header.Set("X-Auth", signed)
+		for k, v := range headers {
+			req.Header.Set(k, v)
+		}
+		recorder := httptest.NewRecorder()
+		var handler handleFunc
+		switch method {
+		case http.MethodPost:
+			handler = tusPostHandler(cache, diskcache.NewNoOp())
+		case http.MethodPatch:
+			handler = tusPatchHandler(cache, diskcache.NewNoOp())
+		}
+		handle(handler, "", st, &settings.Server{}).ServeHTTP(recorder, req)
+		return recorder.Code
+	}
+	chunk := map[string]string{"Content-Type": "application/offset+octet-stream", "Upload-Offset": "0"}
+	escaped := func(name string) {
+		t.Helper()
+		if _, statErr := os.Stat(filepath.Join(outside, name)); statErr == nil {
+			t.Errorf("VULNERABLE: file was created outside the user's scope")
+		}
 	}
 
-	for name, tc := range cases {
-		tc := tc
-		t.Run(name, func(t *testing.T) {
-			req, err := http.NewRequest(tc.method, "escape_link/injected.txt", http.NoBody)
-			if err != nil {
-				t.Fatal(err)
-			}
-			req.Header.Set("X-Auth", signed)
-			for k, v := range tc.headers {
-				req.Header.Set(k, v)
-			}
+	t.Run("POST create through symlinked dir", func(t *testing.T) {
+		if code := send(http.MethodPost, "escape_link/injected.txt", map[string]string{"Upload-Length": "20"}, ""); code != http.StatusForbidden {
+			t.Errorf("expected 403, got %d", code)
+		}
+		escaped("injected.txt")
+	})
 
-			recorder := httptest.NewRecorder()
-			handler := handle(tc.handler, "", st, &settings.Server{})
-			handler.ServeHTTP(recorder, req)
+	// Gezgin stages the data, so a chunk can only reach a destination through an
+	// upload that was started; the destination is checked again when it is put
+	// in place.
+	t.Run("PATCH write through symlinked dir", func(t *testing.T) {
+		if code := send(http.MethodPatch, "escape_link/injected.txt", chunk, "01234567890123456789"); code != http.StatusNotFound {
+			t.Errorf("expected 404, got %d", code)
+		}
+		escaped("injected.txt")
+	})
 
-			if recorder.Code != http.StatusForbidden {
-				t.Errorf("expected 403, got %d", recorder.Code)
-			}
-			if _, statErr := os.Stat(filepath.Join(outside, "injected.txt")); statErr == nil {
-				t.Errorf("VULNERABLE: file was created outside the user's scope")
-			}
-		})
-	}
+	t.Run("folder swapped for an escaping link during the upload", func(t *testing.T) {
+		moved := filepath.Join(userScope, "moved")
+		if err := os.MkdirAll(moved, 0o755); err != nil {
+			t.Fatal(err)
+		}
+		if code := send(http.MethodPost, "moved/swapped.txt", map[string]string{"Upload-Length": "20"}, ""); code != http.StatusCreated {
+			t.Fatalf("POST: expected 201, got %d", code)
+		}
+		if err := os.RemoveAll(moved); err != nil {
+			t.Fatal(err)
+		}
+		if err := os.Symlink(outside, moved); err != nil {
+			t.Fatal(err)
+		}
+		if code := send(http.MethodPatch, "moved/swapped.txt", chunk, "01234567890123456789"); code != http.StatusForbidden {
+			t.Errorf("PATCH: expected 403, got %d", code)
+		}
+		escaped("swapped.txt")
+		if entries, _ := os.ReadDir(cache.dir); len(entries) != 0 {
+			t.Errorf("the refused upload left its data: %v", entries)
+		}
+	})
 }

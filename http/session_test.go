@@ -32,6 +32,7 @@ type sessionEnv struct {
 	st      *storage.Storage
 	handler http.Handler
 	root    string
+	uploads *UploadCache
 }
 
 func newSessionEnv(t *testing.T) *sessionEnv {
@@ -58,11 +59,13 @@ func newSessionEnv(t *testing.T) *sessionEnv {
 	}
 
 	root := t.TempDir()
-	handler, err := NewHandler(nil, diskcache.NewNoOp(), nil, st, &settings.Server{Root: root}, fstest.MapFS{})
+	uploads := newUploadCache(filepath.Join(root, UploadsDir), uploadCacheTTL)
+	t.Cleanup(uploads.Close)
+	handler, err := NewHandler(nil, diskcache.NewNoOp(), uploads, st, &settings.Server{Root: root}, fstest.MapFS{})
 	if err != nil {
 		t.Fatalf("failed to build the handler: %v", err)
 	}
-	return &sessionEnv{t: t, st: st, handler: handler, root: root}
+	return &sessionEnv{t: t, st: st, handler: handler, root: root, uploads: uploads}
 }
 
 func (e *sessionEnv) addUser(name, password string, admin, mustChange bool) *users.User {

@@ -37,8 +37,8 @@ func TestResourceChecksumRequiresDownloadPermission(t *testing.T) {
 
 	t.Run("denied without download permission", func(t *testing.T) {
 		rec := get(t, users.Permissions{})
-		if rec.Code != http.StatusAccepted {
-			t.Fatalf("expected 202, got %d body=%q", rec.Code, rec.Body.String())
+		if rec.Code != http.StatusForbidden {
+			t.Fatalf("expected 403, got %d body=%q", rec.Code, rec.Body.String())
 		}
 		if strings.Contains(strings.ToLower(rec.Body.String()), "checksum") {
 			t.Fatalf("digest leaked without download permission: %q", rec.Body.String())

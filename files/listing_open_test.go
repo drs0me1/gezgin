@@ -14,14 +14,14 @@ type countingFs struct {
 }
 
 func (c *countingFs) Open(name string) (afero.File, error) {
-	if info, err := c.Fs.Stat(name); err == nil && !info.IsDir() {
+	if info, err := c.Stat(name); err == nil && !info.IsDir() {
 		c.opened = append(c.opened, name)
 	}
 	return c.Fs.Open(name)
 }
 
 func (c *countingFs) OpenFile(name string, flag int, perm os.FileMode) (afero.File, error) {
-	if info, err := c.Fs.Stat(name); err == nil && !info.IsDir() {
+	if info, err := c.Stat(name); err == nil && !info.IsDir() {
 		c.opened = append(c.opened, name)
 	}
 	return c.Fs.OpenFile(name, flag, perm)
@@ -41,14 +41,14 @@ func TestListingDoesNotOpenFiles(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if len(dir.Listing.Items) != 4 {
-		t.Fatalf("listed %d entries; want 4", len(dir.Listing.Items))
+	if len(dir.Items) != 4 {
+		t.Fatalf("listed %d entries; want 4", len(dir.Items))
 	}
 	if len(afs.opened) != 0 {
 		t.Errorf("listing opened %v", afs.opened)
 	}
 	types := map[string]string{}
-	for _, item := range dir.Listing.Items {
+	for _, item := range dir.Items {
 		types[item.Name] = item.Type
 	}
 	if types["movie.mkv"] != "video" || types["photo.jpg"] != "image" || types["notes.txt"] != "text" {

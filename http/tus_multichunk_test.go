@@ -11,6 +11,7 @@ import (
 	"strconv"
 	"testing"
 
+	"github.com/filebrowser/filebrowser/v2/diskcache"
 	"github.com/filebrowser/filebrowser/v2/settings"
 	"github.com/filebrowser/filebrowser/v2/storage"
 	"github.com/filebrowser/filebrowser/v2/users"
@@ -19,13 +20,14 @@ import (
 // newTusTestServer mounts the TUS handlers behind a real HTTP server, under the
 // same "/api/tus" prefix used in production, so tests exercise connection
 // handling and header round-tripping instead of a bare ResponseRecorder.
-func newTusTestServer(t *testing.T, st *storage.Storage, cache UploadCache) *httptest.Server {
+func newTusTestServer(t *testing.T, st *storage.Storage, cache *UploadCache) *httptest.Server {
 	t.Helper()
 
 	server := &settings.Server{}
-	post := handle(tusPostHandler(cache), "/api/tus", st, server)
+	post := handle(tusPostHandler(cache, diskcache.NewNoOp()), "/api/tus", st, server)
 	head := handle(tusHeadHandler(cache), "/api/tus", st, server)
-	patch := handle(tusPatchHandler(cache), "/api/tus", st, server)
+	patch := handle(tusPatchHandler(cache, diskcache.NewNoOp()), "/api/tus", st, server)
+	del := handle(tusDeleteHandler(cache), "/api/tus", st, server)
 
 	mux := http.NewServeMux()
 	mux.HandleFunc("/api/tus/", func(w http.ResponseWriter, r *http.Request) {
@@ -36,6 +38,8 @@ func newTusTestServer(t *testing.T, st *storage.Storage, cache UploadCache) *htt
 			head.ServeHTTP(w, r)
 		case http.MethodPatch:
 			patch.ServeHTTP(w, r)
+		case http.MethodDelete:
+			del.ServeHTTP(w, r)
 		default:
 			w.WriteHeader(http.StatusMethodNotAllowed)
 		}
@@ -52,6 +56,7 @@ type tusTestFixture struct {
 	client *http.Client
 	token  string
 	scope  string
+	cache  *UploadCache
 }
 
 func newTusTestFixture(t *testing.T) *tusTestFixture {
@@ -67,7 +72,7 @@ func newTusTestFixture(t *testing.T) *tusTestFixture {
 	perm := users.Permissions{Create: true, Modify: true}
 	st := scopedUserStorage(t, userScope, perm, key)
 
-	cache := newMemoryUploadCache()
+	cache := newUploadCache(filepath.Join(root, UploadsDir), uploadCacheTTL)
 	t.Cleanup(cache.Close)
 
 	srv := newTusTestServer(t, st, cache)
@@ -76,6 +81,7 @@ func newTusTestFixture(t *testing.T) *tusTestFixture {
 		client: srv.Client(),
 		token:  signToken(t, perm, key),
 		scope:  userScope,
+		cache:  cache,
 	}
 }
 

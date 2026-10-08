@@ -8,6 +8,7 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/filebrowser/filebrowser/v2/diskcache"
 	"github.com/filebrowser/filebrowser/v2/settings"
 	"github.com/filebrowser/filebrowser/v2/users"
 )
@@ -27,10 +28,10 @@ func TestTusPatchEnforcesUploadLength(t *testing.T) {
 	st := scopedUserStorage(t, userScope, perm, key)
 	signed := signToken(t, perm, key)
 
-	cache := newMemoryUploadCache()
+	cache := newUploadCache(filepath.Join(root, UploadsDir), uploadCacheTTL)
 	t.Cleanup(cache.Close)
-	post := handle(tusPostHandler(cache), "", st, &settings.Server{})
-	patch := handle(tusPatchHandler(cache), "", st, &settings.Server{})
+	post := handle(tusPostHandler(cache, diskcache.NewNoOp()), "", st, &settings.Server{})
+	patch := handle(tusPatchHandler(cache, diskcache.NewNoOp()), "", st, &settings.Server{})
 
 	patchReq := func(body string) *httptest.ResponseRecorder {
 		req, _ := http.NewRequest(http.MethodPatch, "/file.txt", strings.NewReader(body))
@@ -57,10 +58,15 @@ func TestTusPatchEnforcesUploadLength(t *testing.T) {
 	if rec := patchReq(strings.Repeat("A", 5000)); rec.Code != http.StatusRequestEntityTooLarge {
 		t.Fatalf("over-length PATCH expected 413, got %d body=%q", rec.Code, rec.Body.String())
 	}
-	if fi, err := os.Stat(filepath.Join(userScope, "file.txt")); err != nil {
-		t.Fatalf("stat file.txt: %v", err)
-	} else if fi.Size() > 5 {
-		t.Fatalf("wrote %d bytes despite Upload-Length 5", fi.Size())
+	up, ok := cache.get("1:/file.txt")
+	if !ok {
+		t.Fatal("the rejected chunk ended the upload")
+	}
+	if offset, err := up.offset(); err != nil || offset > 5 {
+		t.Fatalf("staged %d bytes (%v) despite Upload-Length 5", offset, err)
+	}
+	if _, err := os.Stat(filepath.Join(userScope, "file.txt")); !os.IsNotExist(err) {
+		t.Fatalf("an unfinished upload reached its destination: %v", err)
 	}
 
 	// A correctly-sized upload still completes.

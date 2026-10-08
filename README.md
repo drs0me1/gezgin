@@ -48,6 +48,19 @@ Work in progress. Until the first Gezgin release this tree is File Browser's las
   supported encoding reads back unchanged opens read-only. A save names the version the file was
   opened at and is refused (409, the editor asks before overwriting) when the file changed since;
   Ctrl+S without a change writes nothing. Windows-1254 subtitles reach the player as UTF-8.
+- Uploads: a tus upload's data is staged in `<root>/.gezgin-yukleme/` (unreachable through any
+  path) and the file is put in place, keeping a replaced file's permissions, only once it is
+  complete; cancelling, abandoning (3 minutes without a chunk) or a restart drops the staged data
+  and leaves the destination as it was, and an unfinished upload is never listed, downloaded or
+  found. Cancelling takes the create permission instead of delete. An upload that does not fit on
+  the disk is refused at the start (HTTP 507, "Diskte yeterli boş alan yok"). The Redis upload
+  cache option (`redisCacheUrl`) is removed.
+- Search: every word has to be in the name; letter case, Turkish letters and accents do not
+  matter (`ışık`, `isik` and `IŞIK` find `Işık notları.txt`; `case:sensitive` still matches
+  exactly); `type:` matches extensions in any case; folders the rules refuse are not searched.
+- Downloads: without the download permission a file's content, preview, subtitles and checksum are
+  refused with 403 (File Browser answered an empty 202); the download dialog offers zip, tar and
+  tar.gz (the server still makes the other formats).
 - The container image keeps generated thumbnails in `/database/cache` (`FB_CACHE_DIR`).
 - Passwords need at least 8 characters by default (File Browser: 12); the admin can change it in
   the global settings. Quick setup's generated admin password stays 16 characters.
