@@ -25,7 +25,8 @@ archive work, removed the EPUB reader, self-signup and proxy sign-in (K59-K61), 
 (K64-K65), and verified it all live on nrm (`45c22b38`); only the real-client trials of 4.1
 remain before heading 7 is closed. Heading 8, "Yönetim ayarları ekranı", was then reviewed, its
 proposals K66-K75 accepted as recommended, implemented (`a71c0a2e`), deployed on nrm and verified
-live there. Next: heading 9 (4.3).
+live there. Heading 9, "Altyapı, marka ve CSP", has been reviewed; its proposals K76-K83 wait for
+the operator (4.3).
 
 ## 2. Headings
 
@@ -39,14 +40,14 @@ live there. Next: heading 9 (4.3).
 | 6 | Paylaşım (links and WebDAV) | K32-K44 | `c8da81f8`, `aaf43505`, `403d332e` | Done, verified live |
 | 7 | Komut çalıştırma, and archives in its place | K45-K58 | `116c3549`, `b0bb8b63`, `527111be`, `6d531015`, `601ddbaa` | Last step's follow-ups open (4.1) |
 | 8 | Yönetim ayarları ekranı | K66-K75 | `a71c0a2e` | Done, verified live |
-| 9 | Altyapı, marka ve CSP | | | To do (4.3) |
+| 9 | Altyapı, marka ve CSP | K76-K83 proposed | | Reviewed, waits for decisions (4.3) |
 | 10 | Konsol'dan alınacaklar | | | To do (4.3); archives already done under 7 |
 
 Commit messages and README's "Changes from File Browser" describe each change.
 
 ## 3. Decisions taken
 
-The next decision number is **K76**. "Recommended" means the operator accepted the recommendation
+The next decision number is **K76** (K76-K83 are proposed for heading 9, see 4.3). "Recommended" means the operator accepted the recommendation
 made in the report.
 
 **Stage B (start).** Multi-user with an admin; File Browser's forms stay even where Konsol has its
@@ -299,6 +300,52 @@ so the API (400) and `config set` refuse the same; unset values take the default
   text; unknown `/api/*` paths answer 200 with `index.html` instead of 404; the settings pages
   show File Browser's English "being archived" banner. The sidebar shows "Gezgin" with the
   version, still "(untracked)" in local builds.
+  Reviewed 2026-10-09 (`http/http.go`, `static.go`, `raw.go`, `index.html`, the build, the image,
+  the texts), checked on nrm (`a71c0a2e`, headers without sign-in) and on a local build. Verified:
+  the page itself (`/`, `/login`, `/files/...`, `/share/...`) has no CSP and no frame protection,
+  because it is the router's not-found handler, which the header middleware never reaches; for the
+  same reason unknown `/api/*` paths answer 200 with the page. The page has two inline scripts of
+  ours (settings, manifest) and four of `@vitejs/plugin-legacy`, whose old-browser bundle is 105
+  files, 5.1 MB; Ace and the video player use `blob:` workers, the PDF preview an `<object>`. Raw
+  files carry `script-src 'none'` (fine). Logo, favicons and PWA icons are File Browser's, the
+  logos' alt text says "File Browser", `frontend/public/manifest.json` (unused) too; the sidebar
+  reads "Gezgin gezgin-a71c0a2e". The settings page shows File Browser's English sunset card with
+  a link to its GitHub; every start logs four "File Browser is being wound down" lines;
+  `docs/README.md`, `SECURITY.md`, `CHANGELOG.md`, `transifex.yml`, `lint-pr.yaml`, `branding/`,
+  `Dockerfile.s6` and `docker/s6` are upstream's, and `.claude/CLAUDE.md` is File Browser's
+  advisory playbook (wrong project). The image listens on 80 by default (`EXPOSE 80`; nrm sets
+  `FB_PORT=8080`), and nrm's container has no healthcheck (the OCI image drops `HEALTHCHECK`; the
+  build downloads `JSON.sh` only for it). Listings call small archives and binaries "text"
+  (`kucuk.zip`, `film.r00`, `film.zip.001`, `kod.tgz`, an ELF file) and those over 10 MB "blob";
+  opening one finds the right type, so only the icon is wrong. Turkish: 4 texts missing (the
+  sidebar's disk line among them) and 29 left in English; "dizin" and "klasör", "şifre" and
+  "parola" both in use. Fine: one Go program, BoltDB, the CLI, `/health`, no request from the
+  interface to another site but the sunset link, UID 1000 with no capabilities on nrm.
+  Proposals, recommended:
+  - K76: every answer carries the headers, the page too: `default-src 'self'; script-src 'self';
+    style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; media-src 'self' blob:;
+    worker-src 'self' blob:; object-src 'self'; frame-ancestors 'none'; base-uri 'self';
+    form-action 'self'` and `Referrer-Policy: same-origin`; raw files keep `script-src 'none'`
+    and may be framed by Gezgin only (the PDF preview); `X-XSS-Protection` goes.
+  - K77: our inline scripts leave the page (the settings as a JSON data block, the manifest
+    served at `/manifest.webmanifest`); the legacy build stays for old tablets and phones, its
+    four fixed scripts allowed by hash (alternative: drop it, 5.1 MB less, but browsers before
+    about 2022, e.g. iOS 15, would no longer open Gezgin).
+  - K78: unknown `/api/*` paths answer 404.
+  - K79: Gezgin's own logo (a simple SVG: a folder with a compass needle, shown to the operator
+    first), favicons and PWA icons made from it; File Browser's logo, icons, banner and unused
+    manifest go; alt texts "Gezgin"; the sidebar reads "Gezgin a71c0a2e".
+  - K80: File Browser's sunset traces go: the settings card, the four start-up lines (one line
+    "Gezgin <version>" instead), the docs' warning; `SECURITY.md` and `.claude/CLAUDE.md` are
+    rewritten for Gezgin (the latter pointing to this handover); `transifex.yml`, `lint-pr.yaml`
+    and the upstream-only docs go; `CHANGELOG.md` stays as File Browser's history.
+  - K81: the image listens on 8080 by default (`EXPOSE 8080`); its `HEALTHCHECK`, which nrm does
+    not use, goes with the `JSON.sh` download; `Dockerfile.s6` and `docker/s6` go.
+  - K82: listings type known archives and their parts (the "Arşivi aç" rule) as archives with an
+    archive icon, and a file whose extension names a non-text type as a file, not text; files
+    without an extension (README, Makefile) stay text.
+  - K83: the 33 texts in Turkish; one word each: "klasör" and "şifre"; the permission texts
+    reworded ("Dosya ve klasör oluşturabilir", ...).
 - [ ] **10 — Konsol'dan alınacaklar.** Folder sizes and item counts on folder tiles (Konsol
   DD-247/248) and favourite folders (DD-250). Archive extraction and creation are done (7).
 
