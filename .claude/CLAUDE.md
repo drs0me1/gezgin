@@ -12,6 +12,7 @@ modified fork of File Browser (archived upstream).
   and run it on the Mac (`scripts/test-env.sh build start`), check it there and commit to `main`.
   Push only when the operator says so ("push et"); then wait for the image, update the test host
   and verify live.
+- Describe each change in `docs/changes.md`; the README stays a short project page of tables.
 - Keep changes small and match the surrounding code. The Go module path stays
   `github.com/filebrowser/filebrowser/v2` and the program is still `filebrowser`.
 - The repository is public: no host addresses, credentials or personal paths in it.

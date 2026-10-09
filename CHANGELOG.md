@@ -1,5 +1,9 @@
 # Changelog
 
+> This is File Browser's changelog, up to `v2.63.23`, the version Gezgin was forked from. Gezgin
+> has no releases yet; what it changes is summed up in the [README](README.md) and listed in
+> [docs/changes.md](docs/changes.md).
+
 All notable changes to this project will be documented in this file. See [commit-and-tag-version](https://github.com/absolute-version/commit-and-tag-version) for commit guidelines.
 
 ## [2.63.23](https://github.com/filebrowser/filebrowser/compare/v2.63.22...v2.63.23) (2026-07-27)

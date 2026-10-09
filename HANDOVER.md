@@ -46,11 +46,12 @@ headings of stage D are done; open are 4.1's Windows trials and the later work o
 | 9 | Altyapı, marka ve CSP | K76-K83 | `79805244`, `5074d927`, `c11a6b80` | Done, verified live |
 | 10 | Konsol'dan alınacaklar | K84-K89 | `39ae53ce` | Done, verified live |
 
-Commit messages and README's "Changes from File Browser" describe each change.
+Commit messages and `docs/changes.md` describe each change; the README sums them up in two
+short tables (features, and what changed from File Browser), kept so since K166.
 
 ## 3. Decisions taken
 
-The next decision number is **K166**. "Recommended" means the operator accepted the recommendation
+The next decision number is **K167**. "Recommended" means the operator accepted the recommendation
 made in the report.
 
 **Stage B (start).** Multi-user with an admin; File Browser's forms stay even where Konsol has its
@@ -540,6 +541,19 @@ with a wrong one); the share removed after the question; the last link removed, 
 1-day link with a password, "bir gün sonra bitiyor · şifreli", its public API 401 without the
 password and 200 with it; at 375 pixels the list (the 1-day end amber) and the WebDAV form; the
 test shares removed.
+
+**The project page** (operator, 2026-10-10: GitHub's texts too long and technical; lists and
+tables with short descriptions, the changes and added features above all, after a successful
+project's page):
+
+- K166: the README is a short project page: logo, one line on what Gezgin is, badges, a status
+  note, a features table, a "what changed from File Browser" table (File Browser against
+  Gezgin), a quick start with Podman, a configuration table, a development table, documentation
+  links, credits and licence. The detailed list moved, unchanged, to `docs/changes.md`;
+  `docs/README.md`, `docs/customization.md` (the settings' new names), `SECURITY.md` and a note
+  at the top of `CHANGELOG.md` (File Browser's, up to `v2.63.23`) point to it. A new change goes
+  into `docs/changes.md`, and into the README's tables only when it is a feature or a
+  difference worth a row.
 
 ## 4. Tasks
 

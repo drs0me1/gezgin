@@ -1,10 +1,12 @@
 # Gezgin documentation
 
-Gezgin is a file manager for the Konsol server panel, a modified fork of File Browser. What it
-changes from File Browser is listed in the [README](../README.md#changes-from-file-browser).
+Gezgin is a file manager for the Konsol server panel, a modified fork of File Browser. The
+[README](../README.md) sums up what it changes from File Browser; [changes.md](changes.md) lists
+every change in detail.
 
 ## Contents
 
+- [Changes from File Browser, in detail](changes.md)
 - [Authentication](authentication.md)
 - [Customization](customization.md)
 - [Troubleshooting](troubleshooting.md)

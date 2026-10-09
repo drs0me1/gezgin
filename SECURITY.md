@@ -2,7 +2,7 @@
 
 Gezgin is a modified fork of File Browser, which was archived on 2026-09-01 and receives no
 fixes. Gezgin is maintained on its own; the changes it makes, security ones included, are listed in
-the [README](README.md#changes-from-file-browser).
+[docs/changes.md](docs/changes.md).
 
 ## Supported versions
 
