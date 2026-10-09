@@ -140,6 +140,13 @@ func publicShareHandler(limiter *loginLimiter) handleFunc {
 
 func publicDlHandler(limiter *loginLimiter) handleFunc {
 	return withHashFile(limiter, func(w http.ResponseWriter, r *http.Request, d *data) (int, error) {
+		hash, _ := ifPathWithName(r)
+		key := linkDownloads(hash)
+		if !running.begin(key) {
+			return tooMany(w, r, tooManyDownloads)
+		}
+		defer running.end(key)
+
 		file := d.raw.(*files.FileInfo)
 		if !file.IsDir {
 			return rawFileHandler(w, r, file)

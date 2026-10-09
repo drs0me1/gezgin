@@ -93,6 +93,11 @@ var rawHandler = withUser(func(w http.ResponseWriter, r *http.Request, d *data) 
 	if !d.user.Perm.Download {
 		return http.StatusForbidden, nil
 	}
+	key := userDownloads(d.user.ID)
+	if !running.begin(key) {
+		return tooMany(w, r, tooManyDownloads)
+	}
+	defer running.end(key)
 
 	file, err := files.NewFileInfo(&files.FileOptions{
 		Fs:      d.user.Fs,
@@ -161,6 +166,7 @@ func rawDirHandler(w http.ResponseWriter, r *http.Request, d *data, file *files.
 
 	// A file that grows meanwhile goes in as it was, as a download always took it.
 	opt.Lenient = true
+	opt.Limits.Entries = downloadEntries
 	opt.Location = time.Local
 	if zone := r.URL.Query().Get("zone"); zone != "" && len(zone) <= 64 {
 		if loc, err := time.LoadLocation(zone); err == nil {
@@ -168,6 +174,13 @@ func rawDirHandler(w http.ResponseWriter, r *http.Request, d *data, file *files.
 		}
 	}
 	if _, err := pack.Write(r.Context(), newPackSource(d), items, w, opt); err != nil {
+		var packErr *pack.Error
+		if errors.As(err, &packErr) && packErr.Code == pack.CodeEntries {
+			// Found while planning, before anything was sent: not an attachment but a message.
+			w.Header().Del("Content-Disposition")
+			http.Error(w, tooManyEntries, http.StatusUnprocessableEntity)
+			return 0, nil
+		}
 		return http.StatusInternalServerError, err
 	}
 	return 0, nil

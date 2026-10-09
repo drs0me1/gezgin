@@ -204,6 +204,13 @@ func tusHeadHandler(cache *UploadCache) handleFunc {
 
 func tusPatchHandler(cache *UploadCache, fileCache FileCache) handleFunc {
 	return withUser(func(w http.ResponseWriter, r *http.Request, d *data) (int, error) {
+		key := userUploads(d.user.ID)
+		if !running.begin(key) {
+			drainRequestBody(r)
+			return tooMany(w, r, tooManyUploads)
+		}
+		defer running.end(key)
+
 		status, err := tusPatchUpload(w, r, d, cache, fileCache)
 		// A rejected chunk is still a chunk the client is streaming: read what is
 		// left of it so the answer reaches the client on a connection that stays
