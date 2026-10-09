@@ -10,7 +10,8 @@ const disableUsedPercentage: boolean = settings.DisableUsedPercentage;
 const baseURL: string = settings.BaseURL;
 const staticURL: string = settings.StaticURL;
 const version: string = settings.Version;
-const logoURL = `${staticURL}/img/logo.svg`;
+// The version in the address makes a browser fetch a changed logo, cached for a day (Gezgin).
+const logoURL = `${staticURL}/img/logo.svg?v=${encodeURIComponent(version)}`;
 const authMethod = settings.AuthMethod;
 const theme: UserTheme = settings.Theme;
 const enableThumbs: boolean = settings.EnableThumbs;

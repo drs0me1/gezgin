@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"io/fs"
 	"net/http"
+	"net/url"
 	"path"
 
 	"github.com/gorilla/mux"
@@ -12,6 +13,7 @@ import (
 	"github.com/filebrowser/filebrowser/v2/files"
 	"github.com/filebrowser/filebrowser/v2/settings"
 	"github.com/filebrowser/filebrowser/v2/storage"
+	"github.com/filebrowser/filebrowser/v2/version"
 )
 
 type modifyRequest struct {
@@ -142,12 +144,14 @@ func withSecurityHeaders(next http.Handler) http.Handler {
 // manifestHandler serves the web app manifest, which the page used to build in an inline script.
 func manifestHandler(server *settings.Server) http.HandlerFunc {
 	static := path.Join(server.BaseURL, "/static")
+	// The version in the icons' addresses makes a browser fetch them again after an update.
+	v := "?v=" + url.QueryEscape(version.Version)
 	manifest, _ := json.Marshal(map[string]any{
 		"name":       "Gezgin",
 		"short_name": "Gezgin",
 		"icons": []map[string]string{
-			{"src": static + "/img/icons/android-chrome-192x192.png", "sizes": "192x192", "type": "image/png"},
-			{"src": static + "/img/icons/android-chrome-512x512.png", "sizes": "512x512", "type": "image/png"},
+			{"src": static + "/img/icons/android-chrome-192x192.png" + v, "sizes": "192x192", "type": "image/png"},
+			{"src": static + "/img/icons/android-chrome-512x512.png" + v, "sizes": "512x512", "type": "image/png"},
 		},
 		"start_url":        server.BaseURL + "/",
 		"display":          "standalone",

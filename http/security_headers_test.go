@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"net/http"
 	"net/http/httptest"
+	"net/url"
 	"regexp"
 	"strings"
 	"testing"
@@ -11,6 +12,7 @@ import (
 
 	"github.com/filebrowser/filebrowser/v2/diskcache"
 	"github.com/filebrowser/filebrowser/v2/settings"
+	"github.com/filebrowser/filebrowser/v2/version"
 )
 
 // pageEnv serves the API and a page template like the built one.
@@ -98,6 +100,13 @@ func TestPageSettingsAreAJSONBlock(t *testing.T) {
 	}
 	if ct := rec.Header().Get("Content-Type"); ct != "application/manifest+json" {
 		t.Errorf("manifest type %q", ct)
+	}
+	// The icons keep their names from one release to the next and are cached for a day; the
+	// version in their addresses brings a changed one to a browser that kept the old.
+	for _, icon := range manifest.Icons {
+		if !strings.HasSuffix(icon.Src, "?v="+url.QueryEscape(version.Version)) {
+			t.Errorf("icon %q carries no version", icon.Src)
+		}
 	}
 }
 
