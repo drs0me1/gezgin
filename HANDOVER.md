@@ -27,7 +27,7 @@ remain before heading 7 is closed. Heading 8, "Yönetim ayarları ekranı", was 
 proposals K66-K75 accepted as recommended, implemented (`a71c0a2e`), deployed on nrm and verified
 live there. Heading 9, "Altyapı, marka ve CSP", was then reviewed, decided (K76-K83, the logo after
 two drafts), implemented (`79805244`, `5074d927`) and deployed on nrm; its checks without sign-in
-passed there. Open: the signed-in live checks and GitHub's private vulnerability reporting (4.3). Next: heading 10.
+passed there, signed in too. Open: GitHub's private vulnerability reporting (4.3). Next: heading 10.
 
 ## 2. Headings
 
@@ -41,7 +41,7 @@ passed there. Open: the signed-in live checks and GitHub's private vulnerability
 | 6 | Paylaşım (links and WebDAV) | K32-K44 | `c8da81f8`, `aaf43505`, `403d332e` | Done, verified live |
 | 7 | Komut çalıştırma, and archives in its place | K45-K58 | `116c3549`, `b0bb8b63`, `527111be`, `6d531015`, `601ddbaa` | Last step's follow-ups open (4.1) |
 | 8 | Yönetim ayarları ekranı | K66-K75 | `a71c0a2e` | Done, verified live |
-| 9 | Altyapı, marka ve CSP | K76-K83 | `79805244`, `5074d927` | Done, on nrm; signed-in checks open (4.3) |
+| 9 | Altyapı, marka ve CSP | K76-K83 | `79805244`, `5074d927`, `c11a6b80` | Done, verified live |
 | 10 | Konsol'dan alınacaklar | | | To do (4.3); archives already done under 7 |
 
 Commit messages and README's "Changes from File Browser" describe each change.
@@ -347,9 +347,13 @@ so the API (400) and `config set` refuse the same; unset values take the default
   `Referrer-Policy` on every path, no inline script in the page, `/api/yok` 404, the manifest
   named Gezgin, `/static/custom.css` 404, one start-up line "Gezgin gezgin-79805244"; with
   `5074d927` the folder logo and the new icons are served.
-- [ ] **Signed-in live checks of heading 9 on nrm**, through the operator's session (section 6):
-  the sidebar, archive icons in a listing, no sunset card, a video plays, and no CSP violation in
-  the console while browsing.
+- [x] **Signed-in live checks of heading 9 on nrm** (`c11a6b80`, the operator's session): the
+  sidebar reads "Gezgin c11a6b80" under "5.01 GiB / 251 GiB kullanıldı", the header logo's alt
+  text is Gezgin; the RAR set `rg-42386.rar`, `.r00`-`.r15` is listed as archives with the
+  archive icon; the settings pages have no sunset card and the reworded permission texts; no CSP
+  violation in the console while browsing (its only errors were heading 8's deliberate 400s). nrm
+  holds no video, so the player was checked on a local build with a WebM made in the browser:
+  video.js plays it under the CSP without an error.
 - [x] **The image workflow's version line.** `.github/workflows/gezgin-image.yml` sets
   `version.Version=$short`, so that the sidebar reads "Gezgin <commit>" rather than "Gezgin
   gezgin-<commit>". The first push was refused for want of the `workflow` scope; the operator
