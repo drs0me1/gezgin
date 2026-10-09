@@ -12,7 +12,6 @@ const staticURL: string = settings.StaticURL;
 const version: string = settings.Version;
 // The version in the address makes a browser fetch a changed logo, cached for a day (Gezgin).
 const logoURL = `${staticURL}/img/logo.svg?v=${encodeURIComponent(version)}`;
-const authMethod = settings.AuthMethod;
 const theme: UserTheme = settings.Theme;
 const enableThumbs: boolean = settings.EnableThumbs;
 const resizePreview: boolean = settings.ResizePreview;
@@ -29,7 +28,6 @@ export {
   staticURL,
   logoURL,
   version,
-  authMethod,
   theme,
   enableThumbs,
   resizePreview,

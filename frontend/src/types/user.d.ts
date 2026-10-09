@@ -13,7 +13,6 @@ interface IUser {
   dateFormat: boolean;
   viewMode: ViewModeType;
   sorting?: Sorting;
-  aceEditorTheme: string;
   mustChangePassword?: boolean;
 }
 

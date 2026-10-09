@@ -161,7 +161,6 @@
     "deleteMessageMultiple": "{count} dosyayı/dosyaları silmek istediğinizden emin misiniz?",
     "deleteMessageSingle": "Bu dosyayı/klasörü silmek istediğinizden emin misiniz?",
     "deleteMessageShare": "Bu paylaşımı({path}) silmek istediğinizden emin misiniz?",
-    "deleteUser": "Bu kullanıcıyı silmek istediğinizden emin misiniz?",
     "deleteTitle": "Dosyaları sil",
     "displayName": "Görünen Ad:",
     "download": "Dosyaları indir",
@@ -259,7 +258,6 @@
     "openLocation": "Bulunduğu klasörü aç"
   },
   "settings": {
-    "aceEditorTheme": "Düzenleyici teması",
     "admin": "Yönetim",
     "administrator": "Yönetici",
     "allowEdit": "Dosya ve klasörleri düzenleyebilir, yeniden adlandırabilir ve silebilir",

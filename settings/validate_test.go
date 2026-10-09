@@ -55,7 +55,8 @@ func TestValidateBounds(t *testing.T) {
 		{"default scope in the trash", func(s *Settings) { s.Defaults.Scope = "/.gezgin-cop" }, false},
 		{"default scope elsewhere", func(s *Settings) { s.Defaults.Scope = "/ortak" }, true},
 		// K69: the language and view mode are known values.
-		{"language fa", func(s *Settings) { s.Defaults.Locale = "fa" }, true},
+		{"language en", func(s *Settings) { s.Defaults.Locale = "en" }, true},
+		{"language fa", func(s *Settings) { s.Defaults.Locale = "fa" }, false},
 		{"language xx", func(s *Settings) { s.Defaults.Locale = "xx" }, false},
 		{"view mode gallery", func(s *Settings) { s.Defaults.ViewMode = users.MosaicGalleryViewMode }, true},
 		{"view mode zz", func(s *Settings) { s.Defaults.ViewMode = "zz" }, false},

@@ -75,6 +75,9 @@ type Server struct {
 	FollowExternalSymlinks bool   `json:"followExternalSymlinks"`
 	// WebDAVPort is the port the WebDAV shares are served on (Gezgin); empty turns them off.
 	WebDAVPort string `json:"webdavPort"`
+	// Database is the database file, whose size the server page shows (Gezgin). It is never
+	// persisted.
+	Database string `json:"-"`
 
 	// CaseInsensitiveFs is detected from Root at startup rather than
 	// configured, and tells the rule checker to match paths case-insensitively.

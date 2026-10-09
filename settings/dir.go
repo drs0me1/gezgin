@@ -20,16 +20,24 @@ var (
 	dashes = regexp.MustCompile(`[\-]+`)
 )
 
+// HomeDir is a user's own folder, in the folder of the users' folders (Gezgin, K148).
+func (s *Settings) HomeDir(username string) (string, error) {
+	username = cleanUsername(username)
+	if username == "" || username == "-" || username == "." {
+		log.Printf("create user: invalid user for home dir creation: [%s]", username)
+		return "", errors.New("invalid user for home dir creation")
+	}
+	return path.Join(s.UserHomeBasePath, username), nil
+}
+
 // MakeUserDir makes the user directory according to settings.
 func (s *Settings) MakeUserDir(username, userScope, serverRoot string) (string, error) {
 	userScope = strings.TrimSpace(userScope)
 	if userScope == "" && s.CreateUserDir {
-		username = cleanUsername(username)
-		if username == "" || username == "-" || username == "." {
-			log.Printf("create user: invalid user for home dir creation: [%s]", username)
-			return "", errors.New("invalid user for home dir creation")
+		var err error
+		if userScope, err = s.HomeDir(username); err != nil {
+			return "", err
 		}
-		userScope = path.Join(s.UserHomeBasePath, username)
 	}
 
 	userScope = path.Join("/", userScope)

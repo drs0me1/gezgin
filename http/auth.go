@@ -37,7 +37,6 @@ type userInfo struct {
 	HideDotfiles          bool              `json:"hideDotfiles"`
 	DateFormat            bool              `json:"dateFormat"`
 	Username              string            `json:"username"`
-	AceEditorTheme        string            `json:"aceEditorTheme"`
 	MustChangePassword    bool              `json:"mustChangePassword"`
 }
 
@@ -240,7 +239,6 @@ func printToken(w http.ResponseWriter, _ *http.Request, d *data, user *users.Use
 			HideDotfiles:          user.HideDotfiles,
 			DateFormat:            user.DateFormat,
 			Username:              user.Username,
-			AceEditorTheme:        user.AceEditorTheme,
 			MustChangePassword:    user.MustChangePassword,
 		},
 		Stamp: stamp,

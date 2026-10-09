@@ -3,7 +3,6 @@ interface ISettings {
   minimumPasswordLength: number;
   userHomeBasePath: string;
   defaults: SettingsDefaults;
-  authMethod: string;
   rules: any[];
   branding: SettingsBranding;
   tus: SettingsTus;
@@ -20,7 +19,6 @@ interface SettingsDefaults {
   perm: Permissions;
   hideDotfiles: boolean;
   dateFormat: boolean;
-  aceEditorTheme: string;
 }
 
 interface SettingsBranding {

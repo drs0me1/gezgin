@@ -53,3 +53,31 @@ func checkValue(ctx context.Context, t *testing.T, fs afero.Fs, fileFullPath str
 	require.True(t, ok)
 	require.Equal(t, wantValue, string(b))
 }
+
+func TestFileCacheUsageAndClear(t *testing.T) {
+	ctx := context.Background()
+	fs := afero.NewMemMapFs()
+	cache := New(fs, "/cache")
+	require.NoError(t, cache.Store(ctx, "one", []byte("12345")))
+	require.NoError(t, cache.Store(ctx, "two", []byte("123")))
+
+	count, size, err := cache.Usage(ctx)
+	require.NoError(t, err)
+	require.Equal(t, 2, count)
+	require.Equal(t, int64(8), size)
+
+	require.NoError(t, cache.Clear(ctx))
+	count, size, err = cache.Usage(ctx)
+	require.NoError(t, err)
+	require.Zero(t, count)
+	require.Zero(t, size)
+	_, ok, err := cache.Load(ctx, "one")
+	require.NoError(t, err)
+	require.False(t, ok)
+
+	// The cache folder stays, so that the next thumbnails are stored.
+	exists, err := afero.DirExists(fs, "/cache")
+	require.NoError(t, err)
+	require.True(t, exists)
+	require.NoError(t, cache.Store(ctx, "one", []byte("12345")))
+}

@@ -50,7 +50,7 @@ Commit messages and README's "Changes from File Browser" describe each change.
 
 ## 3. Decisions taken
 
-The next decision number is **K142**. "Recommended" means the operator accepted the recommendation
+The next decision number is **K150**. "Recommended" means the operator accepted the recommendation
 made in the report.
 
 **Stage B (start).** Multi-user with an admin; File Browser's forms stay even where Konsol has its
@@ -443,6 +443,33 @@ so the API (400) and `config set` refuse the same; unset values take the default
   listed, a folder and a file made through the API showed on the Mac as the Mac user's, and a
   thumbnail was served.
 
+**The settings page** (operator, 2026-10-10: what no longer works, what to add, then a new
+design; all eight as recommended):
+
+- K142: Turkish and English only. The other 31 languages lacked about 46% of the 458 texts (all
+  of Gezgin's own) and every page carried all 33 (197 KB gzipped, the app itself 236 KB). Their
+  files, dayjs and video.js packs and right-to-left handling are gone; the browser's language
+  picks Turkish, else English; an account or default naming a dropped language reads as English.
+- K143: the editor theme setting is removed (its box showed empty); the editor follows the
+  interface's theme (twilight dark, chrome light). The field leaves the user, the defaults, the
+  token, the CLI (`--aceEditorTheme`) and the docs; the page no longer loads Ace with the app.
+- K144: passwords are the only sign-in (K1, K61): the current password is always asked for, the
+  sign-in method leaves the page's data and the settings API, and the password-less delete
+  prompt (`DeleteUser.vue`) is gone.
+- K145: an admin asks another user for a new password at the next login, on a new account or an
+  existing one (whose sessions then end); never on their own; a locked password takes that
+  change.
+- K146: the thumbnail cache, which nothing trims (a folder deleted, moved or renamed leaves its
+  files' thumbnails), shows its size and can be cleared (`DELETE /api/server/cache`).
+- K147: a server page, read only: version, WebDAV port, thumbnails on or off, how long an unused
+  session lasts, the sizes of the database and the cache (`GET /api/server`); these are the
+  container's settings, changed in Konsol.
+- K148: a user's access is chosen as "Tüm dosyalar", "Kendi klasörü" (`/users/<name>`, made if
+  missing; `ownFolder` in the user request) or a folder picked in the tree; the global "make the
+  home folder" becomes this choice's default.
+- K149: not added: a theme per user ("Sistem" follows each device), defaults for personal
+  preferences, share rules (later if needed), changing the container's settings here.
+
 ## 4. Tasks
 
 ### 4.1 Close heading 7: archive creation follow-ups (commit `601ddbaa`)
@@ -803,6 +830,19 @@ so the API (400) and `config set` refuse the same; unset values take the default
   operator's session in a tab of its own, looking only): "1 paylaşım", `movies` with its lock,
   "WebDAV · salt okunur", "Süresiz"; its menu "Adresi kopyala", "Paylaşım ayarları",
   "Bulunduğu klasörü aç", "Paylaşımı kaldır", "Paylaşım bilgisi", closed unused.
+
+- [ ] **Settings page** (operator, 2026-10-10). Reviewed on the Mac's test environment: the
+  three tabs, every field's use in the frontend and the server. Decided K142-K149 (section 3);
+  their server side and removals are done locally (not pushed, K141): Go tests for the forced
+  change (`TestAdminAsksForANewPassword`, `TestLockedPasswordTakesTheAskedChange`), the server
+  page and cache (`http/server_test.go`, `diskcache`), the own folder (`TestOwnFolderScope`);
+  checked in the browser: the language list "Türkçe", "English"; no editor theme box; the
+  editor dark with the interface; `/api/server` answering; the cache emptied and filling again;
+  the delete asking for the password. The first load is lighter: 73 KB of languages (197) and
+  109 KB of app (236), gzipped, as Ace now comes with the editor only. Open: the new design,
+  shown as a mock-up (tabs Hesabım, Genel, Kullanıcılar, Sunucu; rows with switches; one save
+  bar per page; "Gelişmiş" folded; the users list with access, permission icons and states; the
+  phone stacking rows), with the interface of K145, K146, K147 and K148 in it.
 
 ### 4.4 New decisions to put to the operator
 

@@ -21,12 +21,9 @@ const (
 	MaxTusRetryCount = 20
 )
 
-// Locales are the languages the interface has, named as its translation files are.
-var Locales = []string{
-	"ar", "bg", "ca", "cs", "de", "el", "en", "es", "fa", "fr", "he", "hr", "hu", "is", "it", "ja",
-	"ko", "lv", "nl", "nl-be", "no", "pl", "pt-br", "pt-pt", "ro", "ru", "sk", "sv-se", "tr", "uk",
-	"vi", "zh-cn", "zh-tw",
-}
+// Locales are the languages the interface has, named as its translation files are: Turkish and
+// English only (K142).
+var Locales = []string{"en", "tr"}
 
 // Themes are the interface's themes; "" follows the system.
 var Themes = []string{"", "light", "dark"}

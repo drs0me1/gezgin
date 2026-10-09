@@ -68,14 +68,12 @@ import { computed, inject, onMounted, ref, watch } from "vue";
 import { useRoute, useRouter } from "vue-router";
 import { useI18n } from "vue-i18n";
 import { StatusError } from "@/api/utils";
-import { authMethod } from "@/utils/constants";
 import { login, logout } from "@/utils/auth";
 
 const error = ref<StatusError>();
 const originalUser = ref<IUser>();
 const user = ref<IUser>();
 const createUserDir = ref<boolean>(false);
-const isCurrentPasswordRequired = ref<boolean>(false);
 
 const $showError = inject<IToastError>("$showError")!;
 const $showSuccess = inject<IToastSuccess>("$showSuccess")!;
@@ -104,7 +102,6 @@ const fetchData = async () => {
   try {
     if (isNew.value) {
       const { defaults, createUserDir: _createUserDir } = await settings.get();
-      isCurrentPasswordRequired.value = authMethod == "json";
       createUserDir.value = _createUserDir;
       user.value = {
         ...defaults,
@@ -115,8 +112,6 @@ const fetchData = async () => {
         id: 0,
       };
     } else {
-      const { authMethod } = await settings.get();
-      isCurrentPasswordRequired.value = authMethod == "json";
       const id = Array.isArray(route.params.id)
         ? route.params.id.join("")
         : route.params.id;
@@ -132,21 +127,14 @@ const fetchData = async () => {
 };
 
 const deletePrompt = () => {
-  if (isCurrentPasswordRequired.value) {
-    layoutStore.showHover({
-      prompt: "current-password",
-      confirm: (event: Event, currentPassword: string) => {
-        event.preventDefault();
-        layoutStore.closeHovers();
-        deleteUser(currentPassword);
-      },
-    });
-  } else {
-    layoutStore.showHover({
-      prompt: "deleteUser",
-      confirm: () => deleteUser(""),
-    });
-  }
+  layoutStore.showHover({
+    prompt: "current-password",
+    confirm: (event: Event, currentPassword: string) => {
+      event.preventDefault();
+      layoutStore.closeHovers();
+      deleteUser(currentPassword);
+    },
+  });
 };
 
 const deleteUser = async (currentPassword: string) => {
@@ -189,18 +177,14 @@ const closeSessions = async () => {
 
 const save = (event: Event) => {
   event.preventDefault();
-  if (isCurrentPasswordRequired.value) {
-    layoutStore.showHover({
-      prompt: "current-password",
-      confirm: (event: Event, currentPassword: string) => {
-        event.preventDefault();
-        layoutStore.closeHovers();
-        send(currentPassword);
-      },
-    });
-  } else {
-    send("");
-  }
+  layoutStore.showHover({
+    prompt: "current-password",
+    confirm: (event: Event, currentPassword: string) => {
+      event.preventDefault();
+      layoutStore.closeHovers();
+      send(currentPassword);
+    },
+  });
 
   return true;
 };

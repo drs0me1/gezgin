@@ -1,6 +1,8 @@
 package settings
 
 import (
+	"slices"
+
 	fberrors "github.com/filebrowser/filebrowser/v2/errors"
 )
 
@@ -35,6 +37,11 @@ func (s *Storage) Get() (*Settings, error) {
 
 	if set.MinimumPasswordLength == 0 {
 		set.MinimumPasswordLength = DefaultMinimumPasswordLength
+	}
+
+	// A language Gezgin no longer has (K142) reads as English, as the interface shows it.
+	if set.Defaults.Locale != "" && !slices.Contains(Locales, set.Defaults.Locale) {
+		set.Defaults.Locale = "en"
 	}
 
 	if set.Tus == (Tus{}) {

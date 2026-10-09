@@ -14,7 +14,6 @@ import (
 	"golang.org/x/text/cases"
 	"golang.org/x/text/language"
 
-	"github.com/filebrowser/filebrowser/v2/auth"
 	fberrors "github.com/filebrowser/filebrowser/v2/errors"
 	"github.com/filebrowser/filebrowser/v2/trash"
 	"github.com/filebrowser/filebrowser/v2/users"
@@ -23,9 +22,10 @@ import (
 var (
 	// SelfModifiableFields are the fields users change on their own account; an admin changes
 	// AdminModifiableFields on any account. No request sets the others (the ID, the security
-	// stamp, the forced password change): they follow the server's own rules.
+	// stamp) but the forced password change, which an admin sets on another's account when making
+	// or editing it whole (K145).
 	SelfModifiableFields = []string{"Password", "Locale", "ViewMode", "SingleClick", "RedirectAfterCopyMove",
-		"Sorting", "HideDotfiles", "DateFormat", "AceEditorTheme"}
+		"Sorting", "HideDotfiles", "DateFormat"}
 	AdminModifiableFields = append(slices.Clone(SelfModifiableFields),
 		"Username", "Scope", "LockPassword", "Perm", "Rules")
 )
@@ -33,6 +33,8 @@ var (
 type modifyUserRequest struct {
 	modifyRequest
 	Data *users.User `json:"data"`
+	// OwnFolder gives the user their own folder as scope, made if missing (Gezgin, K148).
+	OwnFolder bool `json:"ownFolder"`
 }
 
 func getUserID(r *http.Request) (uint, error) {
@@ -132,10 +134,8 @@ var userDeleteHandler = withAdmin(selfOrAdmin(func(_ http.ResponseWriter, r *htt
 		return http.StatusBadRequest, err
 	}
 
-	if d.settings.AuthMethod == auth.MethodJSONAuth {
-		if !users.CheckPwd(body.CurrentPassword, d.user.Password) {
-			return http.StatusBadRequest, fberrors.ErrCurrentPasswordIncorrect
-		}
+	if !users.CheckPwd(body.CurrentPassword, d.user.Password) {
+		return http.StatusBadRequest, fberrors.ErrCurrentPasswordIncorrect
 	}
 
 	id, err := d.store.DeleteUser(d.raw.(uint))
@@ -156,10 +156,8 @@ var userPostHandler = withAdmin(func(w http.ResponseWriter, r *http.Request, d *
 		return http.StatusBadRequest, err
 	}
 
-	if d.settings.AuthMethod == auth.MethodJSONAuth {
-		if !users.CheckPwd(req.CurrentPassword, d.user.Password) {
-			return http.StatusBadRequest, fberrors.ErrCurrentPasswordIncorrect
-		}
+	if !users.CheckPwd(req.CurrentPassword, d.user.Password) {
+		return http.StatusBadRequest, fberrors.ErrCurrentPasswordIncorrect
 	}
 
 	if len(req.Which) != 0 {
@@ -181,8 +179,12 @@ var userPostHandler = withAdmin(func(w http.ResponseWriter, r *http.Request, d *
 
 	req.Data.SecurityStamp = ""
 	req.Data.Favorites = nil
-	req.Data.MustChangePassword = false
 
+	if req.OwnFolder {
+		if req.Data.Scope, err = d.settings.HomeDir(req.Data.Username); err != nil {
+			return http.StatusBadRequest, err
+		}
+	}
 	userHome, err := d.settings.MakeUserDir(req.Data.Username, req.Data.Scope, d.server.Root)
 	if err != nil {
 		log.Printf("create user: failed to mkdir user home dir: [%s]", userHome)
@@ -214,23 +216,21 @@ var userPutHandler = withPasswordChange(selfOrAdmin(func(w http.ResponseWriter, 
 		return http.StatusForbidden, nil
 	}
 
-	if d.settings.AuthMethod == auth.MethodJSONAuth {
-		var sensibleFields = map[string]struct{}{
-			"all":          {},
-			"username":     {},
-			"password":     {},
-			"scope":        {},
-			"lockpassword": {},
-			"perm":         {},
-		}
+	var sensibleFields = map[string]struct{}{
+		"all":          {},
+		"username":     {},
+		"password":     {},
+		"scope":        {},
+		"lockpassword": {},
+		"perm":         {},
+	}
 
-		for _, field := range req.Which {
-			if _, ok := sensibleFields[strings.ToLower(field)]; ok {
-				if !users.CheckPwd(req.CurrentPassword, d.user.Password) {
-					return http.StatusBadRequest, fberrors.ErrCurrentPasswordIncorrect
-				}
-				break
+	for _, field := range req.Which {
+		if _, ok := sensibleFields[strings.ToLower(field)]; ok {
+			if !users.CheckPwd(req.CurrentPassword, d.user.Password) {
+				return http.StatusBadRequest, fberrors.ErrCurrentPasswordIncorrect
 			}
+			break
 		}
 	}
 
@@ -273,8 +273,21 @@ var userPutHandler = withPasswordChange(selfOrAdmin(func(w http.ResponseWriter, 
 		req.Data.SecurityStamp = suser.SecurityStamp
 		// Favourites change only through /api/favorites: an edit made meanwhile stays.
 		req.Data.Favorites = suser.Favorites
-		req.Data.MustChangePassword = suser.MustChangePassword
+		// An admin may ask another user for a new password at the next login (K145), which ends
+		// their sessions, so that the next one starts with it; their own account keeps its state.
+		if self {
+			req.Data.MustChangePassword = suser.MustChangePassword
+		} else if req.Data.MustChangePassword && !suser.MustChangePassword && req.Data.Password == "" {
+			if req.Data.SecurityStamp, err = users.NewSecurityStamp(); err != nil {
+				return http.StatusInternalServerError, err
+			}
+		}
 
+		if req.OwnFolder {
+			if req.Data.Scope, err = d.settings.HomeDir(req.Data.Username); err != nil {
+				return http.StatusBadRequest, err
+			}
+		}
 		if err = makeScope(req.Data.Username); err != nil {
 			return errToStatus(err), err
 		}
@@ -310,7 +323,8 @@ var userPutHandler = withPasswordChange(selfOrAdmin(func(w http.ResponseWriter, 
 
 		switch v {
 		case "Password":
-			if !d.user.Perm.Admin && d.user.LockPassword {
+			// A locked password still takes the change an admin asked for (K145).
+			if !d.user.Perm.Admin && d.user.LockPassword && !d.user.MustChangePassword {
 				return http.StatusForbidden, nil
 			}
 

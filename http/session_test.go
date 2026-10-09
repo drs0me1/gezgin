@@ -38,6 +38,12 @@ type sessionEnv struct {
 
 func newSessionEnv(t *testing.T) *sessionEnv {
 	t.Helper()
+	return newSessionEnvWithCache(t, diskcache.NewNoOp())
+}
+
+// newSessionEnvWithCache is newSessionEnv with the given thumbnail cache.
+func newSessionEnvWithCache(t *testing.T, fileCache FileCache) *sessionEnv {
+	t.Helper()
 	db, err := storm.Open(filepath.Join(t.TempDir(), "db"))
 	if err != nil {
 		t.Fatalf("failed to open db: %v", err)
@@ -64,7 +70,7 @@ func newSessionEnv(t *testing.T) *sessionEnv {
 	t.Cleanup(uploads.Close)
 	archives := NewArchiveJobs(filepath.Join(root, ArchiveDir))
 	t.Cleanup(archives.Close)
-	handler, err := NewHandler(nil, diskcache.NewNoOp(), uploads, archives, st, &settings.Server{Root: root}, fstest.MapFS{})
+	handler, err := NewHandler(nil, fileCache, uploads, archives, st, &settings.Server{Root: root}, fstest.MapFS{})
 	if err != nil {
 		t.Fatalf("failed to build the handler: %v", err)
 	}
@@ -253,7 +259,7 @@ func TestClosingSessions(t *testing.T) {
 	}
 }
 
-func TestStampAndForcedChangeAreNotSetByRequests(t *testing.T) {
+func TestStampAndForcedChangeAreNotSetByFields(t *testing.T) {
 	env := newSessionEnv(t)
 	root := env.addUser("root", "root-password-1", true, false)
 	alice := env.addUser("alice", "alice-password-1", false, false)
@@ -277,7 +283,7 @@ func TestStampAndForcedChangeAreNotSetByRequests(t *testing.T) {
 	}
 
 	// The admin form saves every field: without a password it keeps the sessions...
-	form := fmt.Sprintf(`{"id":%d,"username":"alice","scope":".","securityStamp":"","mustChangePassword":true,"perm":{}}`, alice.ID)
+	form := fmt.Sprintf(`{"id":%d,"username":"alice","scope":".","securityStamp":"","perm":{}}`, alice.ID)
 	if rec := env.put(rootToken, alice.ID, `["all"]`, "root-password-1", form); rec.Code != http.StatusOK {
 		t.Fatalf("admin form save = %d %q; want 200", rec.Code, rec.Body.String())
 	}
@@ -298,6 +304,63 @@ func TestStampAndForcedChangeAreNotSetByRequests(t *testing.T) {
 	}
 	if code := env.status(rootToken, root.ID); code != http.StatusOK {
 		t.Errorf("the admin's own token after changing another user's password = %d; want 200", code)
+	}
+}
+
+// An admin asks another user for a new password at the next login (K145): on a new account, or on
+// an existing one, whose sessions then end; never on their own.
+func TestAdminAsksForANewPassword(t *testing.T) {
+	env := newSessionEnv(t)
+	root := env.addUser("root", "root-password-1", true, false)
+	alice := env.addUser("alice", "alice-password-1", false, false)
+	rootToken := env.login("root", "root-password-1")
+	aliceToken := env.login("alice", "alice-password-1")
+
+	body := `{"what":"user","which":[],"current_password":"root-password-1","data":{"username":"bob","password":"given-password-1","scope":".","perm":{"download":true},"mustChangePassword":true}}`
+	if rec := env.do(http.MethodPost, "/api/users", rootToken, body, ""); rec.Code != http.StatusCreated {
+		t.Fatalf("creating a user = %d %q; want 201", rec.Code, rec.Body.String())
+	}
+	if !tokenClaims(t, env.login("bob", "given-password-1")).User.MustChangePassword {
+		t.Errorf("the new user is not asked for a new password")
+	}
+
+	form := fmt.Sprintf(`{"id":%d,"username":"alice","scope":".","mustChangePassword":true,"perm":{}}`, alice.ID)
+	if rec := env.put(rootToken, alice.ID, `["all"]`, "root-password-1", form); rec.Code != http.StatusOK {
+		t.Fatalf("asking alice for a new password = %d %q; want 200", rec.Code, rec.Body.String())
+	}
+	if !env.stored(alice.ID).MustChangePassword {
+		t.Errorf("alice is not asked for a new password")
+	}
+	if code := env.status(aliceToken, alice.ID); code != http.StatusUnauthorized {
+		t.Errorf("alice's session after the admin asked for a new password = %d; want 401", code)
+	}
+
+	form = fmt.Sprintf(`{"id":%d,"username":"root","scope":".","mustChangePassword":true,"perm":{"admin":true}}`, root.ID)
+	if rec := env.put(rootToken, root.ID, `["all"]`, "root-password-1", form); rec.Code != http.StatusOK {
+		t.Fatalf("the admin's own form = %d %q; want 200", rec.Code, rec.Body.String())
+	}
+	if env.stored(root.ID).MustChangePassword {
+		t.Errorf("the admin asked themselves for a new password")
+	}
+}
+
+// A locked password still takes the change the admin asked for, and only that one (K145).
+func TestLockedPasswordTakesTheAskedChange(t *testing.T) {
+	env := newSessionEnv(t)
+	held := env.addUser("held", "given-password-1", false, true)
+	stored := env.stored(held.ID)
+	stored.LockPassword = true
+	if err := env.st.Users.Update(stored, "LockPassword"); err != nil {
+		t.Fatal(err)
+	}
+
+	token := env.login("held", "given-password-1")
+	if rec := env.changePassword(token, held.ID, "given-password-1", "chosen-password-1"); rec.Code != http.StatusOK {
+		t.Fatalf("the asked change of a locked password = %d %q; want 200", rec.Code, rec.Body.String())
+	}
+	token = env.login("held", "chosen-password-1")
+	if rec := env.changePassword(token, held.ID, "chosen-password-1", "chosen-password-2"); rec.Code != http.StatusForbidden {
+		t.Errorf("another change of the locked password = %d; want 403", rec.Code)
 	}
 }
 

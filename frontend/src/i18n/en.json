@@ -161,7 +161,6 @@
     "deleteMessageMultiple": "Are you sure you wish to delete {count} file(s)?",
     "deleteMessageSingle": "Are you sure you wish to delete this file/folder?",
     "deleteMessageShare": "Are you sure you wish to delete this share({path})?",
-    "deleteUser": "Are you sure you want to delete this user?",
     "deleteTitle": "Delete files",
     "displayName": "Display Name:",
     "download": "Download files",
@@ -259,7 +258,6 @@
     "openLocation": "Open the folder it is in"
   },
   "settings": {
-    "aceEditorTheme": "Ace editor theme",
     "admin": "Admin",
     "administrator": "Administrator",
     "allowEdit": "Edit, rename and delete files or directories",

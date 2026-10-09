@@ -120,7 +120,6 @@ func printSettings(ser *settings.Server, set *settings.Settings, auther auth.Aut
 	fmt.Fprintf(w, "\tRedirect after Copy/Move:\t%t\n", set.Defaults.RedirectAfterCopyMove)
 	fmt.Fprintf(w, "\tFile Creation Mode:\t%O\n", set.FileMode)
 	fmt.Fprintf(w, "\tDirectory Creation Mode:\t%O\n", set.DirMode)
-	fmt.Fprintf(w, "\tAce editor syntax highlighting theme:\t%s\n", set.Defaults.AceEditorTheme)
 
 	fmt.Fprintf(w, "\tSorting:\n")
 	fmt.Fprintf(w, "\t\tBy:\t%s\n", set.Defaults.Sorting.By)

@@ -11,6 +11,7 @@ import (
 
 	fberrors "github.com/filebrowser/filebrowser/v2/errors"
 	"github.com/filebrowser/filebrowser/v2/rules"
+	"github.com/filebrowser/filebrowser/v2/settings"
 	"github.com/filebrowser/filebrowser/v2/users"
 )
 
@@ -112,7 +113,7 @@ func TestOwnAccountFields(t *testing.T) {
 	rootToken := env.login("root", "root-password-1")
 	data := fmt.Sprintf(`{"id":%d,"locale":"tr","viewMode":"list","scope":"/x","username":"mallory","perm":{"admin":true},"lockPassword":true}`, alice.ID)
 
-	for _, field := range []string{"locale", "viewMode", "sorting", "hideDotfiles", "singleClick", "dateFormat", "aceEditorTheme", "redirectAfterCopyMove"} {
+	for _, field := range []string{"locale", "viewMode", "sorting", "hideDotfiles", "singleClick", "dateFormat", "redirectAfterCopyMove"} {
 		if rec := env.put(aliceToken, alice.ID, `["`+field+`"]`, "", data); rec.Code != http.StatusOK {
 			t.Errorf("a user changing their own %s = %d; want 200", field, rec.Code)
 		}
@@ -194,6 +195,43 @@ func TestScopeChangeCreatesTheFolder(t *testing.T) {
 	}
 	if rec := env.do(http.MethodGet, "/api/resources/", env.login("alice", "alice-password-1"), "", ""); rec.Code != http.StatusOK {
 		t.Errorf("listing the new scope = %d; want 200", rec.Code)
+	}
+}
+
+// "Kendi klasörü" (K148): the user's own folder, in the folder of the users' folders, made if
+// missing, also when new users get no folder of their own by default.
+func TestOwnFolderScope(t *testing.T) {
+	env := newSessionEnv(t)
+	env.addUser("root", "root-password-1", true, false)
+	alice := env.addUser("alice", "alice-password-1", false, false)
+	token := env.login("root", "root-password-1")
+	if err := env.st.Settings.Save(&settings.Settings{Key: sessionKey, AuthMethod: "json", MinimumPasswordLength: 8, UserHomeBasePath: "/users"}); err != nil {
+		t.Fatal(err)
+	}
+
+	body := `{"what":"user","which":[],"current_password":"root-password-1","ownFolder":true,"data":{"username":"Bob Ross","password":"given-password-1","scope":".","perm":{}}}`
+	if rec := env.do(http.MethodPost, "/api/users", token, body, ""); rec.Code != http.StatusCreated {
+		t.Fatalf("creating a user with their own folder = %d %q; want 201", rec.Code, rec.Body.String())
+	}
+	bob, err := env.st.Users.Get(env.root, false, "Bob Ross")
+	if err != nil {
+		t.Fatal(err)
+	}
+	if bob.Scope != "/users/Bob-Ross" {
+		t.Errorf("the new user's scope %q; want /users/Bob-Ross", bob.Scope)
+	}
+
+	form := fmt.Sprintf(`{"what":"user","which":["all"],"current_password":"root-password-1","ownFolder":true,"data":{"id":%d,"username":"alice","scope":".","perm":{}}}`, alice.ID)
+	if rec := env.do(http.MethodPut, fmt.Sprintf("/api/users/%d", alice.ID), token, form, ""); rec.Code != http.StatusOK {
+		t.Fatalf("giving alice her own folder = %d %q; want 200", rec.Code, rec.Body.String())
+	}
+	if got := env.stored(alice.ID).Scope; got != "/users/alice" {
+		t.Errorf("alice's scope %q; want /users/alice", got)
+	}
+	for _, name := range []string{"Bob-Ross", "alice"} {
+		if st, err := os.Stat(filepath.Join(env.root, "users", name)); err != nil || !st.IsDir() {
+			t.Errorf("the folder of %s was not made: %v", name, err)
+		}
 	}
 }
 

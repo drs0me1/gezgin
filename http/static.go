@@ -27,7 +27,6 @@ func handleWithStaticData(w http.ResponseWriter, _ *http.Request, d *data, fSys 
 		"BaseURL":               d.server.BaseURL,
 		"Version":               version.Version,
 		"StaticURL":             path.Join(d.server.BaseURL, "/static"),
-		"AuthMethod":            d.settings.AuthMethod,
 		"Theme":                 d.settings.Branding.Theme,
 		"EnableThumbs":          d.server.EnableThumbnails,
 		"ResizePreview":         d.server.ResizePreview,

@@ -17,7 +17,6 @@ filebrowser config init [flags]
 ## Options
 
 ```
-      --aceEditorTheme string            ace editor's syntax highlighting theme for users
   -a, --address string                   address to listen on (default "127.0.0.1")
       --auth.method string               authentication type (json) (default "json")
   -b, --baseURL string                   base url

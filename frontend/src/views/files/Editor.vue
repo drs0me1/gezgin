@@ -247,7 +247,7 @@ const initEditor = (fileContent: string) => {
     value: fileContent,
     showPrintMargin: false,
     readOnly: fileStore.req?.type === "textImmutable",
-    theme: getEditorTheme(authStore.user?.aceEditorTheme ?? ""),
+    theme: getEditorTheme(),
     mode: modelist.getModeForPath(fileStore.req!.name).mode,
     wrap: true,
     enableBasicAutocompletion: true,

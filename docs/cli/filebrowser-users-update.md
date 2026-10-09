@@ -14,7 +14,6 @@ filebrowser users update <id|username> [flags]
 ## Options
 
 ```
-      --aceEditorTheme string   ace editor's syntax highlighting theme for users
       --dateFormat              use date format (true for absolute time, false for relative)
   -h, --help                    help for update
       --hideDotfiles            hide dotfiles in file listings

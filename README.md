@@ -25,11 +25,20 @@ Work in progress. Until the first Gezgin release this tree is File Browser's las
   reCAPTCHA are removed. There is no self-registration: an admin creates every account.
 - Password logins are limited per address and username (HTTP 429 with `Retry-After`).
 - Sessions end when the password changes, with "Close all sessions" and when the user is deleted.
-- The admin whose password quick setup generated chooses a new one at the first login.
+- The admin whose password quick setup generated chooses a new one at the first login, and so does
+  a user an admin asks to, on a new account or an existing one, whose sessions then end; a locked
+  password still takes that change.
 - Users: the sole admin cannot lose the admin permission; only an admin deletes accounts; users
   change only their own preferences and password; usernames are unique in any letter case; rules
   are checked when saved (an expression must compile, a path must not be empty); a new scope gets
-  its folder; the default language is Turkish.
+  its folder, and a user may be given their own folder (`/users/<name>`), made if missing; the
+  default language is Turkish. Every change of an account asks for the admin's password.
+- Languages: Turkish and English only. The other translations lacked about half of Gezgin's texts
+  and every page carried all of them; an account or setting naming one of them reads as English.
+- The settings have a server page for admins: the version, the WebDAV port, thumbnails on or off,
+  how long an unused session lasts, the database's size and the thumbnail cache's, which it
+  clears (`GET /api/server`, `DELETE /api/server/cache`). These are the container's settings
+  and are only shown.
 - Files: an upload over a file and a save replace the file only once the new content is complete,
   keeping its permissions; a file and a folder never replace each other on a move or copy; a
   folder moved onto a folder of the same name is merged into it, as a copy already was; a move
@@ -49,11 +58,13 @@ Work in progress. Until the first Gezgin release this tree is File Browser's las
   elsewhere they used to make it at the top of the user's files without a word, and now say why
   they cannot (in the trash: "Çöpte yeni klasör ya da dosya oluşturulamaz.").
 - Viewer: the EPUB reader is removed; an `.epub` has no preview, like other files without one.
-- Editor: Ace's modes, themes and workers ship with Gezgin (no CDN). Texts in UTF-8 and in the
-  Turkish code page (Windows-1254) open decoded and save back in their encoding; a text no
-  supported encoding reads back unchanged opens read-only. A save names the version the file was
-  opened at and is refused (409, the editor asks before overwriting) when the file changed since;
-  Ctrl+S without a change writes nothing. Windows-1254 subtitles reach the player as UTF-8.
+- Editor: Ace's modes, themes and workers ship with Gezgin (no CDN), and are loaded only with the
+  editor; its theme follows the interface's, light or dark (the theme setting is removed). Texts
+  in UTF-8 and in the Turkish code page (Windows-1254) open decoded and save back in their
+  encoding; a text no supported encoding reads back unchanged opens read-only. A save names the
+  version the file was opened at and is refused (409, the editor asks before overwriting) when
+  the file changed since; Ctrl+S without a change writes nothing. Windows-1254 subtitles reach
+  the player as UTF-8.
 - Uploads: a tus upload's data is staged in `<root>/.gezgin-yukleme/` (unreachable through any
   path) and the file is put in place, keeping a replaced file's permissions, only once it is
   complete; cancelling, abandoning (3 minutes without a chunk) or a restart drops the staged data

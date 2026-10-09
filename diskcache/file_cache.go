@@ -74,6 +74,42 @@ func (f *FileCache) Delete(_ context.Context, key string) error {
 	return nil
 }
 
+// Usage counts the cached files and their bytes (Gezgin, K146).
+func (f *FileCache) Usage(_ context.Context) (count int, size int64, err error) {
+	err = afero.Walk(f.fs, "/", func(_ string, info os.FileInfo, err error) error {
+		if err != nil {
+			// A file removed meanwhile is not counted.
+			if errors.Is(err, os.ErrNotExist) {
+				return nil
+			}
+			return err
+		}
+		if info.Mode().IsRegular() {
+			count++
+			size += info.Size()
+		}
+		return nil
+	})
+	return count, size, err
+}
+
+// Clear removes every cached file (Gezgin, K146); each is made again when it is next asked for.
+func (f *FileCache) Clear(_ context.Context) error {
+	entries, err := afero.ReadDir(f.fs, "/")
+	if err != nil {
+		if errors.Is(err, os.ErrNotExist) {
+			return nil
+		}
+		return err
+	}
+	for _, entry := range entries {
+		if err := f.fs.RemoveAll(filepath.Join("/", entry.Name())); err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
 func (f *FileCache) open(key string) (afero.File, bool, error) {
 	fileName := f.getFileName(key)
 	file, err := f.fs.Open(fileName)

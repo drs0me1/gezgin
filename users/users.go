@@ -35,7 +35,6 @@ type User struct {
 	Rules                 []rules.Rule  `json:"rules"`
 	HideDotfiles          bool          `json:"hideDotfiles"`
 	DateFormat            bool          `json:"dateFormat"`
-	AceEditorTheme        string        `json:"aceEditorTheme"`
 	// SecurityStamp is carried by every token issued to the user, which is valid only while the
 	// stamp is unchanged: a password change or "close all sessions" gives a new stamp and ends
 	// the sessions issued before it. Empty until the first login after it was introduced.

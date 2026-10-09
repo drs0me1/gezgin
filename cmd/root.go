@@ -184,6 +184,9 @@ user created with the credentials from options "username" and "password".`,
 		if err != nil {
 			return err
 		}
+		if server.Database, err = filepath.Abs(v.GetString("database")); err != nil {
+			return err
+		}
 		setupLog(server.Log)
 
 		// A database written by File Browser may still name an auth method Gezgin dropped (noauth,
@@ -484,7 +487,6 @@ func quickSetup(v *viper.Viper, s *storage.Storage) error {
 			Locale:                "tr",
 			SingleClick:           false,
 			RedirectAfterCopyMove: true,
-			AceEditorTheme:        v.GetString("defaults.aceEditorTheme"),
 			Perm: users.Permissions{
 				Admin:    false,
 				Create:   true,
