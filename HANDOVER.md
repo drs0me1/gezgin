@@ -642,7 +642,11 @@ so the API (400) and `config set` refuse the same; unset values take the default
   klasör", "Yeni dosya", a line, "İndir", "Bilgi", the first opening its window for `albüm`;
   at 375 pixels the header fits with the account's icon alone, and the ⋮ menu has "Yeni
   klasör" and "Yeni dosya". Found on the way: the new item window wrote a folder's name as the
-  address has it ("alb%C3%BCm"); it now decodes it.
+  address has it ("alb%C3%BCm"); it now decodes it. Live on nrm (`8cecbb2e`, the operator's session in a
+  tab of its own, looking only): the sidebar "Sık kullanılanlar", "Paylaşılanlar", "Dosyalarım",
+  "Çöp" at the bottom; "admin" at the header's right opening "Profil ayarları", "Ayarlar",
+  "Çıkış"; a right click on the empty part giving "Yeni klasör", "Yeni dosya", "İndir",
+  "Bilgi"; both menus closed unused.
 
 ### 4.4 New decisions to put to the operator
 
