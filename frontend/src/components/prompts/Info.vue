@@ -18,6 +18,10 @@
         <span id="content_length"></span> {{ sizeText }}
       </p>
 
+      <p v-if="location !== null">
+        <strong>{{ $t("favorites.location") }}:</strong> {{ location }}
+      </p>
+
       <p v-if="itemCount !== null">
         <strong>{{ $t("prompts.numberItems") }}:</strong> {{ itemCount }}
       </p>
@@ -140,6 +144,11 @@ export default {
       return partial
         ? this.$t("prompts.atLeast", { size: filesize(size) })
         : filesize(size);
+    },
+    // Where a selected shortcut's item lies (the favourites page).
+    location: function () {
+      if (this.selectedCount !== 1 || !this.isListing) return null;
+      return this.req.items[this.selected[0]]?.location ?? null;
     },
     // A selected folder's item count, as the listing gives it.
     itemCount: function () {

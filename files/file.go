@@ -529,6 +529,35 @@ func (i *FileInfo) readListing(checker, dirSizes rules.Checker, calcImgRes bool)
 	return nil
 }
 
+// ListingItems gives the items at paths as one listing would show them (Gezgin: the favourites
+// page, K90): a file's type from its name, and, with dirSizes, a folder's count and size within one
+// budget. An item the checker refuses, or that cannot be read, is nil.
+func ListingItems(fs afero.Fs, checker, dirSizes rules.Checker, paths []string) []*FileInfo {
+	var walk *dirWalk
+	if dirSizes != nil {
+		walk = newDirWalk(fs, dirSizes)
+	}
+	items := make([]*FileInfo, len(paths))
+	for i, p := range paths {
+		if !checker.Check(p) {
+			continue
+		}
+		file, err := stat(&FileOptions{Fs: fs, Path: p, Checker: checker})
+		if err != nil {
+			continue
+		}
+		if file.IsDir {
+			if walk != nil {
+				file.setDirFacts(checker, walk)
+			}
+		} else if err := file.detectType(true, false, false, false); err != nil {
+			continue
+		}
+		items[i] = file
+	}
+	return items
+}
+
 func readDir(afs afero.Fs, dirname string) ([]os.FileInfo, error) {
 	dir, err := afero.ReadDir(afs, dirname)
 	if err == nil {

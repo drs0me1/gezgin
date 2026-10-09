@@ -144,9 +144,12 @@ Work in progress. Until the first Gezgin release this tree is File Browser's las
   entry), and sorting by size orders folders by their size. Only the file listing and share pages
   ask for it (`?sizes=true`).
 - Favourites: a star in the header, the context menu and the phone's selection bar marks a file
-  or folder; the "Sık kullanılanlar" page in the sidebar lists them, at most 20 per user, kept on
-  the server. A favourite follows its item through Gezgin's renames and moves, WebDAV's too, and
-  goes with a delete or when the item leaves the user's reach.
+  or folder, at most 20 per user, kept on the server. The "Sık kullanılanlar" page in the sidebar
+  shows them in the same view as a folder of files (tiles or list, icons, thumbnails, folder
+  sizes, the user's sorting), each a shortcut that opens its item in its place, with its location
+  as a tooltip and in the Info window; there an item is shared, downloaded or taken out of the
+  favourites, and changed in its own folder. A favourite follows its item through Gezgin's renames
+  and moves, WebDAV's too, and goes with a delete or when the item leaves the user's reach.
 - Gezgin's own logo, a pale blue folder, in place of File Browser's, with its favicons and app
   icons; the `branding` folder goes. The version is the short commit the image was built from
   ("Gezgin 5074d927" in the sidebar, the log and `filebrowser version`), and the command line

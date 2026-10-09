@@ -29,8 +29,11 @@ export const useFileStore = defineStore("file", {
     //   const layoutStore = useLayoutStore();
     //   return !layoutStore.loading && state.route._value.name === "Files";
     // },
+    // A folder's listing, or the favourites page, which shows its shortcuts as one (Gezgin).
     isListing: (state) => {
-      return state.isFiles && state?.req?.isDir;
+      return (
+        (state.isFiles || state.req?.favorites === true) && state?.req?.isDir
+      );
     },
   },
   actions: {

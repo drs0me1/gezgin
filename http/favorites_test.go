@@ -10,24 +10,31 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/filebrowser/filebrowser/v2/files"
 	"github.com/filebrowser/filebrowser/v2/rules"
 	"github.com/filebrowser/filebrowser/v2/users"
 )
 
-// favorites returns the paths of the user's favourites as the page lists them.
-func (e *fileEnv) favorites() []string {
+// favoritesListing returns the user's favourites as the page lists them.
+func (e *fileEnv) favoritesListing(query string) files.Listing {
 	e.t.Helper()
-	rec := e.call(http.MethodGet, "/api/favorites", "")
+	rec := e.call(http.MethodGet, "/api/favorites"+query, "")
 	if rec.Code != http.StatusOK {
 		e.t.Fatalf("favourites = %d %q", rec.Code, rec.Body.String())
 	}
-	var list []favorite
+	var list files.Listing
 	if err := json.Unmarshal(rec.Body.Bytes(), &list); err != nil {
 		e.t.Fatal(err)
 	}
+	return list
+}
+
+// favorites returns the paths of the user's favourites as the page lists them.
+func (e *fileEnv) favorites() []string {
+	e.t.Helper()
 	paths := []string{}
-	for _, f := range list {
-		paths = append(paths, f.Path)
+	for _, item := range e.favoritesListing("").Items {
+		paths = append(paths, item.Path)
 	}
 	return paths
 }
@@ -52,9 +59,9 @@ func TestFavorites(t *testing.T) {
 		t.Errorf("favourites %v; want /filmler and /notlar.txt once each", got)
 	}
 
-	var list []favorite
-	_ = json.Unmarshal(env.call(http.MethodGet, "/api/favorites", "").Body.Bytes(), &list)
-	if len(list) != 2 || !list[0].IsDir || list[0].Name != "filmler" || list[1].IsDir || list[1].Size != 3 {
+	list := env.favoritesListing("")
+	if len(list.Items) != 2 || !list.Items[0].IsDir || list.Items[0].Name != "filmler" || list.Items[1].IsDir ||
+		list.Items[1].Size != 3 || list.NumDirs != 1 || list.NumFiles != 1 {
 		t.Errorf("listed favourites %+v", list)
 	}
 
@@ -172,5 +179,52 @@ func TestFavoritesRulesAndUserEdits(t *testing.T) {
 	}
 	if got := ali.favorites(); !slices.Equal(got, []string{"/acik.txt"}) {
 		t.Errorf("ali's favourites after the admin's edit: %v", got)
+	}
+}
+
+// K90: the page shows the favourites as a folder's listing: a file with its type, a folder with
+// its count and size when asked, sorted as the user sorts their folders.
+func TestFavoritesAsAFolderView(t *testing.T) {
+	env := newFileEnv(t)
+	env.write("filmler/a.mkv", "film", 0o644)
+	env.write("filmler/b.srt", "1", 0o644)
+	env.write("resimler/c.jpg", "jpeg", 0o644)
+	env.write("arsiv.zip", "PK", 0o644)
+	for _, p := range []string{"/resimler/c.jpg", "/filmler", "/arsiv.zip", "/filmler/a.mkv"} {
+		if res := env.favorite(http.MethodPost, p); res.StatusCode != http.StatusOK {
+			t.Fatalf("adding %s = %d", p, res.StatusCode)
+		}
+	}
+	root, err := env.st.Users.Get("", false, "root")
+	if err != nil {
+		t.Fatal(err)
+	}
+	// File Browser's default sort by name: folders first, then the names in order.
+	root.Sorting = files.Sorting{By: "name", Asc: false}
+	if err := env.st.Users.Update(root, "Sorting"); err != nil {
+		t.Fatal(err)
+	}
+
+	list := env.favoritesListing("?sizes=true")
+	var names, types []string
+	for _, item := range list.Items {
+		names = append(names, item.Name)
+		types = append(types, item.Type)
+	}
+	if !slices.Equal(names, []string{"filmler", "a.mkv", "arsiv.zip", "c.jpg"}) {
+		t.Errorf("names %v; want them sorted as a folder's listing is", names)
+	}
+	if !slices.Equal(types, []string{"", "video", "archive", "image"}) {
+		t.Errorf("types %v", types)
+	}
+	folder := list.Items[0]
+	if folder.Count == nil || *folder.Count != 2 || folder.Size != 5 || folder.Path != "/filmler" {
+		t.Errorf("filmler: %+v; want 2 items, 5 bytes", folder)
+	}
+	if list.Sorting.By != "name" || list.NumDirs != 1 || list.NumFiles != 3 {
+		t.Errorf("listing %+v", list)
+	}
+	if plain := env.favoritesListing(""); plain.Items[0].Count != nil {
+		t.Errorf("without ?sizes the folder was walked: %+v", plain.Items[0])
 	}
 }

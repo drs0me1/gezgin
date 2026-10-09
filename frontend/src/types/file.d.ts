@@ -28,11 +28,15 @@ interface Resource extends ResourceBase {
   rawContent?: ArrayBuffer;
   encoding?: string;
   version?: string;
+  // The favourites page (Gezgin), whose items are shortcuts to items elsewhere.
+  favorites?: boolean;
 }
 
 interface ResourceItem extends ResourceBase {
   index: number;
   subtitles?: string[];
+  // Where a shortcut's item lies (Gezgin: the favourites page).
+  location?: string;
 }
 
 type ResourceType =

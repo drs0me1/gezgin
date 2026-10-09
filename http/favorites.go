@@ -10,17 +10,18 @@ import (
 	"slices"
 	"strings"
 	"sync"
-	"time"
 
 	fberrors "github.com/filebrowser/filebrowser/v2/errors"
 	"github.com/filebrowser/filebrowser/v2/files"
+	"github.com/filebrowser/filebrowser/v2/rules"
 )
 
-// Favourites (Gezgin, K87, K88): each user marks files and folders, which the "Sık kullanılanlar"
-// page lists. They are kept in the user's record, so every device shows the same list, and change
-// one at a time, so two open tabs cannot undo each other. A favourite follows its item through a
-// rename or move made in Gezgin, and goes with a delete; one the user can no longer reach is left
-// out, and dropped, when the list is read.
+// Favourites (Gezgin, K87, K88, K90): each user marks files and folders, which the "Sık
+// kullanılanlar" page shows as a folder of shortcuts, in the same view as their files. They are kept
+// in the user's record, not as links on disk, so every device shows the same list, and change one at
+// a time, so two open tabs cannot undo each other. A favourite follows its item through a rename or
+// move made in Gezgin, and goes with a delete; one the user can no longer reach is left out, and
+// dropped, when the list is read.
 
 const (
 	maxFavorites    = 20
@@ -29,14 +30,6 @@ const (
 
 // favoritesMu orders the changes of every user's favourites.
 var favoritesMu sync.Mutex
-
-type favorite struct {
-	Path     string    `json:"path"`
-	Name     string    `json:"name"`
-	IsDir    bool      `json:"isDir"`
-	Size     int64     `json:"size"`
-	Modified time.Time `json:"modified"`
-}
 
 type favoriteRequest struct {
 	Path string `json:"path"`
@@ -55,27 +48,29 @@ func favoritePath(r *http.Request) (string, error) {
 	return p, nil
 }
 
-// reach is what the user's favourite at p shows, or an error when they cannot reach it.
-func (d *data) reach(p string) (*favorite, error) {
-	file, err := files.NewFileInfo(&files.FileOptions{Fs: d.user.Fs, Path: p, Checker: d})
-	if err != nil {
-		return nil, err
-	}
-	return &favorite{Path: p, Name: file.Name, IsDir: file.IsDir, Size: file.Size, Modified: file.ModTime}, nil
+// reach fails when the user cannot reach the item at p.
+func (d *data) reach(p string) error {
+	_, err := files.NewFileInfo(&files.FileOptions{Fs: d.user.Fs, Path: p, Checker: d})
+	return err
 }
 
-// listFavorites returns the user's favourites they can reach, dropping the others from the record.
-// favoritesMu must be held.
-func listFavorites(d *data) ([]favorite, error) {
-	list := []favorite{}
+// listFavorites returns the favourites the user can reach as a listing, sorted as they sort their
+// folders, and drops the others from the record; with sizes, folders get their count and size, as
+// in a folder's listing (K90). favoritesMu must be held.
+func listFavorites(d *data, sizes rules.Checker) (*files.Listing, error) {
+	listing := &files.Listing{Items: []*files.FileInfo{}, Sorting: d.user.Sorting}
 	var kept []string
-	for _, p := range d.user.Favorites {
-		f, err := d.reach(p)
-		if err != nil {
+	for i, item := range files.ListingItems(d.user.Fs, d, sizes, d.user.Favorites) {
+		if item == nil {
 			continue
 		}
-		list = append(list, *f)
-		kept = append(kept, p)
+		kept = append(kept, d.user.Favorites[i])
+		listing.Items = append(listing.Items, item)
+		if item.IsDir {
+			listing.NumDirs++
+		} else {
+			listing.NumFiles++
+		}
 	}
 	if len(kept) != len(d.user.Favorites) {
 		d.user.Favorites = kept
@@ -83,13 +78,14 @@ func listFavorites(d *data) ([]favorite, error) {
 			return nil, err
 		}
 	}
-	return list, nil
+	listing.ApplySort()
+	return listing, nil
 }
 
 var favoritesGetHandler = withUser(func(w http.ResponseWriter, r *http.Request, d *data) (int, error) {
 	favoritesMu.Lock()
 	defer favoritesMu.Unlock()
-	list, err := listFavorites(d)
+	list, err := listFavorites(d, dirSizes(r, d))
 	if err != nil {
 		return http.StatusInternalServerError, err
 	}
@@ -103,7 +99,7 @@ var favoritesPostHandler = withUser(func(w http.ResponseWriter, r *http.Request,
 	}
 	favoritesMu.Lock()
 	defer favoritesMu.Unlock()
-	if _, err := d.reach(p); err != nil {
+	if err := d.reach(p); err != nil {
 		return errToStatus(err), err
 	}
 	if !slices.Contains(d.user.Favorites, p) {
@@ -115,7 +111,7 @@ var favoritesPostHandler = withUser(func(w http.ResponseWriter, r *http.Request,
 			return http.StatusInternalServerError, err
 		}
 	}
-	list, err := listFavorites(d)
+	list, err := listFavorites(d, nil)
 	if err != nil {
 		return http.StatusInternalServerError, err
 	}
@@ -135,7 +131,7 @@ var favoritesDeleteHandler = withUser(func(w http.ResponseWriter, r *http.Reques
 			return http.StatusInternalServerError, err
 		}
 	}
-	list, err := listFavorites(d)
+	list, err := listFavorites(d, nil)
 	if err != nil {
 		return http.StatusInternalServerError, err
 	}

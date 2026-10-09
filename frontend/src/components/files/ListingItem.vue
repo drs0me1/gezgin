@@ -85,6 +85,9 @@ const props = defineProps<{
   path?: string;
   count?: number;
   sizeUnknown?: boolean;
+  // A shortcut to an item elsewhere (Gezgin: the favourites page): it opens the item in its place,
+  // and nothing is dragged from it or dropped on it.
+  shortcut?: boolean;
 }>();
 
 const authStore = useAuthStore();
@@ -98,11 +101,11 @@ const isSelected = computed(
   () => fileStore.selected.indexOf(props.index) !== -1
 );
 const isDraggable = computed(
-  () => !props.readOnly && authStore.user?.perm.rename
+  () => !props.readOnly && !props.shortcut && authStore.user?.perm.rename
 );
 
 const canDrop = computed(() => {
-  if (!props.isDir || props.readOnly) return false;
+  if (!props.isDir || props.readOnly || props.shortcut) return false;
 
   for (const i of fileStore.selected) {
     if (fileStore.req?.items[i].url === props.url) {
