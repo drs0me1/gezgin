@@ -4,8 +4,8 @@
       <title />
 
       <template #actions>
-        <!-- On a computer restore, delete for good and Info are in the right-click menu and the
-             bar above the items (Gezgin, K109); a phone, without right-click, keeps Info here. -->
+        <!-- On a computer restore, delete for good and Info are in the right-click menu, the whole
+             trash's too (Gezgin, K109, K121); a phone, without right-click, keeps them here. -->
         <action
           :icon="viewIcon"
           :label="t('buttons.switchView')"
@@ -17,6 +17,20 @@
           :label="t('buttons.info')"
           show="info"
         />
+        <template v-if="isMobile && items.length > 0">
+          <action
+            v-if="canRestore"
+            icon="restore_from_trash"
+            :label="t('trash.restoreAll')"
+            @action="restoreAll"
+          />
+          <action
+            v-if="canDelete"
+            icon="delete_forever"
+            :label="t('trash.deleteAll')"
+            @action="deleteAll"
+          />
+        </template>
       </template>
     </header-bar>
 
@@ -59,29 +73,6 @@
           {{ t("trash.summary", { count: summary.count }) }} ·
           {{ filesize(summary.size) }}
         </span>
-        <button
-          v-if="canRestore"
-          class="button button--flat"
-          :disabled="fileStore.selectedCount === 0"
-          @click="restoreSelected"
-        >
-          {{ t("trash.restore") }}
-        </button>
-        <button
-          v-if="canDelete"
-          class="button button--flat button--red"
-          :disabled="fileStore.selectedCount === 0"
-          @click="purgeSelected"
-        >
-          {{ t("trash.deletePermanently") }}
-        </button>
-        <button
-          v-if="canDelete"
-          class="button button--flat button--red"
-          @click="emptyTrash"
-        >
-          {{ confirmEmpty ? t("trash.confirmEmpty") : t("trash.empty") }}
-        </button>
       </div>
 
       <div
@@ -152,6 +143,22 @@
             :label="t('trash.deletePermanently')"
             @action="purgeSelected"
           />
+          <!-- Off the items, the whole trash (Gezgin, K121). -->
+          <template v-if="fileStore.selectedCount === 0">
+            <action
+              v-if="canRestore"
+              icon="restore_from_trash"
+              :label="t('trash.restoreAll')"
+              @action="restoreAll"
+            />
+            <action
+              v-if="canDelete"
+              icon="delete_forever"
+              :label="t('trash.deleteAll')"
+              @action="deleteAll"
+            />
+            <div v-if="canRestore || canDelete" class="separator"></div>
+          </template>
           <action icon="info" :label="t('buttons.info')" show="info" />
         </context-menu>
       </div>
@@ -186,7 +193,6 @@ const $showSuccess = inject<IToastSuccess>("$showSuccess")!;
 
 const list = ref<ITrashList>({ items: [], count: 0, size: 0 });
 const loading = ref<boolean>(true);
-const confirmEmpty = ref<boolean>(false);
 const error = ref<StatusError | null>(null);
 const width = ref<number>(window.innerWidth);
 const isContextMenuVisible = ref<boolean>(false);
@@ -298,7 +304,6 @@ const load = async () => {
     if (e instanceof StatusError) error.value = e;
   } finally {
     loading.value = false;
-    confirmEmpty.value = false;
   }
 };
 
@@ -324,19 +329,48 @@ const purgeSelected = async () => {
   await load();
 };
 
-// The trash is emptied only on a second click.
-const emptyTrash = async () => {
-  if (!confirmEmpty.value) {
-    confirmEmpty.value = true;
-    return;
-  }
-  try {
-    await api.empty();
-    $showSuccess(t("trash.emptied"));
-  } catch (e: any) {
-    $showError(e);
-  }
-  await load();
+// The whole trash, after a question (Gezgin, K121): everything back in its place, or gone for good.
+const restoreAll = () => {
+  isContextMenuVisible.value = false;
+  layoutStore.showHover({
+    prompt: "confirm",
+    props: {
+      message: t("trash.restoreAllConfirm", { count: summary.value.count }),
+      confirm: t("trash.restore"),
+    },
+    confirm: async () => {
+      layoutStore.closeHovers();
+      try {
+        const done = await api.restore(list.value.items.map((i) => i.id));
+        $showSuccess(t("trash.restored", { count: done.length }));
+      } catch (e: any) {
+        $showError(e);
+      }
+      await load();
+    },
+  });
+};
+
+const deleteAll = () => {
+  isContextMenuVisible.value = false;
+  layoutStore.showHover({
+    prompt: "confirm",
+    props: {
+      message: t("trash.deleteAllConfirm", { count: summary.value.count }),
+      confirm: t("trash.confirmEmpty"),
+      danger: true,
+    },
+    confirm: async () => {
+      layoutStore.closeHovers();
+      try {
+        await api.empty();
+        $showSuccess(t("trash.emptied"));
+      } catch (e: any) {
+        $showError(e);
+      }
+      await load();
+    },
+  });
 };
 
 // The arrows follow the folder listing's (FileListing.vue).

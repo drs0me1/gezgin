@@ -188,12 +188,17 @@ Work in progress. Until the first Gezgin release this tree is File Browser's las
   purple share sign, whose tooltip counts its links and WebDAV shares (a user's own; an admin's
   everyone's), in folders, favourites and search results. The server sets them as it lists, so
   they follow renames, moves and expiries.
-- Sidebar and account: the sidebar holds "Sık kullanılanlar" and "Paylaşılanlar" at the top, in
-  view when it scrolls, "Dosyalarım" under a line, and "Çöp" at the bottom above the disk use.
+- Sidebar and account: the sidebar holds "Sık kullanılanlar" and "Paylaşılanlar" at the top and,
+  at the bottom, the disk use over "Çöp" and the version, both parts in view when it scrolls and
+  on every page, with "Dosyalarım" between them.
   The user's name is at the header's right, opening "Profil ayarları", an admin's "Ayarlar" and
   "Çıkış". "Yeni klasör" and "Yeni dosya" are at the top of the right-click menu on a folder's
   empty part and in an empty folder, and in a phone's ⋮ menu. The new item window names the
   folders as they are written ("albüm", not "alb%C3%BCm").
+- Trash actions in the right-click menu: an item's "Geri yükle" and "Kalıcı sil", and off the
+  items "Tümünü geri yükle" and "Tümünü sil", each asking first in a window (red for what cannot
+  be undone); the bar above the items keeps only the count and size. A phone has them in its ⋮
+  menu.
 - Gezgin's own logo, a pale blue folder, in place of File Browser's, with its favicons and app
   icons; the `branding` folder goes. The version is the short commit the image was built from
   ("Gezgin 5074d927" in the sidebar, the log and `filebrowser version`), and the command line

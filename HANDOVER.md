@@ -50,7 +50,7 @@ Commit messages and README's "Changes from File Browser" describe each change.
 
 ## 3. Decisions taken
 
-The next decision number is **K121**. "Recommended" means the operator accepted the recommendation
+The next decision number is **K123**. "Recommended" means the operator accepted the recommendation
 made in the report.
 
 **Stage B (start).** Multi-user with an admin; File Browser's forms stay even where Konsol has its
@@ -353,6 +353,14 @@ so the API (400) and `config set` refuse the same; unset values take the default
 - K120 (operator: the user, settings and logout to the header's right): one account button at
   the header's right, the user's name beside the icon on a computer, the icon alone on a phone,
   opening "Profil ayarları", "Ayarlar" (an admin's) and "Çıkış" (`header/Account.vue`).
+- K121 (operator): the trash's restore, delete for good and two-step empty leave the bar above
+  the items (which keeps the count and size) for the right-click menu: an item's "Geri yükle",
+  "Kalıcı sil"; off the items "Tümünü geri yükle" and "Tümünü sil", each asking first in a window
+  (`prompts/Confirm.vue`; red for the delete, "Evet, hepsini kalıcı sil"); a phone has the two in
+  its ⋮ menu.
+- K122 (operator): the disk use goes over "Çöp" in a bottom part of the sidebar, with the
+  version, in view when the sidebar scrolls and on every page (the user's files' disk off
+  "Dosyalarım", the open folder's in it).
 
 ## 4. Tasks
 
@@ -647,6 +655,13 @@ so the API (400) and `config set` refuse the same; unset values take the default
   "Çöp" at the bottom; "admin" at the header's right opening "Profil ayarları", "Ayarlar",
   "Çıkış"; a right click on the empty part giving "Yeni klasör", "Yeni dosya", "İndir",
   "Bilgi"; both menus closed unused.
+- [x] **Trash actions in the right-click menu, the disk use over the trash** (operator,
+  2026-10-09, with a screenshot of the trash's bar): K121-K122 (section 3). Checked in the
+  browser on a local build: the trash page with the count and size only; a right click on its
+  empty part gave "Tümünü geri yükle", "Tümünü sil", "Bilgi"; the first asked "Çöpteki 3 öğe
+  eski yerlerine geri yüklensin mi?" and put three test files back; the second asked in red and
+  emptied the trash; the phone's ⋮ had both; the disk use over "Çöp" on the shares page, and at
+  340 pixels of height the top and bottom parts stayed with "Dosyalarım" scrolling between.
 
 ### 4.4 New decisions to put to the operator
 

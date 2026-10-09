@@ -84,6 +84,20 @@ nav > .pinned + div {
 
 nav > .last {
   margin-top: auto;
+  position: sticky;
+  bottom: 0;
+  z-index: 1;
+  background: var(--background);
+}
+
+nav > .last .usage {
+  padding: 0.75em 1em 0.25em;
+  font-size: 0.8em;
+  color: var(--textPrimary);
+}
+
+nav > .last .usage p {
+  margin: 0.4em 0 0;
 }
 
 nav::-webkit-scrollbar {

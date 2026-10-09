@@ -392,7 +392,11 @@
     "keepDays": "Saklama süresi (gün)",
     "keepDaysHelp": "Silinen öğeler bu kadar gün sonra kalıcı silinir; 0 verilirse çöp boşaltılana kadar kalır.",
     "usage": "Bütün kullanıcıların çöpü: {count} öğe",
-    "emptyAll": "Bütün çöpleri boşalt"
+    "emptyAll": "Bütün çöpleri boşalt",
+    "restoreAll": "Tümünü geri yükle",
+    "deleteAll": "Tümünü sil",
+    "restoreAllConfirm": "Çöpteki {count} öğe eski yerlerine geri yüklensin mi?",
+    "deleteAllConfirm": "Çöpteki {count} öğe kalıcı olarak silinsin mi? Bu geri alınamaz."
   },
   "archive": {
     "title": "Arşivler",

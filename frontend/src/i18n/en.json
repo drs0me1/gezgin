@@ -392,7 +392,11 @@
     "keepDays": "Days to keep",
     "keepDaysHelp": "Deleted items are deleted for good after this many days; 0 keeps them until the trash is emptied.",
     "usage": "Every user's trash: {count} items",
-    "emptyAll": "Empty every trash"
+    "emptyAll": "Empty every trash",
+    "restoreAll": "Restore all",
+    "deleteAll": "Delete all",
+    "restoreAllConfirm": "Restore the {count} items in the trash to their places?",
+    "deleteAllConfirm": "Delete the {count} items in the trash for good? This cannot be undone."
   },
   "archive": {
     "title": "Archives",

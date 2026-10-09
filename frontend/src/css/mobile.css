@@ -114,7 +114,8 @@
   #file-selection .action span {
     display: none;
   }
-  nav > .pinned {
+  nav > .pinned,
+  nav > .last {
     background: var(--surfaceSecondary);
   }
   nav {

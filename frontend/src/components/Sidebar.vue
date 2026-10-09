@@ -39,39 +39,37 @@
           <span>{{ $t("sidebar.myFiles") }}</span>
         </button>
       </div>
-
-      <div class="last">
-        <button
-          class="action"
-          @click="toTrash"
-          :aria-label="$t('trash.title')"
-          :title="$t('trash.title')"
-        >
-          <i class="material-icons">delete</i>
-          <span>{{ $t("trash.title") }}</span>
-        </button>
-      </div>
     </template>
 
-    <div
-      class="credits"
-      v-if="isFiles && !disableUsedPercentage"
-      style="width: 90%; margin: 2em 2.5em 3em 2.5em"
-    >
-      <progress-bar :val="usage.usedPercentage" size="small"></progress-bar>
-      <br />
-      {{ $t("sidebar.diskUsed", { used: usage.used, total: usage.total }) }}
+    <!-- At the bottom, in view on every page: the disk use over the trash, and the version
+         (Gezgin, K122). -->
+    <div class="last">
+      <div v-if="isLoggedIn && !disableUsedPercentage" class="usage">
+        <progress-bar :val="usage.usedPercentage" size="small"></progress-bar>
+        <p>
+          {{ $t("sidebar.diskUsed", { used: usage.used, total: usage.total }) }}
+        </p>
+      </div>
+      <button
+        v-if="isLoggedIn"
+        class="action"
+        @click="toTrash"
+        :aria-label="$t('trash.title')"
+        :title="$t('trash.title')"
+      >
+        <i class="material-icons">delete</i>
+        <span>{{ $t("trash.title") }}</span>
+      </button>
+      <p class="credits">
+        <span>
+          <span>{{ name }}</span>
+          <span> {{ " " }} {{ version }}</span>
+        </span>
+        <span>
+          <a @click="help">{{ $t("sidebar.help") }}</a>
+        </span>
+      </p>
     </div>
-
-    <p class="credits">
-      <span>
-        <span>{{ name }}</span>
-        <span> {{ " " }} {{ version }}</span>
-      </span>
-      <span>
-        <a @click="help">{{ $t("sidebar.help") }}</a>
-      </span>
-    </p>
   </nav>
 </template>
 
@@ -79,7 +77,6 @@
 import { reactive } from "vue";
 import { mapActions, mapState } from "pinia";
 import { useAuthStore } from "@/stores/auth";
-import { useFileStore } from "@/stores/file";
 import { useLayoutStore } from "@/stores/layout";
 
 import { name, version, disableUsedPercentage } from "@/utils/constants";
@@ -100,7 +97,6 @@ export default {
   },
   computed: {
     ...mapState(useAuthStore, ["user", "isLoggedIn"]),
-    ...mapState(useFileStore, ["isFiles", "reload"]),
     ...mapState(useLayoutStore, ["currentPromptName"]),
     active() {
       return this.currentPromptName === "sidebar";
@@ -115,9 +111,9 @@ export default {
       this.usageAbortController.abort();
     },
     async fetchUsage() {
-      const path = this.$route.path.endsWith("/")
-        ? this.$route.path
-        : this.$route.path + "/";
+      // The open folder's disk in "Dosyalarım", the user's files' elsewhere (Gezgin, K122).
+      const route = this.$route.name === "Files" ? this.$route.path : "/files/";
+      const path = route.endsWith("/") ? route : route + "/";
       let usageStats = USAGE_DEFAULT;
       if (this.disableUsedPercentage) {
         return Object.assign(this.usage, usageStats);
@@ -157,8 +153,9 @@ export default {
   },
   watch: {
     $route: {
-      handler(to) {
-        if (to.path.includes("/files")) {
+      handler(to, from) {
+        // Every page shows it; it is read again in "Dosyalarım" and on coming to a page.
+        if (to.name === "Files" || to.name !== from?.name) {
           this.fetchUsage();
         }
       },
