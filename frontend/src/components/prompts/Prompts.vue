@@ -27,6 +27,7 @@ import Share from "./Share.vue";
 import ShareDelete from "./ShareDelete.vue";
 import ShareEdit from "./ShareEdit.vue";
 import Confirm from "./Confirm.vue";
+import ShareInfo from "./ShareInfo.vue";
 import Upload from "./Upload.vue";
 import DiscardEditorChanges from "./DiscardEditorChanges.vue";
 import EditorConflict from "./EditorConflict.vue";
@@ -55,6 +56,7 @@ const components = new Map<string, any>([
   ["share-delete", ShareDelete],
   ["share-edit", ShareEdit],
   ["confirm", Confirm],
+  ["share-info", ShareInfo],
   ["deleteUser", DeleteUser],
   ["discardEditorChanges", DiscardEditorChanges],
   ["editorConflict", EditorConflict],

@@ -94,15 +94,18 @@ Work in progress. Until the first Gezgin release this tree is File Browser's las
   files are not shown, and a symbolic link does not lead out of the shared folder. The share
   dialog offers it for folders when the port is set; it lasts 7 days unless told otherwise.
 - Shares page: "Paylaşılanlar", after "Favoriler" in the sidebar for users who may share,
-  replaces Settings → "Paylaşım yönetimi". A fixed list gives each share's item with its icon (it
-  opens the item in its place) and folder, a lock when it has a password, its kind ("Bağlantı", or
-  "WebDAV" read-only or read-write with its username), its end (amber within a day) and, for an
-  admin, who made it; sorted by name or end. Under each item its address, with a copy button
-  (a link's opens in a new tab); the gear changes the share's settings and the bin removes it. A change keeps the address (`PATCH /api/share/<id>`): a new duration
-  counted from now (the same units and 10-year limit) or none; a link's password set, replaced or
-  removed, a new one ending the downloads begun with the old; a WebDAV share's password replaced
-  (it stays required) and the share made read-only or read-write (for an owner who may create,
-  change, rename and delete). An admin sees and changes every user's shares, others their own.
+  replaces Settings → "Paylaşım yönetimi". It is a folder view like the others (tiles or list,
+  the view button and "Seç"), one tile per share: its item's icon, a lock when it has a password,
+  its kind ("Bağlantı", or "WebDAV" read-only or read-write), its end (amber within a day) and,
+  for an admin, who made it (a column of the list). A double click opens the item in its place;
+  the right-click menu copies the address, opens a link in a new tab, changes the share's
+  settings, opens the item's folder, removes the share (several at once, asking first) or shows
+  its information (address, kind, end, password, owner); a phone has these in its selection bar.
+  A change keeps the address (`PATCH /api/share/<id>`): a new duration counted from now (the
+  same units and 10-year limit) or none; a link's password set, replaced or removed, a new one
+  ending the downloads begun with the old; a WebDAV share's password replaced (it stays
+  required) and the share made read-only or read-write (for an owner who may create, change,
+  rename and delete). An admin sees and changes every user's shares, others their own.
 - Archives: a user who may create opens ZIP, RAR, 7z and tar archives (plain, `.gz`, `.bz2`, `.xz`,
   `.zst`) on the server with "Arşivi aç"; a RAR set (`name.part1.rar`, `name.part1of3.rar`, or
   `name.rar` with `name.r00`, ...) opens by its `.rar` parts or `name.r00` to `name.r99`, and files

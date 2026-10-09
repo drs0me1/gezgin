@@ -38,6 +38,8 @@ interface Resource extends ResourceBase {
   trash?: boolean;
   // The search results (Gezgin, K111), whose items are shortcuts to items elsewhere.
   search?: boolean;
+  // The shares page (Gezgin, K130), whose items are shares: each a shortcut to its item.
+  shares?: boolean;
 }
 
 interface ResourceItem extends ResourceBase {

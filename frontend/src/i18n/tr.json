@@ -495,7 +495,16 @@
     "ownerCannotWrite": "Paylaşımın sahibinin oluşturma, değiştirme, yeniden adlandırma ve silme izinleri olmadığı için paylaşım okuma-yazma olamaz.",
     "timeInvalid": "Süre 1 ya da daha büyük bir tam sayı olmalı.",
     "passwordEmpty": "Yeni şifreyi yazın.",
-    "tooLong": "Bir paylaşım en fazla 10 yıl sürebilir."
+    "tooLong": "Bir paylaşım en fazla 10 yıl sürebilir.",
+    "info": "Paylaşım bilgisi",
+    "address": "Adres",
+    "passwordYes": "var",
+    "passwordNo": "yok",
+    "openNewTab": "Yeni sekmede aç",
+    "count": "{count} paylaşım",
+    "removeMany": "{count} paylaşımı kaldır",
+    "removeManyConfirm": "{count} paylaşım kaldırılsın mı? Adresleri artık açılmaz.",
+    "removedMany": "{count} paylaşım kaldırıldı"
   },
   "nav": {
     "back": "Geri ({key})",

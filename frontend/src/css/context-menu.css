@@ -2,7 +2,7 @@
   position: absolute;
   background: var(--surfacePrimary);
   min-width: 180px;
-  max-width: 220px;
+  max-width: 300px;
   border: 1px solid var(--borderSecondary);
   box-shadow: 0 2px 4px var(--borderPrimary);
   z-index: 999;
@@ -22,6 +22,19 @@
 
 /* A line between the folder's new items and the rest (Gezgin, K118). */
 .context-menu .separator {
-  border-top: 1px solid var(--divider);
+  /* Full width also where a folder view's layout makes the menu a wrapping row. */
+  flex: 0 0 100%;
+  width: 100%;
+  height: 0;
+  border-top: 1px solid var(--borderSecondary);
   margin: 0.25em 0;
+}
+
+/* A label stays on one line, and an action that ends something is red (Gezgin, K131). */
+.context-menu .action span {
+  white-space: nowrap;
+}
+
+.context-menu .action.danger {
+  color: var(--red);
 }

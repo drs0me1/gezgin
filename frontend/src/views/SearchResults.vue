@@ -178,6 +178,7 @@ import HeaderBar from "@/components/header/HeaderBar.vue";
 import Item from "@/components/files/ListingItem.vue";
 import ListingTools from "@/components/files/ListingTools.vue";
 import { useAuthStore } from "@/stores/auth";
+import { fitColumns } from "@/utils/columns";
 import { useFavoritesStore } from "@/stores/favorites";
 import { useFileStore } from "@/stores/file";
 import { useLayoutStore } from "@/stores/layout";
@@ -455,6 +456,7 @@ const handleEmptyAreaClick = (e: MouseEvent) => {
 
 const resize = () => {
   width.value = window.innerWidth;
+  fitColumns();
 };
 
 // A new query or folder searches again; leaving the page does not.
@@ -467,6 +469,7 @@ watch(
 
 onMounted(() => {
   window.addEventListener("resize", resize);
+  fitColumns();
   run();
 });
 

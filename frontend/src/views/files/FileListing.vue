@@ -362,7 +362,7 @@ import { users, files as api } from "@/api";
 import * as upload from "@/utils/upload";
 import { isArchive } from "@/utils/archive";
 import buttons from "@/utils/buttons";
-import css from "@/utils/css";
+import { fitColumns } from "@/utils/columns";
 import { throttle } from "lodash-es";
 import { Base64 } from "js-base64";
 
@@ -795,17 +795,8 @@ const paste = async (event: Event) => {
   action(false, false);
 };
 
-const columnsResize = () => {
-  // Update the columns size based on the window width.
-  const items_ = css(["#listing.mosaic .item", ".mosaic#listing .item"]);
-  if (items_ === null) return;
-
-  let columns = Math.floor(
-    (document.querySelector("main")?.offsetWidth ?? 0) / columnWidth.value
-  );
-  if (columns === 0) columns = 1;
-  items_.style.width = `calc(${100 / columns}% - 1em)`;
-};
+// Update the columns size based on the window width (shared with the other folder views).
+const columnsResize = () => fitColumns(columnWidth.value);
 
 const scrollEvent = throttle(() => {
   const totalItems =

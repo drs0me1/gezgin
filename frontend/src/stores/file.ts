@@ -29,14 +29,15 @@ export const useFileStore = defineStore("file", {
     //   const layoutStore = useLayoutStore();
     //   return !layoutStore.loading && state.route._value.name === "Files";
     // },
-    // A folder's listing, or the favourites, trash or search results page, which show their
-    // items as one (Gezgin).
+    // A folder's listing, or the favourites, trash, search results or shares page, which show
+    // their items as one (Gezgin).
     isListing: (state) => {
       return (
         (state.isFiles ||
           state.req?.favorites === true ||
           state.req?.trash === true ||
-          state.req?.search === true) &&
+          state.req?.search === true ||
+          state.req?.shares === true) &&
         state?.req?.isDir
       );
     },

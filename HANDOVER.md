@@ -50,7 +50,7 @@ Commit messages and README's "Changes from File Browser" describe each change.
 
 ## 3. Decisions taken
 
-The next decision number is **K130** (K130-K134 are proposed, see 4.3). "Recommended" means the operator accepted the recommendation
+The next decision number is **K135**. "Recommended" means the operator accepted the recommendation
 made in the report.
 
 **Stage B (start).** Multi-user with an admin; File Browser's forms stay even where Konsol has its
@@ -377,6 +377,18 @@ so the API (400) and `config set` refuse the same; unset values take the default
   tick circle on every item, a click ticking it (a second click does not open it), the button
   turning into "Bitti", which clears the selection and ends it, as do Esc and leaving the folder;
   the old "Çoklu seçim etkin" bar goes.
+- K130 (operator): the shares page is a folder view (`views/Shares.vue` building a listing with
+  `shares: true`), one tile per share, its item's icon, a lock for a password, the kind and the
+  end in place of the size and time (`ListingItem`'s `meta`, `locked`), an admin's owner a
+  column of the list and beside the kind on a tile when not theirs; the top line "N paylaşım"
+  with the view button and "Seç"; sorted by name or end; a double click opens the item in place.
+- K131 (operator): a share's right-click menu: "Bağlantıyı kopyala" or "Adresi kopyala", "Yeni
+  sekmede aç" (links), "Paylaşım ayarları", "Bulunduğu klasörü aç", a line, "Paylaşımı kaldır"
+  (red), "Paylaşım bilgisi"; with several selected "N paylaşımı kaldır", asking first.
+- K132 (operator): the address leaves the tile; it is copied from the menu and shown in Info.
+- K133 (operator): Info gives a share's name, place, kind with access and WebDAV user, address,
+  end with its date, password or none, and owner (`prompts/ShareInfo.vue`).
+- K134 (operator): on a phone a tap selects, and the bottom bar has copy, settings, remove, Info.
 
 ## 4. Tasks
 
@@ -709,7 +721,7 @@ so the API (400) and `config set` refuse the same; unset values take the default
   "Dosyalarım", "Çöp"; the path row's view button and "Seç"; a right click on `movies` gave
   "Paylaş", "Favorilerden çıkar", "Yeniden adlandır", "Kopyala", "Taşı", "Arşiv oluştur", "Sil",
   "İndir" (no count), "Bilgi", closed unused.
-- [ ] **The shares page as a folder view, its actions in the right-click menu** (operator,
+- [x] **The shares page as a folder view, its actions in the right-click menu** (operator,
   2026-10-09: like the other pages, tiles or list switchable, the list's features in the
   right-click menu; a design first). Proposed with a mock-up, waiting: K130, one tile per share
   (an item shared twice shows twice), its item's icon, the name with a lock when it has a
@@ -722,7 +734,17 @@ so the API (400) and `config set` refuse the same; unset values take the default
   kaldır", "Bilgi"; with several selected "N paylaşımı kaldır", asking first; K132, the address
   leaves the tile, staying in the menu and the Info window; K133, the Info window gives the
   share: name, place, kind with access and WebDAV user, address, end, password or none, owner;
-  K134, on a phone a tap selects and the bottom bar has copy, settings, remove and Info.
+  K134, on a phone a tap selects and the bottom bar has copy, settings, remove and Info. Done as
+  K130-K134 (section 3). Checked in the browser on a local build: "3 paylaşım" as two columns of
+  tiles, `albüm` "Bağlantı" and an amber "29 dakika sonra", `tur` with its lock and "WebDAV ·
+  okuma-yazma", `a.jpg` "Süresiz"; a link's menu with "Yeni sekmede aç" and the red "Paylaşımı
+  kaldır", a WebDAV share's with "Adresi kopyala" and no new tab; Info with the address and the
+  end's date; the list with Ad, Tür, Bitiş and Paylaşan; two selected gave "2 paylaşımı
+  kaldır", which asked (cancelled); at 375 pixels a tap gave the bottom bar. Found on the way:
+  tiles took whatever width the folder view had last set, as only it fitted them to the window
+  (`utils/columns.ts` now fits them on every folder-like page); inside a folder view the
+  right-click menu is a wrapping row, so its line had no width (it now spans the menu); long
+  menu labels wrapped (now one line, the menu up to 300 pixels).
 
 ### 4.4 New decisions to put to the operator
 

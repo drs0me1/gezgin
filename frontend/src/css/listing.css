@@ -377,3 +377,52 @@ html[dir="rtl"] #listing {
   color: var(--textPrimary);
   font-size: 0.9em;
 }
+
+/* The shares page's lines (Gezgin, K130): the end amber within a day, red when past; the owner a
+   column of the list, beside the kind on a tile. */
+#listing .item .modified.soon {
+  color: #b7791f;
+}
+
+#listing .item .modified.ended {
+  color: var(--red);
+}
+
+#listing .item[aria-selected="true"] .modified.soon,
+#listing .item[aria-selected="true"] .modified.ended {
+  color: inherit;
+}
+
+#listing .item .owner {
+  display: none;
+}
+
+#listing.list .item .owner {
+  display: block;
+  width: 15%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+#listing.list .item .owner-inline {
+  display: none;
+}
+
+#listing.list.with-owner .item .name {
+  width: 40%;
+}
+
+#listing .item .name .mark.lock {
+  color: var(--textPrimary);
+  font-size: 1em;
+}
+
+#listing .item[aria-selected="true"] .name .mark.lock {
+  color: var(--item-selected);
+}
+
+/* On a narrow tile a share's kind and end go on to another line rather than being cut. */
+#listing.shares:not(.list) .item div:last-of-type {
+  white-space: normal;
+}

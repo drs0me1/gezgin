@@ -495,7 +495,16 @@
     "ownerCannotWrite": "The share's owner may not create, change, rename and delete, so the share cannot be read-write.",
     "timeInvalid": "The duration must be a whole number, 1 or more.",
     "passwordEmpty": "Type the new password.",
-    "tooLong": "A share lasts at most 10 years."
+    "tooLong": "A share lasts at most 10 years.",
+    "info": "Share information",
+    "address": "Address",
+    "passwordYes": "yes",
+    "passwordNo": "none",
+    "openNewTab": "Open in a new tab",
+    "count": "{count} share | {count} shares",
+    "removeMany": "Remove {count} shares",
+    "removeManyConfirm": "Remove {count} shares? Their addresses will no longer open.",
+    "removedMany": "{count} shares removed"
   },
   "nav": {
     "back": "Back ({key})",

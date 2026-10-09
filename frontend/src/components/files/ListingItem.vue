@@ -57,16 +57,37 @@
           :aria-label="sharedText"
           >share</span
         >
+        <span
+          v-if="locked"
+          class="material-icons mark lock"
+          role="img"
+          :title="t('shares.protected')"
+          :aria-label="t('shares.protected')"
+          >lock</span
+        >
       </p>
 
-      <p v-if="isDir" class="size" :data-order="folderSize">
-        {{ folderFacts }}
-      </p>
-      <p v-else class="size" :data-order="humanSize()">{{ humanSize() }}</p>
+      <!-- A share's lines (Gezgin, K130): its kind, its end, and who made it. -->
+      <template v-if="meta">
+        <p class="size">
+          {{ meta.kind
+          }}<span v-if="meta.foreign" class="owner-inline">
+            · {{ t("shares.owner") }}: {{ meta.owner }}</span
+          >
+        </p>
+        <p class="modified" :class="meta.endState">{{ meta.end }}</p>
+        <p v-if="meta.owner !== undefined" class="owner">{{ meta.owner }}</p>
+      </template>
+      <template v-else>
+        <p v-if="isDir" class="size" :data-order="folderSize">
+          {{ folderFacts }}
+        </p>
+        <p v-else class="size" :data-order="humanSize()">{{ humanSize() }}</p>
 
-      <p class="modified">
-        <time :datetime="modified">{{ humanTime() }}</time>
-      </p>
+        <p class="modified">
+          <time :datetime="modified">{{ humanTime() }}</time>
+        </p>
+      </template>
     </div>
   </div>
 </template>
@@ -120,6 +141,17 @@ const props = defineProps<{
   favorite?: boolean;
   sharedLinks?: number;
   sharedDav?: number;
+  // A share on the shares page (Gezgin, K130): a lock for a password, and its lines in place of
+  // the size and time; the owner, given to an admin, in a column of the list, and beside the
+  // kind when not theirs.
+  locked?: boolean;
+  meta?: {
+    kind: string;
+    end: string;
+    endState?: string;
+    owner?: string;
+    foreign?: boolean;
+  };
 }>();
 
 const authStore = useAuthStore();
@@ -394,7 +426,8 @@ const click = (event: Event | KeyboardEvent) => {
 };
 
 const open = () => {
-  if (props.trashed) return;
+  // A trashed item has no place, nor a share whose item the user cannot reach (Gezgin).
+  if (props.trashed || !props.url) return;
   router.push({ path: props.url });
 };
 
