@@ -479,9 +479,11 @@ so the API (400) and `config set` refuse the same; unset values take the default
   window opens with nothing changed (end and password kept, read-write off) and was closed
   without saving; `/settings/shares` leads to the page; the settings tabs no longer have
   "Paylaşım yönetimi"; no console error.
-  K98: checked locally at 1280 and 375 pixels (the addresses wrap, no overflow;
+  K98 (`b715caaa`): checked locally at 1280 and 375 pixels (the addresses wrap, no overflow;
   copying could not be tried there, as the built-in browser denies the clipboard to
-  `127.0.0.1`).
+  `127.0.0.1`). Live on nrm (`b715caaa`, the operator's session): `movies` shows its WebDAV
+  address under it; the copy button beside it said "Link kopyalandı!"; the row keeps the gear
+  and the bin; no console error.
 
 ### 4.4 New decisions to put to the operator
 
