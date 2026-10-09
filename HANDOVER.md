@@ -553,7 +553,11 @@ project's page):
   `docs/README.md`, `docs/customization.md` (the settings' new names), `SECURITY.md` and a note
   at the top of `CHANGELOG.md` (File Browser's, up to `v2.63.23`) point to it. A new change goes
   into `docs/changes.md`, and into the README's tables only when it is a feature or a
-  difference worth a row.
+  difference worth a row. The operator then asked that the page name both languages (Turkish and
+  English, each user picking theirs), and for the repository's description and topics, which
+  GitHub had empty: "Self-hosted file manager in Turkish and English: trash, favourites, link
+  and WebDAV sharing, archives and folder sizes. A fork of File Browser." and `file-manager`,
+  `self-hosted`, `webdav`, `filebrowser`, `golang`, `vuejs`, `podman`, `turkish`, `english`.
 
 ## 4. Tasks
 

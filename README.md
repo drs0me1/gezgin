@@ -5,7 +5,7 @@
 <h1 align="center">Gezgin</h1>
 
 <p align="center">
-  A self-hosted file manager with a Turkish interface, for your own server.<br>
+  A self-hosted file manager for your own server, in Turkish and English.<br>
   Trash, favourites, link and WebDAV sharing, archives and folder sizes, in one web app.
 </p>
 
@@ -41,7 +41,7 @@ a home server needs has been added.
 | **Users** | An own folder per user, permissions at a glance, a new password asked at the next login. |
 | **Safe writes** | Uploads and saves replace a file only once complete; a full disk is refused at the start. |
 | **Security** | A strict content security policy, limits on password guesses, sessions that end with a password change. |
-| **Turkish first** | The whole interface is in Turkish, with English as the second language. |
+| **Two languages** | The whole interface in Turkish and in English; each user picks theirs, Turkish by default. |
 
 ## What changed from File Browser
 
