@@ -50,7 +50,7 @@ Commit messages and README's "Changes from File Browser" describe each change.
 
 ## 3. Decisions taken
 
-The next decision number is **K90**. "Recommended" means the operator accepted the recommendation
+The next decision number is **K90** (K90-K91 are proposed, see 4.3). "Recommended" means the operator accepted the recommendation
 made in the report.
 
 **Stage B (start).** Multi-user with an admin; File Browser's forms stay even where Konsol has its
@@ -402,6 +402,15 @@ so the API (400) and `config set` refuse the same; unset values take the default
   takes it out (nothing left in the operator's list); no console error. Seen there: between 737
   and 1024 pixels wide the sidebar is 10em and cut "Sık kullanılanlar" (it needs 11.44em); it is
   12em now (`frontend/src/css/mobile.css`).
+- [ ] **Favourites as a folder view** (operator, 2026-10-09): the page should look like
+  "Dosyalarım", its items shortcuts; the operator suggested a hidden favourites folder with links.
+  Proposed, waiting: K90, the page is a folder view the server builds from the favourites list
+  (the same tiles, icons, thumbnails and folder facts, the user's view mode and sorting), each
+  tile opening its item in place; no folder or links on disk (Gezgin's folders are unreachable by
+  path, links on disk break when an item moves outside Gezgin, need renaming on equal names, and
+  would have to be kept out of WebDAV, search, archives and the size walk). K91, the actions
+  there: open, info, download, share and the star (remove); rename, move, copy, delete and
+  archive are done in the item's own folder, and no drag and drop.
 
 ### 4.4 New decisions to put to the operator
 
