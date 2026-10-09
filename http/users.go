@@ -180,6 +180,7 @@ var userPostHandler = withAdmin(func(w http.ResponseWriter, r *http.Request, d *
 	}
 
 	req.Data.SecurityStamp = ""
+	req.Data.Favorites = nil
 	req.Data.MustChangePassword = false
 
 	userHome, err := d.settings.MakeUserDir(req.Data.Username, req.Data.Scope, d.server.Root)
@@ -270,6 +271,8 @@ var userPutHandler = withPasswordChange(selfOrAdmin(func(w http.ResponseWriter, 
 			return errToStatus(err), err
 		}
 		req.Data.SecurityStamp = suser.SecurityStamp
+		// Favourites change only through /api/favorites: an edit made meanwhile stays.
+		req.Data.Favorites = suser.Favorites
 		req.Data.MustChangePassword = suser.MustChangePassword
 
 		if err = makeScope(req.Data.Username); err != nil {

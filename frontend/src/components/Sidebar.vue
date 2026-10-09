@@ -17,6 +17,15 @@
       </button>
       <button
         class="action"
+        @click="toFavorites"
+        :aria-label="$t('favorites.title')"
+        :title="$t('favorites.title')"
+      >
+        <i class="material-icons">star</i>
+        <span>{{ $t("favorites.title") }}</span>
+      </button>
+      <button
+        class="action"
         @click="toTrash"
         :aria-label="$t('trash.title')"
         :title="$t('trash.title')"
@@ -156,6 +165,10 @@ export default {
     },
     toRoot() {
       this.$router.push({ path: "/files" });
+      this.closeHovers();
+    },
+    toFavorites() {
+      this.$router.push({ path: "/favorites" });
       this.closeHovers();
     },
     toTrash() {

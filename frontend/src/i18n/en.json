@@ -55,7 +55,9 @@
     "singleDecision": "Decide for each conflicting file",
     "extract": "Extract",
     "archive": "Create archive",
-    "archiveCreate": "Create"
+    "archiveCreate": "Create",
+    "favorite": "Add to favorites",
+    "unfavorite": "Remove from favorites"
   },
   "download": {
     "downloadFile": "Download File",
@@ -102,7 +104,8 @@
       "semicolon": "Semicolon (;)",
       "both": "Both (,) and (;)"
     },
-    "fileEncoding": "File Encoding"
+    "fileEncoding": "File Encoding",
+    "itemCount": "{count} item | {count} items"
   },
   "help": {
     "click": "select file or directory",
@@ -218,7 +221,9 @@
     "forbiddenError": "Forbidden Error",
     "currentPassword": "Your password",
     "currentPasswordMessage": "Enter your password to validate this action.",
-    "mergeFolders": "When a folder has the same name, keeping the new one merges them: the other files in the destination folder stay."
+    "mergeFolders": "When a folder has the same name, keeping the new one merges them: the other files in the destination folder stay.",
+    "numberItems": "Number of items",
+    "atLeast": "at least {size}"
   },
   "search": {
     "images": "Images",
@@ -411,5 +416,16 @@
     "conflict": "The file changed while you were editing it. Saving now overwrites the other change.",
     "overwrite": "Save anyway",
     "unencodable": "The text has characters {encoding} cannot hold; it was not saved."
+  },
+  "favorites": {
+    "title": "Favorites",
+    "name": "Name",
+    "location": "Location",
+    "size": "Size",
+    "remove": "Remove from favorites",
+    "nothing": "No favorites yet: select a file or folder and press its star.",
+    "added": "{name} added to favorites",
+    "removed": "{name} removed from favorites",
+    "tooMany": "At most {max} favorites."
   }
 }

@@ -4,8 +4,9 @@ import { baseURL } from "@/utils/constants";
 export async function fetch(url: string, password: string = "") {
   url = removePrefix(url);
 
+  // The share page shows its folders' item counts and sizes (Gezgin).
   const res = await fetchURL(
-    `/api/public/share${url}`,
+    `/api/public/share${url}?sizes=true`,
     {
       headers: { "X-SHARE-PASSWORD": encodeURIComponent(password) },
     },

@@ -66,6 +66,23 @@ func (d *data) CheckRules(path string) bool {
 	return allow
 }
 
+// rulesOnly checks a path by the rules alone, dotfiles included (see CheckRules).
+type rulesOnly struct{ d *data }
+
+func (c rulesOnly) Check(path string) bool { return c.d.CheckRules(path) }
+
+// dirSizes gives a listing its folders' counts and sizes when the request asks for them with
+// ?sizes=true (Gezgin, K85). The file listing and share pages do; the other listings (the move
+// dialog, the upload check, the preview's neighbours) do not, and stay as quick as they were. A
+// size counts the dotfiles a user hides, as they hold space; the count does not, as they are not
+// shown.
+func dirSizes(r *http.Request, d *data) rules.Checker {
+	if r.URL.Query().Get("sizes") != "true" {
+		return nil
+	}
+	return rulesOnly{d}
+}
+
 // reserved reports whether a path the user sees lies in one of Gezgin's folders
 // at the server root: the trash and the uploads in progress. No path reaches
 // them, whatever the rules: they are only handled through their own endpoints.

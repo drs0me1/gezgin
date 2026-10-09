@@ -34,7 +34,9 @@
     <div>
       <p class="name">{{ name }}</p>
 
-      <p v-if="isDir" class="size" data-order="-1">&mdash;</p>
+      <p v-if="isDir" class="size" :data-order="folderSize">
+        {{ folderFacts }}
+      </p>
       <p v-else class="size" :data-order="humanSize()">{{ humanSize() }}</p>
 
       <p class="modified">
@@ -51,10 +53,12 @@ import { useLayoutStore } from "@/stores/layout";
 
 import { enableThumbs } from "@/utils/constants";
 import { filesize } from "@/utils";
+import { folderLine, knownSize } from "@/utils/folder";
 import dayjs from "dayjs";
 import { files as api } from "@/api";
 import * as upload from "@/utils/upload";
 import { computed, inject, ref } from "vue";
+import { useI18n } from "vue-i18n";
 import { useRouter } from "vue-router";
 
 const touches = ref<number>(0);
@@ -67,6 +71,7 @@ const moveThreshold = ref<number>(10);
 
 const $showError = inject<IToastError>("$showError")!;
 const router = useRouter();
+const { t } = useI18n();
 
 const props = defineProps<{
   name: string;
@@ -78,6 +83,8 @@ const props = defineProps<{
   index: number;
   readOnly?: boolean;
   path?: string;
+  count?: number;
+  sizeUnknown?: boolean;
 }>();
 
 const authStore = useAuthStore();
@@ -118,6 +125,12 @@ const thumbnailUrl = computed(() => {
 const isThumbsEnabled = computed(() => {
   return enableThumbs;
 });
+
+// A folder's line (Gezgin): its item count and size, as the listing gives them.
+const folderFacts = computed(() =>
+  folderLine(props, (n) => t("files.itemCount", n))
+);
+const folderSize = computed(() => knownSize(props) ?? -1);
 
 const humanSize = () => {
   return props.type == "invalid_link" ? "invalid link" : filesize(props.size);

@@ -56,6 +56,11 @@ type FileInfo struct {
 	// file back unchanged; Version identifies the file's content (see Version).
 	Encoding string `json:"encoding,omitempty"`
 	Version  string `json:"version,omitempty"`
+	// Count is how many items a listed folder shows, and SizeUnknown tells that Size is not its
+	// total, the walk having stopped short (Gezgin, K84); both only when the listing was asked
+	// for its folders' sizes.
+	Count       *int `json:"count,omitempty"`
+	SizeUnknown bool `json:"sizeUnknown,omitempty"`
 }
 
 // FileOptions are the options when getting a file info.
@@ -68,6 +73,9 @@ type FileOptions struct {
 	Token      string
 	Checker    rules.Checker
 	Content    bool
+	// DirSizes, when set, gives a listing's folders their count and size (Gezgin, K85); the size
+	// includes what DirSizes allows, which the count, following Checker, may leave out.
+	DirSizes rules.Checker
 }
 
 type ImageResolution struct {
@@ -95,7 +103,7 @@ func NewFileInfo(opts *FileOptions) (*FileInfo, error) {
 
 	if opts.Expand {
 		if file.IsDir {
-			if err := file.readListing(opts.Checker, opts.CalcImgRes); err != nil {
+			if err := file.readListing(opts.Checker, opts.DirSizes, opts.CalcImgRes); err != nil {
 				return nil, err
 			}
 			return file, nil
@@ -429,10 +437,15 @@ func (i *FileInfo) addSubtitle(fPath string) {
 // readListing lists the folder. An entry's type comes from its extension: reading the first bytes
 // of every file made a large folder slow to list (Gezgin), so the content is only looked at when
 // a single file is opened.
-func (i *FileInfo) readListing(checker rules.Checker, calcImgRes bool) error {
+func (i *FileInfo) readListing(checker, dirSizes rules.Checker, calcImgRes bool) error {
 	dir, err := readDir(i.Fs, i.Path)
 	if err != nil {
 		return err
+	}
+
+	var walk *dirWalk
+	if dirSizes != nil {
+		walk = newDirWalk(i.Fs, dirSizes)
 	}
 
 	listing := &Listing{
@@ -493,6 +506,9 @@ func (i *FileInfo) readListing(checker rules.Checker, calcImgRes bool) error {
 
 		if file.IsDir {
 			listing.NumDirs++
+			if walk != nil {
+				file.setDirFacts(checker, walk)
+			}
 		} else {
 			listing.NumFiles++
 

@@ -124,10 +124,13 @@ func (f *davFS) RemoveAll(ctx context.Context, name string) error {
 	if err := dropShares(f.d, f.owned(name)); err != nil {
 		log.Printf("WARNING: could not end the shares of %s: %v", f.owned(name), err)
 	}
+	if err := dropFavorites(f.d, f.owned(name)); err != nil {
+		log.Printf("WARNING: could not drop the favourites of %s: %v", f.owned(name), err)
+	}
 	return nil
 }
 
-// Rename moves an item, and its share links along.
+// Rename moves an item, and its share links and favourites along.
 func (f *davFS) Rename(ctx context.Context, oldName, newName string) error {
 	oldName, newName = davClean(oldName), davClean(newName)
 	if !f.writable || oldName == "/" || !f.Check(oldName) || !f.Check(newName) {
@@ -142,6 +145,9 @@ func (f *davFS) Rename(ctx context.Context, oldName, newName string) error {
 	}
 	if err := moveShares(f.d, f.owned(oldName), f.owned(newName)); err != nil {
 		log.Printf("WARNING: could not move the shares of %s: %v", f.owned(oldName), err)
+	}
+	if err := moveFavorites(f.d, f.owned(oldName), f.owned(newName)); err != nil {
+		log.Printf("WARNING: could not move the favourites of %s: %v", f.owned(oldName), err)
 	}
 	return nil
 }

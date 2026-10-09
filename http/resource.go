@@ -28,12 +28,13 @@ import (
 
 var resourceGetHandler = withUser(func(w http.ResponseWriter, r *http.Request, d *data) (int, error) {
 	file, err := files.NewFileInfo(&files.FileOptions{
-		Fs:      d.user.Fs,
-		Path:    r.URL.Path,
-		Modify:  d.user.Perm.Modify,
-		Expand:  true,
-		Checker: d,
-		Content: d.user.Perm.Download,
+		Fs:       d.user.Fs,
+		Path:     r.URL.Path,
+		Modify:   d.user.Perm.Modify,
+		Expand:   true,
+		Checker:  d,
+		Content:  d.user.Perm.Download,
+		DirSizes: dirSizes(r, d),
 	})
 	if err != nil {
 		return errToStatus(err), err
@@ -120,9 +121,13 @@ func resourceDeleteHandler(fileCache FileCache) handleFunc {
 			return errToStatus(err), err
 		}
 
-		// The item's shares end with it, everyone's, and do not come back with a restore.
+		// The item's shares end with it, everyone's, and do not come back with a restore; so do
+		// its favourites (K88).
 		if err = dropShares(d, file.Path); err != nil {
 			log.Printf("WARNING: Error(s) occurred while deleting associated shares with file: %s", err)
+		}
+		if err = dropFavorites(d, file.Path); err != nil {
+			log.Printf("WARNING: could not drop the favourites of %s: %v", file.Path, err)
 		}
 
 		// delete thumbnails
@@ -310,10 +315,13 @@ func resourcePatchHandler(fileCache FileCache) handleFunc {
 			return errToStatus(err), err
 		}
 
-		// A moved item takes its share links along (Gezgin).
+		// A moved item takes its share links and favourites along (Gezgin, K33, K88).
 		if action == "rename" {
 			if err := moveShares(d, src, dst); err != nil {
 				log.Printf("WARNING: could not move the shares of %s to %s: %v", src, dst, err)
+			}
+			if err := moveFavorites(d, src, dst); err != nil {
+				log.Printf("WARNING: could not move the favourites of %s to %s: %v", src, dst, err)
 			}
 		}
 		return 0, nil

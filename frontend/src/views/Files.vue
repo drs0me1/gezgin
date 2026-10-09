@@ -159,7 +159,8 @@ const fetchData = async () => {
     const res = await api.fetch(
       url,
       fetchDataController.signal,
-      route.query.edit === "true" ? false : undefined
+      route.query.edit === "true" ? false : undefined,
+      true
     );
     fileStore.updateRequest(res);
     document.title = `${res.name || t("sidebar.myFiles")} - ${t("files.files")} - ${name}`;

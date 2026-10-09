@@ -136,6 +136,17 @@ Work in progress. Until the first Gezgin release this tree is File Browser's las
   request templates, Transifex and PR-title workflow, the install docs and the s6 image variant.
   The image listens on 8080 by default and has no `HEALTHCHECK`, which an OCI image drops anyway.
 - Every text of the interface is in Turkish, with "klasör" and "şifre" throughout.
+- Folder sizes: a listing shows each folder's item count and size ("248 öğe · 1.82 GiB"), walked
+  as the folder is listed, links not followed, within 200,000 entries and 2 seconds per listing
+  (past them, only the count). The count is what the user sees on opening the folder; the size is
+  everything the rules let them reach, hidden files included. The Info window gives a folder's
+  count and size and a selection's real total (a folder used to count as its 4096-byte directory
+  entry), and sorting by size orders folders by their size. Only the file listing and share pages
+  ask for it (`?sizes=true`).
+- Favourites: a star in the header, the context menu and the phone's selection bar marks a file
+  or folder; the "Sık kullanılanlar" page in the sidebar lists them, at most 20 per user, kept on
+  the server. A favourite follows its item through Gezgin's renames and moves, WebDAV's too, and
+  goes with a delete or when the item leaves the user's reach.
 - Gezgin's own logo, a pale blue folder, in place of File Browser's, with its favicons and app
   icons; the `branding` folder goes. The version is the short commit the image was built from
   ("Gezgin 5074d927" in the sidebar, the log and `filebrowser version`), and the command line

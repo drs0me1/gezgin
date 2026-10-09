@@ -13,9 +13,13 @@
         <strong>{{ $t("prompts.displayName") }}</strong> {{ name }}
       </p>
 
-      <p v-if="!dir || selected.length > 1">
+      <p v-if="sizeText !== null">
         <strong>{{ $t("prompts.size") }}:</strong>
-        <span id="content_length"></span> {{ humanSize }}
+        <span id="content_length"></span> {{ sizeText }}
+      </p>
+
+      <p v-if="itemCount !== null">
+        <strong>{{ $t("prompts.numberItems") }}:</strong> {{ itemCount }}
       </p>
 
       <div v-if="resolution">
@@ -104,6 +108,7 @@ import { mapActions, mapState } from "pinia";
 import { useFileStore } from "@/stores/file";
 import { useLayoutStore } from "@/stores/layout";
 import { filesize } from "@/utils";
+import { knownSize, totalSize } from "@/utils/folder";
 import dayjs from "dayjs";
 import { files as api } from "@/api";
 
@@ -117,18 +122,30 @@ export default {
       "selectedCount",
       "isListing",
     ]),
-    humanSize: function () {
+    // The size shown (Gezgin): a folder's own, a selection's total, "en az ..." when a folder's
+    // size is not known, and nothing when none is. A folder's directory entry (4096 bytes) used to
+    // count as its size.
+    sizeText: function () {
+      let items;
       if (this.selectedCount === 0 || !this.isListing) {
-        return filesize(this.req.size);
+        if (!this.req.isDir) return filesize(this.req.size);
+        items = this.req.items ?? [];
+      } else {
+        items = this.selected.map((i) => this.req.items[i]);
       }
-
-      let sum = 0;
-
-      for (const selected of this.selected) {
-        sum += this.req.items[selected].size;
+      if (items.length > 0 && items.every((i) => knownSize(i) === null)) {
+        return null;
       }
-
-      return filesize(sum);
+      const { size, partial } = totalSize(items);
+      return partial
+        ? this.$t("prompts.atLeast", { size: filesize(size) })
+        : filesize(size);
+    },
+    // A selected folder's item count, as the listing gives it.
+    itemCount: function () {
+      if (this.selectedCount !== 1 || !this.isListing) return null;
+      const item = this.req.items[this.selected[0]];
+      return item?.isDir && item.count !== undefined ? item.count : null;
     },
     humanTime: function () {
       if (this.selectedCount === 0) {

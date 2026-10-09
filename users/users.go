@@ -43,6 +43,10 @@ type User struct {
 	// MustChangePassword holds every request but the user's own password change; quick setup sets
 	// it for the admin whose generated password was written to the log.
 	MustChangePassword bool `json:"mustChangePassword"`
+	// Favorites are the paths, in the user's scope, of the files and folders they marked as
+	// favourites (Gezgin, K87). Only /api/favorites changes them, and they follow their items
+	// through Gezgin's moves (K88).
+	Favorites []string `json:"favorites"`
 }
 
 // GetRules implements rules.Provider.

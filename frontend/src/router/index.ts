@@ -12,6 +12,7 @@ import ProfileSettings from "@/views/settings/Profile.vue";
 import Shares from "@/views/settings/Shares.vue";
 import Errors from "@/views/Errors.vue";
 import Trash from "@/views/Trash.vue";
+import Favorites from "@/views/Favorites.vue";
 import { useAuthStore } from "@/stores/auth";
 import { baseURL, name } from "@/utils/constants";
 import i18n from "@/i18n";
@@ -22,6 +23,7 @@ const titles = {
   Share: "buttons.share",
   Files: "files.files",
   Trash: "trash.title",
+  Favorites: "favorites.title",
   Settings: "sidebar.settings",
   ProfileSettings: "settings.profileSettings",
   Shares: "settings.shareManagement",
@@ -61,6 +63,20 @@ const routes = [
         path: ":path*",
         name: "Files",
         component: Files,
+      },
+    ],
+  },
+  {
+    path: "/favorites",
+    component: Layout,
+    meta: {
+      requiresAuth: true,
+    },
+    children: [
+      {
+        path: "",
+        name: "Favorites",
+        component: Favorites,
       },
     ],
   },

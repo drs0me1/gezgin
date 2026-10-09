@@ -19,6 +19,14 @@
             show="share"
           />
           <action
+            v-if="headerButtons.favorite"
+            :icon="isFavorite ? 'star' : 'star_border'"
+            :label="
+              isFavorite ? t('buttons.unfavorite') : t('buttons.favorite')
+            "
+            @action="toggleFavorite"
+          />
+          <action
             v-if="headerButtons.rename"
             icon="mode_edit"
             :label="t('buttons.rename')"
@@ -109,6 +117,12 @@
         icon="share"
         :label="t('buttons.share')"
         show="share"
+      />
+      <action
+        v-if="headerButtons.favorite"
+        :icon="isFavorite ? 'star' : 'star_border'"
+        :label="isFavorite ? t('buttons.unfavorite') : t('buttons.favorite')"
+        @action="toggleFavorite"
       />
       <action
         v-if="headerButtons.rename"
@@ -249,6 +263,8 @@
             v-bind:modified="item.modified"
             v-bind:type="item.type"
             v-bind:size="item.size"
+            v-bind:count="item.count"
+            v-bind:sizeUnknown="item.sizeUnknown"
             v-bind:path="item.path"
           >
           </item>
@@ -272,6 +288,8 @@
             v-bind:modified="item.modified"
             v-bind:type="item.type"
             v-bind:size="item.size"
+            v-bind:count="item.count"
+            v-bind:sizeUnknown="item.sizeUnknown"
             v-bind:path="item.path"
           >
           </item>
@@ -286,6 +304,14 @@
             icon="share"
             :label="t('buttons.share')"
             show="share"
+          />
+          <action
+            v-if="headerButtons.favorite"
+            :icon="isFavorite ? 'star' : 'star_border'"
+            :label="
+              isFavorite ? t('buttons.unfavorite') : t('buttons.favorite')
+            "
+            @action="toggleFavorite"
           />
           <action
             v-if="headerButtons.rename"
@@ -375,6 +401,7 @@ import { useAuthStore } from "@/stores/auth";
 import { useClipboardStore } from "@/stores/clipboard";
 import { useFileStore } from "@/stores/file";
 import { useLayoutStore } from "@/stores/layout";
+import { useFavoritesStore } from "@/stores/favorites";
 
 import { users, files as api } from "@/api";
 import * as upload from "@/utils/upload";
@@ -412,8 +439,10 @@ const isContextMenuVisible = ref<boolean>(false);
 const contextMenuPos = ref<{ x: number; y: number }>({ x: 0, y: 0 });
 
 const $showError = inject<IToastError>("$showError")!;
+const $showSuccess = inject<IToastSuccess>("$showSuccess")!;
 
 const clipboardStore = useClipboardStore();
+const favoritesStore = useFavoritesStore();
 const authStore = useAuthStore();
 const fileStore = useFileStore();
 const layoutStore = useLayoutStore();
@@ -505,8 +534,37 @@ const viewIcon = computed(() => {
     : icons[authStore.user.viewMode];
 });
 
+// The one selected item, whose star adds it to the favourites or takes it out (Gezgin, K87).
+const selectedItem = computed(() =>
+  fileStore.selectedCount === 1
+    ? fileStore.req?.items[fileStore.selected[0]]
+    : undefined
+);
+const isFavorite = computed(
+  () =>
+    selectedItem.value !== undefined &&
+    favoritesStore.has(selectedItem.value.path)
+);
+
+const toggleFavorite = async () => {
+  const item = selectedItem.value;
+  if (item === undefined) return;
+  try {
+    if (isFavorite.value) {
+      await favoritesStore.remove(item.path);
+      $showSuccess(t("favorites.removed", { name: item.name }));
+    } else {
+      await favoritesStore.add(item.path);
+      $showSuccess(t("favorites.added", { name: item.name }));
+    }
+  } catch (e: any) {
+    $showError(e);
+  }
+};
+
 const headerButtons = computed(() => {
   return {
+    favorite: fileStore.selectedCount === 1,
     upload: authStore.user?.perm.create,
     download: authStore.user?.perm.download,
     delete: fileStore.selectedCount > 0 && authStore.user?.perm.delete,
@@ -555,6 +613,10 @@ watch(req, () => {
 });
 
 onMounted(() => {
+  if (!favoritesStore.loaded) {
+    favoritesStore.load().catch((e) => $showError(e));
+  }
+
   // Check the columns size for the first time.
   columnsResize();
 

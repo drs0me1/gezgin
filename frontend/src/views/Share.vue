@@ -261,6 +261,8 @@
               v-bind:modified="item.modified"
               v-bind:type="item.type"
               v-bind:size="item.size"
+              v-bind:count="item.count"
+              v-bind:sizeUnknown="item.sizeUnknown"
               readOnly
             >
             </item>

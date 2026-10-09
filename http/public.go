@@ -85,12 +85,13 @@ func withHashFile(limiter *loginLimiter, fn handleFunc) handleFunc {
 		d.checkerPrefix = basePath
 
 		file, err = files.NewFileInfo(&files.FileOptions{
-			Fs:      d.user.Fs,
-			Path:    filePath,
-			Modify:  d.user.Perm.Modify,
-			Expand:  true,
-			Checker: d,
-			Token:   link.Token,
+			Fs:       d.user.Fs,
+			Path:     filePath,
+			Modify:   d.user.Perm.Modify,
+			Expand:   true,
+			Checker:  d,
+			Token:    link.Token,
+			DirSizes: dirSizes(r, d),
 		})
 		if err != nil {
 			return errToStatus(err), err

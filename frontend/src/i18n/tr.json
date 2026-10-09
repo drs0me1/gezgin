@@ -55,7 +55,9 @@
     "resumeTransferTooltip": "Sunucudaki sürümü daha küçük olanlar dışında çakışan bütün dosyaları atlar; onların aktarımının yarıda kaldığı varsayılır.",
     "extract": "Arşivi aç",
     "archive": "Arşiv oluştur",
-    "archiveCreate": "Oluştur"
+    "archiveCreate": "Oluştur",
+    "favorite": "Sık kullanılanlara ekle",
+    "unfavorite": "Sık kullanılanlardan çıkar"
   },
   "download": {
     "downloadFile": "Dosyayı indir",
@@ -102,7 +104,8 @@
       "semicolon": "Noktalı virgül (;)",
       "both": "İkisi de (,) ve (;)"
     },
-    "fileEncoding": "Karakter kodlaması"
+    "fileEncoding": "Karakter kodlaması",
+    "itemCount": "{count} öğe"
   },
   "help": {
     "click": "dosya veya klasör seçin",
@@ -218,7 +221,9 @@
     "forbiddenError": "İzin verilmiyor",
     "currentPassword": "Şifreniz",
     "currentPasswordMessage": "Bu işlemi onaylamak için şifrenizi girin.",
-    "mergeFolders": "Aynı adlı bir klasörde yenisini seçmek iki klasörü birleştirir: hedef klasördeki diğer dosyalar kalır."
+    "mergeFolders": "Aynı adlı bir klasörde yenisini seçmek iki klasörü birleştirir: hedef klasördeki diğer dosyalar kalır.",
+    "numberItems": "Öğe sayısı",
+    "atLeast": "en az {size}"
   },
   "search": {
     "images": "Görseller",
@@ -411,5 +416,16 @@
     "conflict": "Dosya siz düzenlerken değişti. Şimdi kaydederseniz diğer değişiklik kaybolur.",
     "overwrite": "Yine de kaydet",
     "unencodable": "Metinde {encoding} kodlamasının yazamadığı karakterler var; kaydedilmedi."
+  },
+  "favorites": {
+    "title": "Sık kullanılanlar",
+    "name": "Ad",
+    "location": "Konum",
+    "size": "Boyut",
+    "remove": "Sık kullanılanlardan çıkar",
+    "nothing": "Henüz sık kullanılan yok: bir dosya ya da klasör seçip yıldıza basın.",
+    "added": "{name} sık kullanılanlara eklendi",
+    "removed": "{name} sık kullanılanlardan çıkarıldı",
+    "tooMany": "En fazla {max} sık kullanılan olabilir."
   }
 }

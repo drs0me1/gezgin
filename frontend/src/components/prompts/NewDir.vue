@@ -88,7 +88,12 @@ const submit = async (event: Event) => {
     if (layoutStore.currentPrompt?.props?.redirect) {
       router.push({ path: uri });
     } else if (!base.value) {
-      const res = await api.fetch(url.removeLastDir(uri) + "/");
+      const res = await api.fetch(
+        url.removeLastDir(uri) + "/",
+        undefined,
+        undefined,
+        true
+      );
       fileStore.updateRequest(res);
     }
     if (layoutStore.currentPrompt?.confirm) {

@@ -9,6 +9,10 @@ interface ResourceBase {
   isSymlink: boolean;
   type: ResourceType;
   url: string;
+  // A folder's item count, and whether its size is unknown, when a listing asked for them
+  // (Gezgin).
+  count?: number;
+  sizeUnknown?: boolean;
 }
 
 interface Resource extends ResourceBase {

@@ -8,14 +8,18 @@ import i18n from "@/i18n";
 
 // fetch reads a file or a folder. raw asks for a text file's bytes (the CSV viewer decodes them
 // itself); otherwise the server decodes the text and names its encoding and version.
+// fetch reads a file or a folder; sizes asks a folder's listing for its folders' item counts and
+// sizes (Gezgin), which only the listings shown to the user need.
 export async function fetch(
   url: string,
   signal?: AbortSignal,
-  raw = isEncodableResponse(url)
+  raw = isEncodableResponse(url),
+  sizes = false
 ) {
   const encoding = raw;
   url = removePrefix(url);
-  const res = await fetchURL(`/api/resources${url}`, {
+  const query = sizes ? "?sizes=true" : "";
+  const res = await fetchURL(`/api/resources${url}${query}`, {
     signal,
     headers: {
       "X-Encoding": encoding ? "true" : "false",

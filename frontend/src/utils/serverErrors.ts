@@ -39,6 +39,10 @@ const known: [RegExp, (m: RegExpMatchArray) => string][] = [
     /a scope cannot lie in Gezgin's folders/,
     () => i18n.global.t("settings.errors.reservedScope"),
   ],
+  [
+    /at most (\d+) favourites/,
+    (m) => i18n.global.t("favorites.tooMany", { max: m[1] }),
+  ],
 ];
 
 // serverMessage returns the translated text of a known server error, or null.

@@ -44,6 +44,11 @@ describe("serverMessage", () => {
         "400 Bad Request (password is too short, minimum length is 8)"
       )
     ).toBe('login.passwordTooShort {"min":"8"}');
+    expect(
+      serverMessage(
+        "400 Bad Request (invalid request params: at most 20 favourites)"
+      )
+    ).toBe('favorites.tooMany {"max":"20"}');
   });
 
   it("leaves other errors alone", () => {
