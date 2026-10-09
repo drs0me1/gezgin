@@ -27,7 +27,8 @@ remain before heading 7 is closed. Heading 8, "Yönetim ayarları ekranı", was 
 proposals K66-K75 accepted as recommended, implemented (`a71c0a2e`), deployed on nrm and verified
 live there. Heading 9, "Altyapı, marka ve CSP", was then reviewed, decided (K76-K83, the logo after
 two drafts), implemented (`79805244`, `5074d927`) and deployed on nrm; its checks without sign-in
-passed there, signed in too. Open: GitHub's private vulnerability reporting (4.3). Next: heading 10.
+passed there, signed in too. Heading 10, "Konsol'dan alınacaklar", has been reviewed; its proposals
+K84-K89 wait for the operator (4.3).
 
 ## 2. Headings
 
@@ -42,13 +43,13 @@ passed there, signed in too. Open: GitHub's private vulnerability reporting (4.3
 | 7 | Komut çalıştırma, and archives in its place | K45-K58 | `116c3549`, `b0bb8b63`, `527111be`, `6d531015`, `601ddbaa` | Last step's follow-ups open (4.1) |
 | 8 | Yönetim ayarları ekranı | K66-K75 | `a71c0a2e` | Done, verified live |
 | 9 | Altyapı, marka ve CSP | K76-K83 | `79805244`, `5074d927`, `c11a6b80` | Done, verified live |
-| 10 | Konsol'dan alınacaklar | | | To do (4.3); archives already done under 7 |
+| 10 | Konsol'dan alınacaklar | K84-K89 proposed | | Reviewed, waits for decisions (4.3) |
 
 Commit messages and README's "Changes from File Browser" describe each change.
 
 ## 3. Decisions taken
 
-The next decision number is **K84**. "Recommended" means the operator accepted the recommendation
+The next decision number is **K84** (K84-K89 are proposed for heading 10, see 4.3). "Recommended" means the operator accepted the recommendation
 made in the report.
 
 **Stage B (start).** Multi-user with an admin; File Browser's forms stay even where Konsol has its
@@ -358,10 +359,37 @@ so the API (400) and `config set` refuse the same; unset values take the default
   `version.Version=$short`, so that the sidebar reads "Gezgin <commit>" rather than "Gezgin
   gezgin-<commit>". The first push was refused for want of the `workflow` scope; the operator
   added it (`gh auth refresh -s workflow`).
-- [ ] **GitHub's private vulnerability reporting**, which `SECURITY.md` points to, is off for the
-  repository; turning it on is the operator's call (a repository setting).
+- [x] **GitHub's private vulnerability reporting**, which `SECURITY.md` points to, is on (the
+  operator agreed, 2026-10-09).
 - [ ] **10 — Konsol'dan alınacaklar.** Folder sizes and item counts on folder tiles (Konsol
   DD-247/248) and favourite folders (DD-250). Archive extraction and creation are done (7).
+  Reviewed 2026-10-09 against Konsol (`drs0me1/myserver`, v2-229/230/232/233: DD-247, DD-248,
+  DD-250). Konsol walks each subfolder of a listing for its size, links not followed, regular
+  files summed, within one budget of 200,000 entries per listing; a folder past it, or
+  unreadable, shows only its count ("248 öge · 1,82 TB"). DD-248 is its root view, which Gezgin
+  has not. Favourites: a star, kept on the server (at most 20, 1024-byte paths), not following a
+  rename. In Gezgin, verified: folder tiles and rows show "—"; the listing gives a folder the
+  4096-byte size of its directory entry (nrm), which the Info window adds up for a selection
+  (three folders read "12 KiB" though one holds 2.6 GB) and the size sort uses; no favourites;
+  sizes are written "5.01 GiB", not in Turkish. Measured: a walk through Gezgin's file layer of
+  101,000 entries takes 0.16-0.19 s (local SSD, warm); nrm's media folder holds 34 entries.
+  Moves and deletes already call `moveShares`/`dropShares`, where favourites could follow too.
+  Proposals, recommended:
+  - K84: folder tiles and rows read "N öge · boyut" (an empty folder "0 öge", one not walked
+    only its count); the Info window gives a folder's count and size, and a selection's real
+    total; the size sort orders folders by their size.
+  - K85: the listing walks each subfolder, links not followed, within 200,000 entries and 2
+    seconds per listing; only the file listing and share pages ask for it (not the move dialog,
+    the upload check or the preview's neighbours); no cache.
+  - K86: the count is what the user sees on opening the folder (rules, Gezgin's own items, and
+    dotfiles when they hide them); the size is everything the rules let them reach; refused
+    folders are not entered.
+  - K87: favourite folders: a star in the header (one folder selected, or the open one) and in
+    the context menu; listed in the sidebar under "Dosyalarım"; kept per user on the server, at
+    most 20, the same on every device.
+  - K88: a favourite follows its folder through a rename or move made in Gezgin (WebDAV too),
+    and goes when the folder is deleted, trashed or out of the user's reach.
+  - K89: sizes are written in the user's language: "1,82 GiB" in Turkish.
 
 ### 4.4 New decisions to put to the operator
 
