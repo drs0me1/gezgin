@@ -50,7 +50,7 @@ Commit messages and README's "Changes from File Browser" describe each change.
 
 ## 3. Decisions taken
 
-The next decision number is **K156**. "Recommended" means the operator accepted the recommendation
+The next decision number is **K157**. "Recommended" means the operator accepted the recommendation
 made in the report.
 
 **Stage B (start).** Multi-user with an admin; File Browser's forms stay even where Konsol has its
@@ -493,6 +493,11 @@ uygulayabiliriz beğendim"):
   rules, then "Oturumlarını kapat", "Kullanıcıyı sil", "Vazgeç", "Kaydet".
 - K155: on a phone the tabs scroll, rows stack, the list leaves out the permission icons and the
   buttons at the bottom take the width.
+- K156 (operator: "+" and "-" for the chunk size, in steps of 1 MB): the chunk size is a number
+  of MB, 1 to 1024, with "+" and "-" as the other numbers, in place of K67's size text; a size
+  that is not whole MB (from the command line) stays as it is until changed. The size parser
+  (`utils/size.ts`) served only that text and is gone. Checked on the Mac: "10", "+" gives 11
+  and the save bar, "Vazgeç" 10; 12 saved (12,582,912 bytes) and back to 10.
 
 ## 4. Tasks
 

@@ -114,6 +114,10 @@
   max-width: none;
 }
 
+.setting-unit {
+  color: var(--textPrimary);
+}
+
 .setting-value {
   color: var(--textPrimary);
   text-align: right;

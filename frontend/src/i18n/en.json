@@ -309,7 +309,6 @@
     "errors": {
       "passwordLength": "The minimum password length must be from {min} to {max}.",
       "chunkSize": "The chunk size must be from {min} to {max}.",
-      "chunkSizeUnreadable": "The chunk size could not be read: write it as 10MB, 1.5 GB or a number of bytes.",
       "retryCount": "The retry count must be from {min} to {max}.",
       "reservedScope": "A scope cannot lie in Gezgin's own folders (.gezgin-cop, .gezgin-yukleme, .gezgin-arsiv)."
     },
@@ -345,7 +344,7 @@
     },
     "advancedGlobal": "Advanced: chunked uploads and global rules",
     "chunkSize": "Chunk size",
-    "chunkSizeHelp": "Large files are uploaded in chunks of this size, from 1 MB to 1 GB.",
+    "chunkSizeHelp": "Large files are uploaded in chunks of this size, from 1 to {max} MB.",
     "retryCount": "Retries",
     "retryCountHelp": "How many times a chunk that failed is tried again (0 to {max}).",
     "globalRulesTitle": "Global rules",

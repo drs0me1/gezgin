@@ -115,16 +115,17 @@
         </summary>
         <setting-row
           :label="t('settings.chunkSize')"
-          :help="t('settings.chunkSizeHelp')"
-          label-for="tus-chunkSize"
+          :help="t('settings.chunkSizeHelp', { max: maxChunkMB })"
         >
-          <input
-            id="tus-chunkSize"
-            class="input"
-            type="text"
-            style="width: 8em"
-            v-model="chunkSizeText"
+          <vue-number-input
+            controls
+            size="small"
+            v-model.number="chunkSizeMB"
+            :min="1"
+            :max="maxChunkMB"
+            :step="1"
           />
+          <span class="setting-unit">MB</span>
         </setting-row>
         <setting-row
           :label="t('settings.retryCount')"
@@ -163,7 +164,6 @@ import ToggleSwitch from "@/components/settings/ToggleSwitch.vue";
 import { useLayoutStore } from "@/stores/layout";
 import { filesize } from "@/utils";
 import { homeDir, scopeMode, type ScopeMode } from "@/utils/scope";
-import { formatSize, parseSize } from "@/utils/size";
 import { getTheme, setTheme } from "@/utils/theme";
 import Errors from "@/views/Errors.vue";
 import { computed, inject, onMounted, ref } from "vue";
@@ -175,14 +175,18 @@ import { useI18n } from "vue-i18n";
 // The bounds the server holds the settings to (settings.Validate).
 const minPasswordLength = 8;
 const maxPasswordLength = 32;
-const minChunkSize = 1024 ** 2;
+const MB = 1024 ** 2;
+const minChunkSize = MB;
 const maxChunkSize = 1024 ** 3;
+const maxChunkMB = maxChunkSize / MB;
 const maxRetryCount = 20;
 
 const error = ref<StatusError | null>(null);
 const original = ref<ISettings | null>(null);
 const settings = ref<ISettings | null>(null);
-const chunkSizeText = ref<string>("");
+// The chunk size in whole MB, stepped by one (K156).
+const chunkSizeMB = ref<number>(10);
+const toMB = (bytes: number) => Math.max(1, Math.round(bytes / MB));
 const access = ref<{ mode: ScopeMode; folder: string }>({
   mode: "all",
   folder: "",
@@ -205,7 +209,7 @@ const accessOf = (s: ISettings) =>
 const load = (s: ISettings) => {
   original.value = s;
   settings.value = JSON.parse(JSON.stringify(s));
-  chunkSizeText.value = formatSize(s.tus.chunkSize);
+  chunkSizeMB.value = toMB(s.tus.chunkSize);
   access.value = accessOf(s);
 };
 
@@ -218,7 +222,7 @@ const dirty = computed(
     settings.value !== null &&
     original.value !== null &&
     (JSON.stringify(settings.value) !== JSON.stringify(original.value) ||
-      chunkSizeText.value !== formatSize(original.value.tus.chunkSize) ||
+      chunkSizeMB.value !== toMB(original.value.tus.chunkSize) ||
       JSON.stringify(access.value) !== JSON.stringify(accessOf(original.value)))
 );
 
@@ -255,15 +259,11 @@ const interfaceSettings = (s: ISettings) => JSON.stringify([s.branding, s.tus]);
 const save = async () => {
   if (settings.value === null || original.value === null) return;
 
-  // The text shown rounds the size; left as shown, it keeps the size as it was.
+  // The MB shown round the size; left as shown, it keeps the size as it was.
   const chunkSize =
-    chunkSizeText.value === formatSize(settings.value.tus.chunkSize)
+    chunkSizeMB.value === toMB(settings.value.tus.chunkSize)
       ? settings.value.tus.chunkSize
-      : parseSize(chunkSizeText.value);
-  if (chunkSize === null) {
-    $showError(t("settings.errors.chunkSizeUnreadable"));
-    return;
-  }
+      : chunkSizeMB.value * MB;
   if (access.value.mode === "folder" && access.value.folder === "") {
     $showError(t("settings.access.noFolder"));
     return;

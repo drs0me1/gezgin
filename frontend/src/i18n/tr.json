@@ -309,7 +309,6 @@
     "errors": {
       "passwordLength": "En kısa şifre uzunluğu {min} ile {max} arasında olmalı.",
       "chunkSize": "Parça boyutu {min} ile {max} arasında olmalı.",
-      "chunkSizeUnreadable": "Parça boyutu okunamadı: 10MB, 1,5 GB gibi ya da bayt sayısı olarak yazın.",
       "retryCount": "Yeniden deneme sayısı {min} ile {max} arasında olmalı.",
       "reservedScope": "Kapsam Gezgin'in kendi klasörlerinde (.gezgin-cop, .gezgin-yukleme, .gezgin-arsiv) olamaz."
     },
@@ -345,7 +344,7 @@
     },
     "advancedGlobal": "Gelişmiş: parçalı yükleme ve genel kurallar",
     "chunkSize": "Parça boyutu",
-    "chunkSizeHelp": "Büyük dosyalar bu boyutta parçalarla yüklenir; 1 MB ile 1 GB arası.",
+    "chunkSizeHelp": "Büyük dosyalar bu boyutta parçalarla yüklenir; 1 ile {max} MB arası.",
     "retryCount": "Yeniden deneme",
     "retryCountHelp": "Bir parça yüklenemezse kaç kez yeniden denensin (0-{max}).",
     "globalRulesTitle": "Genel kurallar",
