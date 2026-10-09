@@ -106,7 +106,6 @@
     },
     "fileEncoding": "Karakter kodlaması",
     "itemCount": "{count} öğe",
-    "noNewHere": "Yeni klasör ya da dosya için Dosyalarım'da bir klasör açın.",
     "favoriteMark": "Sık kullanılan",
     "sharedMark": "Paylaşıldı: {kinds}",
     "sharedLinks": "{n} bağlantı",
@@ -359,7 +358,8 @@
     "preview": "Önizleme",
     "settings": "Ayarlar",
     "siteSettings": "Site ayarları!",
-    "diskUsed": "{used} / {total} kullanıldı"
+    "diskUsed": "{used} / {total} kullanıldı",
+    "account": "Hesap: {name}"
   },
   "success": {
     "linkCopied": "Link kopyalandı!"
@@ -392,8 +392,7 @@
     "keepDays": "Saklama süresi (gün)",
     "keepDaysHelp": "Silinen öğeler bu kadar gün sonra kalıcı silinir; 0 verilirse çöp boşaltılana kadar kalır.",
     "usage": "Bütün kullanıcıların çöpü: {count} öğe",
-    "emptyAll": "Bütün çöpleri boşalt",
-    "noNew": "Çöpte yeni klasör ya da dosya oluşturulamaz."
+    "emptyAll": "Bütün çöpleri boşalt"
   },
   "archive": {
     "title": "Arşivler",
@@ -450,8 +449,7 @@
     "nothing": "Henüz sık kullanılan yok: bir dosya ya da klasör seçip yıldıza basın.",
     "added": "{name} sık kullanılanlara eklendi",
     "removed": "{name} sık kullanılanlardan çıkarıldı",
-    "tooMany": "En fazla {max} sık kullanılan olabilir.",
-    "noNew": "Sık kullanılanlarda yeni klasör ya da dosya oluşturulamaz: koyacağınız klasörü açın."
+    "tooMany": "En fazla {max} sık kullanılan olabilir."
   },
   "shares": {
     "title": "Paylaşılanlar",
@@ -472,7 +470,6 @@
     "copyAddress": "Adresi kopyala",
     "remove": "Paylaşımı kaldır",
     "nothing": "Henüz paylaşım yok: bir dosya ya da klasör seçip paylaş düğmesine basın.",
-    "noNew": "Paylaşılanlarda yeni klasör ya da dosya oluşturulamaz: koyacağınız klasörü açın.",
     "updated": "{name} paylaşımı güncellendi",
     "removed": "{name} paylaşımı kaldırıldı",
     "removeConfirm": "{name} paylaşımı kaldırılsın mı? Adresi artık açılmaz.",

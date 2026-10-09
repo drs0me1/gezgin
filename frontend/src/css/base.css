@@ -63,6 +63,27 @@ nav {
   overflow-x: hidden;
   scrollbar-width: thin;
   scrollbar-color: var(--borderSecondary) transparent;
+  display: flex;
+  flex-direction: column;
+}
+
+/* The favourites and the shares stay in view at the top when the sidebar scrolls, a line under
+   them; the trash goes to the bottom, above the disk use (Gezgin, K117). */
+nav > .pinned {
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  border-top: 0;
+  border-bottom: 1px solid var(--borderSecondary);
+  background: var(--background);
+}
+
+nav > .pinned + div {
+  border-top: 0;
+}
+
+nav > .last {
+  margin-top: auto;
 }
 
 nav::-webkit-scrollbar {

@@ -50,7 +50,7 @@ Commit messages and README's "Changes from File Browser" describe each change.
 
 ## 3. Decisions taken
 
-The next decision number is **K117** (K117-K119 are proposed, see 4.3). "Recommended" means the operator accepted the recommendation
+The next decision number is **K121**. "Recommended" means the operator accepted the recommendation
 made in the report.
 
 **Stage B (start).** Multi-user with an admin; File Browser's forms stay even where Konsol has its
@@ -343,6 +343,16 @@ so the API (400) and `config set` refuse the same; unset values take the default
 - K116 (recommended): the server marks each listed item (`favorite`, `sharedLinks`,
   `sharedDav`) in folders, favourites and search results; the star and the share dialog update
   the marks in place.
+- K117 (operator, changed after the mock-up): the sidebar holds "Sık kullanılanlar" and
+  "Paylaşılanlar" at the top, in view when it scrolls (`position: sticky`), a line under them;
+  "Dosyalarım"; and "Çöp" at the bottom, above the disk use.
+- K118 (operator): "Yeni klasör" and "Yeni dosya" at the top of the right-click menu on a
+  folder's empty part and in an empty folder, for a user who may create, a line under them.
+- K119 (operator, changed): they leave the sidebar; a phone, without right-click, has them in its
+  ⋮ menu. The sidebar's messages for new items outside a folder (K93) go with them.
+- K120 (operator: the user, settings and logout to the header's right): one account button at
+  the header's right, the user's name beside the icon on a computer, the icon alone on a phone,
+  opening "Profil ayarları", "Ayarlar" (an admin's) and "Çıkış" (`header/Account.vue`).
 
 ## 4. Tasks
 
@@ -615,7 +625,7 @@ so the API (400) and `config set` refuse the same; unset values take the default
   `movies`; `/api/search/?query=movies` answered `movies` with `favorite` and one WebDAV share,
   its time and `isDir`. The results page itself was not opened there: the operator was using
   the pane.
-- [ ] **The sidebar's order, and new items from the right-click menu** (operator, 2026-10-09:
+- [x] **The sidebar's order, and new items from the right-click menu** (operator, 2026-10-09:
   the trash to the bottom of the last part; favourites and shares to the top, a fixed part
   set off by a line; "Yeni klasör" and "Yeni dosya" in the right-click menu inside a folder).
   Proposed with a mock-up, waiting: K117, at the top "Sık kullanılanlar" and "Paylaşılanlar",
@@ -623,7 +633,16 @@ so the API (400) and `config set` refuse the same; unset values take the default
   "Dosyalarım"; a line; "Yeni klasör", "Yeni dosya"; a line; "Ayarlar", "Çıkış" and last
   "Çöp", above the disk use; K118, "Yeni klasör" and "Yeni dosya" at the top of the right-click
   menu on a folder's empty part and in an empty folder, for a user who may create (an item's
-  menu unchanged); K119, they stay in the sidebar too, for a phone, which has no right-click.
+  menu unchanged); K119, they stay in the sidebar too, for a phone, which has no right-click. The
+  operator approved the right-click menu, took "Yeni klasör" and "Yeni dosya" out of the sidebar
+  and moved the user, settings and logout to the header's right: K117-K120 (section 3). Checked
+  in the browser on a local build: the sidebar with the two at the top, "Dosyalarım" under the
+  line and "Çöp" at the bottom (computer and phone); the account button "yonetici" opening
+  "Profil ayarları", "Ayarlar", "Çıkış"; a right click on `albüm`'s empty part giving "Yeni
+  klasör", "Yeni dosya", a line, "İndir", "Bilgi", the first opening its window for `albüm`;
+  at 375 pixels the header fits with the account's icon alone, and the ⋮ menu has "Yeni
+  klasör" and "Yeni dosya". Found on the way: the new item window wrote a folder's name as the
+  address has it ("alb%C3%BCm"); it now decodes it.
 
 ### 4.4 New decisions to put to the operator
 

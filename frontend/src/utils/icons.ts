@@ -33,6 +33,14 @@ export interface OutlineIcon {
 // outlineIcons draws a button's icon, keyed by the Material Icons name the button is given; a
 // name not here is still drawn by the Material Icons font.
 export const outlineIcons: Record<string, OutlineIcon> = {
+  // user-circle
+  account_circle: {
+    paths: [
+      "M3 12a9 9 0 1 0 18 0a9 9 0 1 0 -18 0",
+      "M9 10a3 3 0 1 0 6 0a3 3 0 1 0 -6 0",
+      "M6.168 18.849a4 4 0 0 1 3.832 -2.849h4a4 4 0 0 1 3.834 2.855",
+    ],
+  },
   // plus
   add: {
     paths: ["M12 5l0 14", "M5 12l14 0"],
@@ -70,6 +78,14 @@ export const outlineIcons: Record<string, OutlineIcon> = {
     paths: [
       "M7 9.667a2.667 2.667 0 0 1 2.667 -2.667h8.666a2.667 2.667 0 0 1 2.667 2.667v8.666a2.667 2.667 0 0 1 -2.667 2.667h-8.666a2.667 2.667 0 0 1 -2.667 -2.667l0 -8.666",
       "M4.012 16.737a2.005 2.005 0 0 1 -1.012 -1.737v-10c0 -1.1 .9 -2 2 -2h10c.75 0 1.158 .385 1.5 1",
+    ],
+  },
+  // folder-plus
+  create_new_folder: {
+    paths: [
+      "M12 19h-7a2 2 0 0 1 -2 -2v-11a2 2 0 0 1 2 -2h4l3 3h7a2 2 0 0 1 2 2v3.5",
+      "M16 19h6",
+      "M19 16v6",
     ],
   },
   // trash
@@ -123,6 +139,12 @@ export const outlineIcons: Record<string, OutlineIcon> = {
       "M12 4l0 12",
     ],
   },
+  // folder-open
+  folder_open: {
+    paths: [
+      "M5 19l2.757 -7.351a1 1 0 0 1 .936 -.649h12.307a1 1 0 0 1 .986 1.164l-.996 5.211a2 2 0 0 1 -1.964 1.625h-14.026a2 2 0 0 1 -2 -2v-11a2 2 0 0 1 2 -2h4l3 3h7a2 2 0 0 1 2 2v2",
+    ],
+  },
   // photo
   grid_view: {
     paths: [
@@ -142,12 +164,6 @@ export const outlineIcons: Record<string, OutlineIcon> = {
       "M7 12h3",
     ],
   },
-  // folder-open
-  folder_open: {
-    paths: [
-      "M5 19l2.757 -7.351a1 1 0 0 1 .936 -.649h12.307a1 1 0 0 1 .986 1.164l-.996 5.211a2 2 0 0 1 -1.964 1.625h-14.026a2 2 0 0 1 -2 -2v-11a2 2 0 0 1 2 -2h4l3 3h7a2 2 0 0 1 2 2v2",
-    ],
-  },
   // home
   home: {
     paths: [
@@ -162,6 +178,14 @@ export const outlineIcons: Record<string, OutlineIcon> = {
       "M3 12a9 9 0 1 0 18 0a9 9 0 0 0 -18 0",
       "M12 9h.01",
       "M11 12h1v4h1",
+    ],
+  },
+  // logout
+  logout: {
+    paths: [
+      "M14 8v-2a2 2 0 0 0 -2 -2h-7a2 2 0 0 0 -2 2v12a2 2 0 0 0 2 2h7a2 2 0 0 0 2 -2v-2",
+      "M9 12h12l-3 -3",
+      "M18 15l3 -3",
     ],
   },
   // menu-2
@@ -183,12 +207,28 @@ export const outlineIcons: Record<string, OutlineIcon> = {
       "M11 5a1 1 0 1 0 2 0a1 1 0 1 0 -2 0",
     ],
   },
+  // file-plus
+  note_add: {
+    paths: [
+      "M14 3v4a1 1 0 0 0 1 1h4",
+      "M17 21h-10a2 2 0 0 1 -2 -2v-14a2 2 0 0 1 2 -2h7l5 5v11a2 2 0 0 1 -2 2",
+      "M12 11l0 6",
+      "M9 14l6 0",
+    ],
+  },
   // external-link
   open_in_new: {
     paths: [
       "M12 6h-6a2 2 0 0 0 -2 2v10a2 2 0 0 0 2 2h10a2 2 0 0 0 2 -2v-6",
       "M11 13l9 -9",
       "M15 4h5v5",
+    ],
+  },
+  // user
+  person: {
+    paths: [
+      "M8 7a4 4 0 1 0 8 0a4 4 0 0 0 -8 0",
+      "M6 21v-2a4 4 0 0 1 4 -4h4a4 4 0 0 1 4 4v2",
     ],
   },
   // eye
@@ -221,6 +261,13 @@ export const outlineIcons: Record<string, OutlineIcon> = {
   // search
   search: {
     paths: ["M3 10a7 7 0 1 0 14 0a7 7 0 1 0 -14 0", "M21 21l-6 -6"],
+  },
+  // settings
+  settings: {
+    paths: [
+      "M10.325 4.317c.426 -1.756 2.924 -1.756 3.35 0a1.724 1.724 0 0 0 2.573 1.066c1.543 -.94 3.31 .826 2.37 2.37a1.724 1.724 0 0 0 1.065 2.572c1.756 .426 1.756 2.924 0 3.35a1.724 1.724 0 0 0 -1.066 2.573c.94 1.543 -.826 3.31 -2.37 2.37a1.724 1.724 0 0 0 -2.572 1.065c-.426 1.756 -2.924 1.756 -3.35 0a1.724 1.724 0 0 0 -2.573 -1.066c-1.543 .94 -3.31 -.826 -2.37 -2.37a1.724 1.724 0 0 0 -1.065 -2.572c-1.756 -.426 -1.756 -2.924 0 -3.35a1.724 1.724 0 0 0 1.066 -2.573c-.94 -1.543 .826 -3.31 2.37 -2.37c1 .608 2.296 .07 2.572 -1.065",
+      "M9 12a3 3 0 1 0 6 0a3 3 0 0 0 -6 0",
+    ],
   },
   // share
   share: {

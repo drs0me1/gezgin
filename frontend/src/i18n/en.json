@@ -106,7 +106,6 @@
     },
     "fileEncoding": "File Encoding",
     "itemCount": "{count} item | {count} items",
-    "noNewHere": "Open a folder in My files to make a new folder or file in it.",
     "favoriteMark": "Favourite",
     "sharedMark": "Shared: {kinds}",
     "sharedLinks": "{n} link | {n} links",
@@ -359,7 +358,8 @@
     "newFolder": "New folder",
     "preview": "Preview",
     "settings": "Settings",
-    "siteSettings": "Site Settings"
+    "siteSettings": "Site Settings",
+    "account": "Account: {name}"
   },
   "success": {
     "linkCopied": "Link copied!"
@@ -392,8 +392,7 @@
     "keepDays": "Days to keep",
     "keepDaysHelp": "Deleted items are deleted for good after this many days; 0 keeps them until the trash is emptied.",
     "usage": "Every user's trash: {count} items",
-    "emptyAll": "Empty every trash",
-    "noNew": "New folders and files cannot be made in the trash."
+    "emptyAll": "Empty every trash"
   },
   "archive": {
     "title": "Archives",
@@ -450,8 +449,7 @@
     "nothing": "No favorites yet: select a file or folder and press its star.",
     "added": "{name} added to favorites",
     "removed": "{name} removed from favorites",
-    "tooMany": "At most {max} favorites.",
-    "noNew": "New folders and files cannot be made in favorites: open the folder they should go in."
+    "tooMany": "At most {max} favorites."
   },
   "shares": {
     "title": "Shared",
@@ -472,7 +470,6 @@
     "copyAddress": "Copy the address",
     "remove": "Remove the share",
     "nothing": "Nothing is shared yet: select a file or folder and press share.",
-    "noNew": "A new folder or file cannot be made in Shared: open the folder to put it in.",
     "updated": "The share of {name} was updated",
     "removed": "The share of {name} was removed",
     "removeConfirm": "Remove the share of {name}? Its address will no longer open.",

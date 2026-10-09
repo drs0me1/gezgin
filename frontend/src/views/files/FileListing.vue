@@ -44,6 +44,18 @@
           :label="t('buttons.upload')"
           @action="uploadFunc"
         />
+        <template v-if="isMobile && authStore.user?.perm.create">
+          <action
+            icon="create_new_folder"
+            :label="t('sidebar.newFolder')"
+            show="newDir"
+          />
+          <action
+            icon="note_add"
+            :label="t('sidebar.newFile')"
+            show="newFile"
+          />
+        </template>
         <action
           v-if="isMobile"
           icon="info"
@@ -286,6 +298,20 @@
         :pos="contextMenuPos"
         @hide="hideContextMenu"
       >
+        <!-- Off the items, the folder's menu makes new folders and files (Gezgin, K118). -->
+        <template v-if="headerButtons.newItems">
+          <action
+            icon="create_new_folder"
+            :label="t('sidebar.newFolder')"
+            show="newDir"
+          />
+          <action
+            icon="note_add"
+            :label="t('sidebar.newFile')"
+            show="newFile"
+          />
+          <div class="separator"></div>
+        </template>
         <action
           v-if="headerButtons.share"
           icon="share"
@@ -521,6 +547,7 @@ const toggleFavorite = async () => {
 const headerButtons = computed(() => {
   return {
     favorite: fileStore.selectedCount === 1,
+    newItems: fileStore.selectedCount === 0 && authStore.user?.perm.create,
     upload: authStore.user?.perm.create,
     download: authStore.user?.perm.download,
     delete: fileStore.selectedCount > 0 && authStore.user?.perm.delete,

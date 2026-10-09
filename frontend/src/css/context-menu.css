@@ -19,3 +19,9 @@
 .context-menu .action .counter {
   left: 1.75em;
 }
+
+/* A line between the folder's new items and the rest (Gezgin, K118). */
+.context-menu .separator {
+  border-top: 1px solid var(--divider);
+  margin: 0.25em 0;
+}

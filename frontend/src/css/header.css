@@ -143,3 +143,49 @@ header .header-nav .action[disabled] {
   color: var(--textSecondary);
   padding: 0;
 }
+
+/* The account at the header's right (Gezgin, K120): the user's name, opening a menu. */
+header .account {
+  position: relative;
+  margin-left: 0.25em;
+}
+
+header .account .account-button {
+  display: inline-flex;
+  align-items: center;
+  border-radius: 1.5em;
+  padding-right: 0.75em;
+}
+
+header .account .account-button .account-name {
+  display: inline;
+  max-width: 10em;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+header .account-menu {
+  position: absolute;
+  right: 0;
+  top: calc(100% + 0.5em);
+  min-width: 13em;
+  padding: 0.25em 0;
+  background: var(--surfacePrimary);
+  border: 1px solid var(--borderSecondary);
+  border-radius: 0.3em;
+  box-shadow: 0 2px 4px var(--borderPrimary);
+  z-index: 1001;
+}
+
+header .account-menu .action {
+  display: flex;
+  align-items: center;
+  width: 100%;
+  border-radius: 0;
+  padding-right: 1em;
+}
+
+header .account-menu .action span {
+  display: inline;
+}

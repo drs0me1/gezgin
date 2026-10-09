@@ -2,91 +2,55 @@
   <div v-show="active" @click="closeHovers" class="overlay"></div>
   <nav :class="{ active }">
     <template v-if="isLoggedIn">
-      <button @click="toAccountSettings" class="action">
-        <i class="material-icons">person</i>
-        <span>{{ user.username }}</span>
-      </button>
-      <button
-        class="action"
-        @click="toRoot"
-        :aria-label="$t('sidebar.myFiles')"
-        :title="$t('sidebar.myFiles')"
-      >
-        <i class="material-icons">folder</i>
-        <span>{{ $t("sidebar.myFiles") }}</span>
-      </button>
-      <button
-        class="action"
-        @click="toFavorites"
-        :aria-label="$t('favorites.title')"
-        :title="$t('favorites.title')"
-      >
-        <i class="material-icons">star</i>
-        <span>{{ $t("favorites.title") }}</span>
-      </button>
-      <button
-        v-if="user.perm.share"
-        class="action"
-        @click="toShares"
-        :aria-label="$t('shares.title')"
-        :title="$t('shares.title')"
-      >
-        <i class="material-icons">share</i>
-        <span>{{ $t("shares.title") }}</span>
-      </button>
-      <button
-        class="action"
-        @click="toTrash"
-        :aria-label="$t('trash.title')"
-        :title="$t('trash.title')"
-      >
-        <i class="material-icons">delete</i>
-        <span>{{ $t("trash.title") }}</span>
-      </button>
-
-      <div v-if="user.perm.create">
+      <!-- At the top, in view when the sidebar scrolls: the favourites and the shares; the user's
+           files under them, and the trash at the bottom. The account's settings and logout are
+           at the header's right, new folders and files in the folder's right-click menu (Gezgin,
+           K117-K120). -->
+      <div class="pinned">
         <button
-          @click="newItem('newDir')"
           class="action"
-          :aria-label="$t('sidebar.newFolder')"
-          :title="$t('sidebar.newFolder')"
+          @click="toFavorites"
+          :aria-label="$t('favorites.title')"
+          :title="$t('favorites.title')"
         >
-          <i class="material-icons">create_new_folder</i>
-          <span>{{ $t("sidebar.newFolder") }}</span>
+          <i class="material-icons">star</i>
+          <span>{{ $t("favorites.title") }}</span>
         </button>
-
         <button
-          @click="newItem('newFile')"
+          v-if="user.perm.share"
           class="action"
-          :aria-label="$t('sidebar.newFile')"
-          :title="$t('sidebar.newFile')"
+          @click="toShares"
+          :aria-label="$t('shares.title')"
+          :title="$t('shares.title')"
         >
-          <i class="material-icons">note_add</i>
-          <span>{{ $t("sidebar.newFile") }}</span>
+          <i class="material-icons">share</i>
+          <span>{{ $t("shares.title") }}</span>
         </button>
       </div>
 
-      <div v-if="user.perm.admin">
+      <div>
         <button
           class="action"
-          @click="toGlobalSettings"
-          :aria-label="$t('sidebar.settings')"
-          :title="$t('sidebar.settings')"
+          @click="toRoot"
+          :aria-label="$t('sidebar.myFiles')"
+          :title="$t('sidebar.myFiles')"
         >
-          <i class="material-icons">settings_applications</i>
-          <span>{{ $t("sidebar.settings") }}</span>
+          <i class="material-icons">folder</i>
+          <span>{{ $t("sidebar.myFiles") }}</span>
         </button>
       </div>
-      <button
-        @click="logout"
-        class="action"
-        id="logout"
-        :aria-label="$t('sidebar.logout')"
-        :title="$t('sidebar.logout')"
-      >
-        <i class="material-icons">exit_to_app</i>
-        <span>{{ $t("sidebar.logout") }}</span>
-      </button>
+
+      <div class="last">
+        <button
+          class="action"
+          @click="toTrash"
+          :aria-label="$t('trash.title')"
+          :title="$t('trash.title')"
+        >
+          <i class="material-icons">delete</i>
+          <span>{{ $t("trash.title") }}</span>
+        </button>
+      </div>
     </template>
 
     <div
@@ -118,7 +82,6 @@ import { useAuthStore } from "@/stores/auth";
 import { useFileStore } from "@/stores/file";
 import { useLayoutStore } from "@/stores/layout";
 
-import * as auth from "@/utils/auth";
 import { name, version, disableUsedPercentage } from "@/utils/constants";
 import { files as api } from "@/api";
 import ProgressBar from "@/components/ProgressBar.vue";
@@ -135,7 +98,6 @@ export default {
   components: {
     ProgressBar,
   },
-  inject: ["$showError"],
   computed: {
     ...mapState(useAuthStore, ["user", "isLoggedIn"]),
     ...mapState(useFileStore, ["isFiles", "reload"]),
@@ -177,21 +139,6 @@ export default {
       this.$router.push({ path: "/files" });
       this.closeHovers();
     },
-    // A new folder or file goes into the folder open in "Dosyalarım" (Gezgin). Elsewhere it used to
-    // land at the top of the user's files without a word; now the page says why it cannot.
-    newItem(prompt) {
-      if (this.isFiles) {
-        this.showHover(prompt);
-        return;
-      }
-      this.closeHovers();
-      const reasons = {
-        Trash: "trash.noNew",
-        Favorites: "favorites.noNew",
-        Shares: "shares.noNew",
-      };
-      this.$showError(this.$t(reasons[this.$route.name] ?? "files.noNewHere"));
-    },
     toFavorites() {
       this.$router.push({ path: "/favorites" });
       this.closeHovers();
@@ -204,18 +151,9 @@ export default {
       this.$router.push({ path: "/trash" });
       this.closeHovers();
     },
-    toAccountSettings() {
-      this.$router.push({ path: "/settings/profile" });
-      this.closeHovers();
-    },
-    toGlobalSettings() {
-      this.$router.push({ path: "/settings/global" });
-      this.closeHovers();
-    },
     help() {
       this.showHover("help");
     },
-    logout: auth.logout,
   },
   watch: {
     $route: {

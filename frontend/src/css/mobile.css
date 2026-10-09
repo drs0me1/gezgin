@@ -114,6 +114,9 @@
   #file-selection .action span {
     display: none;
   }
+  nav > .pinned {
+    background: var(--surfaceSecondary);
+  }
   nav {
     top: 0;
     z-index: 99999;
@@ -146,6 +149,14 @@
   header .search-button,
   header .menu-button {
     display: inherit;
+  }
+  /* A phone shows the account as its icon (Gezgin, K120). */
+  header .account .account-button .account-name {
+    display: none;
+  }
+  header .account .account-button {
+    padding-right: 0;
+    border-radius: 50%;
   }
   /* A phone keeps back, up and home (Gezgin, K103). */
   header .header-nav .forward {

@@ -43,14 +43,21 @@ const props = defineProps({
 
 const container = ref<HTMLElement | null>(null);
 
+// The route's path is percent-encoded; its folders read as they are named ("albüm", not
+// "alb%C3%BCm"; Gezgin). The name being typed is shown as it is.
+const decode = (segment: string) => {
+  try {
+    return decodeURIComponent(segment);
+  } catch {
+    return segment;
+  }
+};
+
 const path = computed(() => {
   const routePath = props.path || route.path;
-  let basePath = fileStore.isFiles ? routePath : url.removeLastDir(routePath);
-  if (!basePath.endsWith("/")) {
-    basePath += "/";
-  }
-  basePath += props.name;
-  return basePath.split("/").filter(Boolean).splice(1);
+  const basePath = fileStore.isFiles ? routePath : url.removeLastDir(routePath);
+  const folders = basePath.split("/").filter(Boolean).splice(1).map(decode);
+  return props.name ? [...folders, props.name] : folders;
 });
 
 watch(path, () => {

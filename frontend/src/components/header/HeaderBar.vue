@@ -26,6 +26,7 @@
       :label="t('buttons.more')"
       @action="layoutStore.showHover('more')"
     />
+    <Account v-if="showMenu && authStore.isLoggedIn" />
 
     <div
       class="overlay"
@@ -36,10 +37,12 @@
 </template>
 
 <script setup lang="ts">
+import { useAuthStore } from "@/stores/auth";
 import { useLayoutStore } from "@/stores/layout";
 
 import { logoURL } from "@/utils/constants";
 
+import Account from "@/components/header/Account.vue";
 import Action from "@/components/header/Action.vue";
 import Navigation from "@/components/header/Navigation.vue";
 import { computed, useSlots } from "vue";
@@ -53,6 +56,7 @@ defineProps<{
 }>();
 
 const layoutStore = useLayoutStore();
+const authStore = useAuthStore();
 const slots = useSlots();
 
 const { t } = useI18n();
