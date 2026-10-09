@@ -50,7 +50,7 @@ Commit messages and README's "Changes from File Browser" describe each change.
 
 ## 3. Decisions taken
 
-The next decision number is **K123** (K123-K128 are proposed, see 4.3). "Recommended" means the operator accepted the recommendation
+The next decision number is **K130**. "Recommended" means the operator accepted the recommendation
 made in the report.
 
 **Stage B (start).** Multi-user with an admin; File Browser's forms stay even where Konsol has its
@@ -361,6 +361,22 @@ so the API (400) and `config set` refuse the same; unset values take the default
 - K122 (operator): the disk use goes over "Çöp" in a bottom part of the sidebar, with the
   version, in view when the sidebar scrolls and on every page (the user's files' disk off
   "Dosyalarım", the open folder's in it).
+- K123 (operator): "Sık kullanılanlar" is "Favoriler" everywhere ("Favorilere ekle",
+  "Favorilerden çıkar", "{ad} favorilere eklendi", the mark's "Favori", "En fazla 20 favori
+  olabilir.").
+- K124 (operator): "Dosyayı kopyala" and "Dosyayı taşı" are "Kopyala" and "Taşı".
+- K125 (operator, changed after the mock-up: one icon, not three): the view button leaves the
+  header and the phone's ⋮ for the right of the path row (`Breadcrumbs`' slot), and of the top
+  line on the favourites (which get one: "N öğe"), trash and search pages
+  (`files/ListingTools.vue`); it shows the view it goes to, now `layout-grid`, `layout-cards`
+  and `layout-list`, no more the picture that read as images.
+- K126 (recommended A, not objected to): rename is drawn as a text box with a cursor (`forms`).
+- K127 (recommended A, not objected to): "Arşiv oluştur" as a zipped file (`file-zip`).
+- K128 (recommended, not objected to): the right-click menu's "İndir" has no count.
+- K129 (operator): "Seç", beside the view button, replaces the header's multiple selection: a
+  tick circle on every item, a click ticking it (a second click does not open it), the button
+  turning into "Bitti", which clears the selection and ends it, as do Esc and leaving the folder;
+  the old "Çoklu seçim etkin" bar goes.
 
 ## 4. Tasks
 
@@ -666,7 +682,7 @@ so the API (400) and `config set` refuse the same; unset values take the default
   read "2 öğe · 1.64 GiB" with no buttons; a right click on its empty part gave "Tümünü geri
   yükle", "Tümünü sil", "Bilgi" (closed unused, the trash untouched); the sidebar showed
   "5.4 GiB / 251 GiB kullanıldı" on the trash page.
-- [ ] **Words and icons of the menus, the view switch** (operator, 2026-10-09, with two
+- [x] **Words and icons of the menus, the view switch** (operator, 2026-10-09, with two
   screenshots: the header with the view button and an empty spot at the right of the path row
   circled, and a folder's right-click menu; a design first). Proposed with a mock-up, waiting:
   K123, "Sık kullanılanlar" becomes "Favoriler" everywhere ("Favorilere ekle", "Favorilerden
@@ -678,7 +694,17 @@ so the API (400) and `config set` refuse the same; unset values take the default
   path row at the right of their top line (the favourites get one with their count), the phone's
   ⋮ losing it; K126, "Yeniden adlandır" gets a text box with a cursor (`forms`, as Windows 11),
   or the I-beam (`cursor-text`); K127, "Arşiv oluştur" a zipped file (`file-zip`), or `zip`;
-  K128, no count badge on "İndir" in the right-click menu (it covered the icon).
+  K128, no count badge on "İndir" in the right-click menu (it covered the icon). The operator
+  kept the view as one icon, beside it "Seç" (ticks to select): K123-K129 (section 3). Checked
+  in the browser on a local build: the sidebar's "Favoriler", the page title "Favoriler -
+  Gezgin" and its top line "4 öğe" with the view and "Seç"; in `albüm` the path row's right held
+  the view button and "Seç", the header only upload and the account; "Seç" put five circles,
+  ticked `2024` and `a.jpg` on a click each and read "Bitti", which cleared them; a right click
+  gave "Favorilere ekle", "Yeniden adlandır" (text box), "Kopyala", "Taşı", "Arşiv oluştur"
+  (zipped file), "İndir" without count; at 375 pixels the path row held both and the ⋮ menu
+  neither. Found on the way: the right-click menu was placed before it was measured, so near the
+  right edge it ran off the window and near the bottom its last items were cut; it now moves
+  left, and up only as far as it must, never under the header.
 
 ### 4.4 New decisions to put to the operator
 

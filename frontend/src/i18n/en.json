@@ -5,7 +5,7 @@
     "close": "Close",
     "continue": "Continue",
     "copy": "Copy",
-    "copyFile": "Copy file",
+    "copyFile": "Copy",
     "copyToClipboard": "Copy to clipboard",
     "copyDownloadLinkToClipboard": "Copy download link to clipboard",
     "create": "Create",
@@ -18,7 +18,7 @@
     "info": "Info",
     "more": "More",
     "move": "Move",
-    "moveFile": "Move file",
+    "moveFile": "Move",
     "new": "New",
     "next": "Next",
     "ok": "OK",
@@ -57,7 +57,8 @@
     "archive": "Create archive",
     "archiveCreate": "Create",
     "favorite": "Add to favorites",
-    "unfavorite": "Remove from favorites"
+    "unfavorite": "Remove from favorites",
+    "done": "Done"
   },
   "download": {
     "downloadFile": "Download File",

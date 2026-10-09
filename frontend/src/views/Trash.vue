@@ -7,11 +7,6 @@
         <!-- On a computer restore, delete for good and Info are in the right-click menu, the whole
              trash's too (Gezgin, K109, K121); a phone, without right-click, keeps them here. -->
         <action
-          :icon="viewIcon"
-          :label="t('buttons.switchView')"
-          @action="switchView"
-        />
-        <action
           v-if="isMobile"
           icon="info"
           :label="t('buttons.info')"
@@ -73,6 +68,7 @@
           {{ t("trash.summary", { count: summary.count }) }} ·
           {{ filesize(summary.size) }}
         </span>
+        <listing-tools />
       </div>
 
       <div
@@ -173,6 +169,7 @@ import ContextMenu from "@/components/ContextMenu.vue";
 import Action from "@/components/header/Action.vue";
 import HeaderBar from "@/components/header/HeaderBar.vue";
 import Item from "@/components/files/ListingItem.vue";
+import ListingTools from "@/components/files/ListingTools.vue";
 import { useAuthStore } from "@/stores/auth";
 import { useFileStore } from "@/stores/file";
 import { useLayoutStore } from "@/stores/layout";
@@ -218,15 +215,6 @@ const columns = computed(() => [
   { by: "size", label: t("files.size") },
   { by: "modified", label: t("trash.deleted") },
 ]);
-
-const viewIcon = computed(() => {
-  const icons = {
-    list: "view_module",
-    mosaic: "grid_view",
-    "mosaic gallery": "view_list",
-  };
-  return icons[authStore.user?.viewMode ?? "list"];
-});
 
 const selectedIds = () =>
   fileStore.selected
@@ -391,22 +379,6 @@ const sort = async (by: string) => {
   } catch (e: any) {
     $showError(e);
   }
-};
-
-const switchView = async () => {
-  layoutStore.closeHovers();
-  const modes = {
-    list: "mosaic",
-    mosaic: "mosaic gallery",
-    "mosaic gallery": "list",
-  };
-  const data = {
-    id: authStore.user?.id,
-    viewMode: (modes[authStore.user?.viewMode ?? "list"] ||
-      "list") as ViewModeType,
-  };
-  users.update(data, ["viewMode"]).catch($showError);
-  authStore.updateUser(data);
 };
 
 const showContextMenu = (event: MouseEvent) => {

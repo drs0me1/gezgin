@@ -93,7 +93,7 @@ Work in progress. Until the first Gezgin release this tree is File Browser's las
   and a move takes the share links along. The owner's permissions and rules hold, Gezgin's own
   files are not shown, and a symbolic link does not lead out of the shared folder. The share
   dialog offers it for folders when the port is set; it lasts 7 days unless told otherwise.
-- Shares page: "Paylaşılanlar", after "Sık kullanılanlar" in the sidebar for users who may share,
+- Shares page: "Paylaşılanlar", after "Favoriler" in the sidebar for users who may share,
   replaces Settings → "Paylaşım yönetimi". A fixed list gives each share's item with its icon (it
   opens the item in its place) and folder, a lock when it has a password, its kind ("Bağlantı", or
   "WebDAV" read-only or read-write with its username), its end (amber within a day) and, for an
@@ -159,7 +159,7 @@ Work in progress. Until the first Gezgin release this tree is File Browser's las
   entry), and sorting by size orders folders by their size. Only the file listing and share pages
   ask for it (`?sizes=true`).
 - Favourites: a star in the header, the context menu and the phone's selection bar marks a file
-  or folder, at most 20 per user, kept on the server. The "Sık kullanılanlar" page in the sidebar
+  or folder, at most 20 per user, kept on the server. The "Favoriler" page in the sidebar
   shows them in the same view as a folder of files (tiles or list, icons, thumbnails, folder
   sizes, the user's sorting), each a shortcut that opens its item in its place, with its location
   as a tooltip and in the Info window; there an item is shared, downloaded or taken out of the
@@ -188,7 +188,7 @@ Work in progress. Until the first Gezgin release this tree is File Browser's las
   purple share sign, whose tooltip counts its links and WebDAV shares (a user's own; an admin's
   everyone's), in folders, favourites and search results. The server sets them as it lists, so
   they follow renames, moves and expiries.
-- Sidebar and account: the sidebar holds "Sık kullanılanlar" and "Paylaşılanlar" at the top and,
+- Sidebar and account: the sidebar holds "Favoriler" and "Paylaşılanlar" at the top and,
   at the bottom, the disk use over "Çöp" and the version, both parts in view when it scrolls and
   on every page, with "Dosyalarım" between them.
   The user's name is at the header's right, opening "Profil ayarları", an admin's "Ayarlar" and
@@ -199,6 +199,13 @@ Work in progress. Until the first Gezgin release this tree is File Browser's las
   items "Tümünü geri yükle" and "Tümünü sil", each asking first in a window (red for what cannot
   be undone); the bar above the items keeps only the count and size. A phone has them in its ⋮
   menu.
+- View and selection: the view button and "Seç" sit at the right of the path row (of the top line
+  on the favourites, trash and search pages). The view button shows the view it goes to (tiles,
+  large tiles, list); "Seç" puts a tick circle on every item, a click then ticking it without
+  opening it, and turns into "Bitti", which, like Esc or another folder, ends it. The menus say
+  "Favorilere ekle", "Kopyala" and "Taşı", rename shows a text box with a cursor and "Arşiv
+  oluştur" a zipped file; the right-click menu stays inside the window, moving left or up near
+  the edges, and its "İndir" has no count.
 - Gezgin's own logo, a pale blue folder, in place of File Browser's, with its favicons and app
   icons; the `branding` folder goes. The version is the short commit the image was built from
   ("Gezgin 5074d927" in the sidebar, the log and `filebrowser version`), and the command line

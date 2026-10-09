@@ -313,3 +313,67 @@ html[dir="rtl"] #listing {
 #listing #multiple-selection i {
   color: var(--iconSecondary);
 }
+
+/* The selection mode's ticks (Gezgin, K129): over a tile's corner, before a row's icon. */
+#listing .item .select-mark {
+  position: absolute;
+  top: 0.3em;
+  left: 0.3em;
+  z-index: 1;
+  font-size: 1.4em;
+  color: var(--textPrimary);
+}
+
+#listing .item[aria-selected="true"] .select-mark {
+  color: var(--item-selected);
+}
+
+#listing.list .item .select-mark {
+  position: static;
+  align-self: center;
+  margin-right: 0.4em;
+}
+
+/* The view and "Seç" at the right of the path or a page's top line (Gezgin, K125, K129). */
+.listing-tools {
+  display: flex;
+  align-items: center;
+  gap: 0.25em;
+  margin-left: auto;
+}
+
+.listing-tools .action i {
+  padding: 0.3em;
+}
+
+.listing-tools .select-toggle {
+  border: 0;
+  border-radius: 0.3em;
+  padding: 0.35em 0.7em;
+  background: none;
+  color: var(--blue);
+  font: inherit;
+  font-weight: 500;
+  cursor: pointer;
+}
+
+.listing-tools .select-toggle:hover {
+  background: var(--hover);
+}
+
+.listing-tools .select-toggle.active {
+  color: var(--textSecondary);
+}
+
+.listing-bar {
+  display: flex;
+  align-items: center;
+  gap: 0.5em;
+  margin: 0 0 0.5em;
+}
+
+.listing-bar .small {
+  flex: 1;
+  color: var(--textPrimary);
+  font-size: 0.9em;
+}

@@ -15,6 +15,8 @@
       >
       <component :is="element" :to="link.url">{{ link.name }}</component>
     </span>
+    <!-- The view and the selection, at the path's right (Gezgin, K125, K129). -->
+    <div v-if="$slots.default" class="breadcrumbs-tools"><slot /></div>
   </div>
 </template>
 

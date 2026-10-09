@@ -20,11 +20,6 @@
           @action="toggleFavorite"
         />
         <action
-          :icon="viewIcon"
-          :label="t('buttons.switchView')"
-          @action="switchView"
-        />
-        <action
           v-if="isMobile && headerButtons.download"
           icon="file_download"
           :label="t('buttons.download')"
@@ -61,11 +56,6 @@
           icon="info"
           :label="t('buttons.info')"
           show="info"
-        />
-        <action
-          icon="check_circle"
-          :label="t('buttons.selectMultiple')"
-          @action="toggleMultipleSelection"
         />
       </template>
     </header-bar>
@@ -278,20 +268,6 @@
           webkitdirectory
           multiple
         />
-
-        <div :class="{ active: fileStore.multiple }" id="multiple-selection">
-          <p>{{ t("files.multipleSelectionEnabled") }}</p>
-          <div
-            @click="() => (fileStore.multiple = false)"
-            tabindex="0"
-            role="button"
-            :title="t('buttons.clear')"
-            :aria-label="t('buttons.clear')"
-            class="action"
-          >
-            <i class="material-icons">clear</i>
-          </div>
-        </div>
       </div>
       <context-menu
         :show="isContextMenuVisible"
@@ -368,7 +344,6 @@
           icon="file_download"
           :label="t('buttons.download')"
           @action="download"
-          :counter="fileStore.selectedCount"
         />
         <action icon="info" :label="t('buttons.info')" show="info" />
       </context-menu>
@@ -501,17 +476,6 @@ const modifiedIcon = computed(() => {
   }
 
   return "arrow_upward";
-});
-
-const viewIcon = computed(() => {
-  const icons = {
-    list: "view_module",
-    mosaic: "grid_view",
-    "mosaic gallery": "view_list",
-  };
-  return authStore.user === null
-    ? icons["list"]
-    : icons[authStore.user.viewMode];
 });
 
 // The one selected item, whose star adds it to the favourites or takes it out (Gezgin, K87).
@@ -655,8 +619,9 @@ const keyEvent = (event: KeyboardEvent) => {
   }
 
   if (event.key === "Escape") {
-    // Reset files selection.
+    // Reset files selection, and leave the selection mode (Gezgin, K129).
     fileStore.selected = [];
+    fileStore.multiple = false;
   }
 
   if (event.key === "Delete") {
@@ -1068,11 +1033,6 @@ const openSearch = () => {
   document.querySelector<HTMLInputElement>("#search input")?.focus();
 };
 
-const toggleMultipleSelection = () => {
-  fileStore.toggleMultiple();
-  layoutStore.closeHovers();
-};
-
 const windowsResize = throttle(() => {
   columnsResize();
   width.value = window.innerWidth;
@@ -1118,28 +1078,16 @@ const download = () => {
   });
 };
 
-const switchView = async () => {
-  layoutStore.closeHovers();
-
-  const modes = {
-    list: "mosaic",
-    mosaic: "mosaic gallery",
-    "mosaic gallery": "list",
-  };
-
-  const data = {
-    id: authStore.user?.id,
-    viewMode: (modes[authStore.user?.viewMode ?? "list"] ||
-      "list") as ViewModeType,
-  };
-
-  users.update(data, ["viewMode"]).catch($showError);
-
-  authStore.updateUser(data);
-
-  setItemWeight();
-  fillWindow();
-};
+// The view is switched at the path's right (ListingTools, Gezgin K125); the listing fills the
+// window again for its new item size.
+watch(
+  () => authStore.user?.viewMode,
+  () =>
+    nextTick(() => {
+      setItemWeight();
+      fillWindow();
+    })
+);
 
 const uploadFunc = () => {
   if (

@@ -5,7 +5,7 @@
     "close": "Kapat",
     "continue": "Devam",
     "copy": "Kopyala",
-    "copyFile": "Dosyayı kopyala",
+    "copyFile": "Kopyala",
     "copyToClipboard": "Panoya kopyala",
     "copyDownloadLinkToClipboard": "İndirme bağlantısını kopyala",
     "create": "Oluştur",
@@ -18,7 +18,7 @@
     "info": "Bilgi",
     "more": "Daha fazla",
     "move": "Taşı",
-    "moveFile": "Dosyayı taşı",
+    "moveFile": "Taşı",
     "new": "Yeni",
     "next": "Sonraki",
     "ok": "Tamam",
@@ -56,8 +56,9 @@
     "extract": "Arşivi aç",
     "archive": "Arşiv oluştur",
     "archiveCreate": "Oluştur",
-    "favorite": "Sık kullanılanlara ekle",
-    "unfavorite": "Sık kullanılanlardan çıkar"
+    "favorite": "Favorilere ekle",
+    "unfavorite": "Favorilerden çıkar",
+    "done": "Bitti"
   },
   "download": {
     "downloadFile": "Dosyayı indir",
@@ -106,7 +107,7 @@
     },
     "fileEncoding": "Karakter kodlaması",
     "itemCount": "{count} öğe",
-    "favoriteMark": "Sık kullanılan",
+    "favoriteMark": "Favori",
     "sharedMark": "Paylaşıldı: {kinds}",
     "sharedLinks": "{n} bağlantı",
     "sharedDav": "{n} WebDAV"
@@ -445,15 +446,15 @@
     "unencodable": "Metinde {encoding} kodlamasının yazamadığı karakterler var; kaydedilmedi."
   },
   "favorites": {
-    "title": "Sık kullanılanlar",
+    "title": "Favoriler",
     "name": "Ad",
     "location": "Konum",
     "size": "Boyut",
-    "remove": "Sık kullanılanlardan çıkar",
-    "nothing": "Henüz sık kullanılan yok: bir dosya ya da klasör seçip yıldıza basın.",
-    "added": "{name} sık kullanılanlara eklendi",
-    "removed": "{name} sık kullanılanlardan çıkarıldı",
-    "tooMany": "En fazla {max} sık kullanılan olabilir."
+    "remove": "Favorilerden çıkar",
+    "nothing": "Henüz favori yok: bir dosya ya da klasör seçip yıldıza basın.",
+    "added": "{name} favorilere eklendi",
+    "removed": "{name} favorilerden çıkarıldı",
+    "tooMany": "En fazla {max} favori olabilir."
   },
   "shares": {
     "title": "Paylaşılanlar",

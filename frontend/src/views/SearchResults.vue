@@ -18,11 +18,6 @@
           @action="toggleFavorite"
         />
         <action
-          :icon="viewIcon"
-          :label="t('buttons.switchView')"
-          @action="switchView"
-        />
-        <action
           v-if="isMobile && headerButtons.download"
           icon="file_download"
           :label="t('buttons.download')"
@@ -76,6 +71,7 @@
       <span v-else-if="capped" class="capped">
         {{ t("search.capped", { max: MAX_RESULTS }) }}
       </span>
+      <listing-tools />
     </p>
 
     <errors v-if="error" :errorCode="error.status" />
@@ -180,6 +176,7 @@ import Search from "@/components/Search.vue";
 import Action from "@/components/header/Action.vue";
 import HeaderBar from "@/components/header/HeaderBar.vue";
 import Item from "@/components/files/ListingItem.vue";
+import ListingTools from "@/components/files/ListingTools.vue";
 import { useAuthStore } from "@/stores/auth";
 import { useFavoritesStore } from "@/stores/favorites";
 import { useFileStore } from "@/stores/file";
@@ -266,15 +263,6 @@ const columns = computed(() => [
   { by: "size", label: t("files.size") },
   { by: "modified", label: t("files.lastModified") },
 ]);
-
-const viewIcon = computed(() => {
-  const icons = {
-    list: "view_module",
-    mosaic: "grid_view",
-    "mosaic gallery": "view_list",
-  };
-  return icons[authStore.user?.viewMode ?? "list"];
-});
 
 // The page's listing, which the prompts (share, info) read as they read a folder's.
 const start = () => {
@@ -440,22 +428,6 @@ const sort = async (by: string) => {
   const data = { id: authStore.user?.id, sorting: { by, asc } };
   authStore.updateUser(data);
   users.update(data, ["sorting"]).catch($showError);
-};
-
-const switchView = async () => {
-  layoutStore.closeHovers();
-  const modes = {
-    list: "mosaic",
-    mosaic: "mosaic gallery",
-    "mosaic gallery": "list",
-  };
-  const data = {
-    id: authStore.user?.id,
-    viewMode: (modes[authStore.user?.viewMode ?? "list"] ||
-      "list") as ViewModeType,
-  };
-  users.update(data, ["viewMode"]).catch($showError);
-  authStore.updateUser(data);
 };
 
 // The menu is a result's; off the results nothing is selected and there is none.

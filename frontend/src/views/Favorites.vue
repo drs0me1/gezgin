@@ -13,11 +13,6 @@
           @action="unfavorite"
         />
         <action
-          :icon="viewIcon"
-          :label="t('buttons.switchView')"
-          @action="switchView"
-        />
-        <action
           v-if="isMobile && headerButtons.download"
           icon="file_download"
           :label="t('buttons.download')"
@@ -80,6 +75,13 @@
       @click="handleEmptyAreaClick"
       @contextmenu="showContextMenu"
     >
+      <!-- A top line: the count, the view and "Seç" (Gezgin, K125, K129). -->
+      <div class="listing-bar" data-clear-on-click="true">
+        <span class="small">
+          {{ t("files.itemCount", { count: items.length }) }}
+        </span>
+        <listing-tools />
+      </div>
       <div>
         <div class="item header">
           <div>
@@ -186,6 +188,7 @@ import ContextMenu from "@/components/ContextMenu.vue";
 import Action from "@/components/header/Action.vue";
 import HeaderBar from "@/components/header/HeaderBar.vue";
 import Item from "@/components/files/ListingItem.vue";
+import ListingTools from "@/components/files/ListingTools.vue";
 import { useAuthStore } from "@/stores/auth";
 import { useFavoritesStore } from "@/stores/favorites";
 import { useFileStore } from "@/stores/file";
@@ -195,7 +198,7 @@ import Errors from "@/views/Errors.vue";
 import { computed, inject, onBeforeUnmount, onMounted, ref, watch } from "vue";
 import { useI18n } from "vue-i18n";
 
-// The "Sık kullanılanlar" page (Gezgin, K90, K91): the favourites in the same view as a folder of
+// The "Favoriler" page (Gezgin, K90, K91, K123): the favourites in the same view as a folder of
 // the user's files, each tile a shortcut that opens its item in its place. Here an item can be
 // opened, shared, downloaded, looked at and taken out of the favourites; the rest is done in its
 // own folder.
@@ -236,15 +239,6 @@ const headerButtons = computed(() => ({
     authStore.user?.perm.download,
   download: selectedItem.value !== undefined && authStore.user?.perm.download,
 }));
-
-const viewIcon = computed(() => {
-  const icons = {
-    list: "view_module",
-    mosaic: "grid_view",
-    "mosaic gallery": "view_list",
-  };
-  return icons[authStore.user?.viewMode ?? "list"];
-});
 
 // Where an item lies: its folder, or "Dosyalarım" for the top.
 const locationOf = (path: string) => {
@@ -341,22 +335,6 @@ const sort = async (by: string) => {
     $showError(e);
   }
   await load();
-};
-
-const switchView = async () => {
-  layoutStore.closeHovers();
-  const modes = {
-    list: "mosaic",
-    mosaic: "mosaic gallery",
-    "mosaic gallery": "list",
-  };
-  const data = {
-    id: authStore.user?.id,
-    viewMode: (modes[authStore.user?.viewMode ?? "list"] ||
-      "list") as ViewModeType,
-  };
-  users.update(data, ["viewMode"]).catch($showError);
-  authStore.updateUser(data);
 };
 
 const showContextMenu = (event: MouseEvent) => {

@@ -22,6 +22,13 @@
     :data-ext="getExtension(name).toLowerCase()"
     @contextmenu="contextMenu"
   >
+    <!-- The tick of the selection mode (Gezgin, K129). -->
+    <span
+      v-if="fileStore.multiple"
+      class="material-icons select-mark"
+      aria-hidden="true"
+      >{{ isSelected ? "check_circle" : "radio_button_unchecked" }}</span
+    >
     <div>
       <img
         v-if="!readOnly && !trashed && type === 'image' && isThumbsEnabled"
@@ -337,7 +344,8 @@ const click = (event: Event | KeyboardEvent) => {
   }, 300);
 
   touches.value++;
-  if (touches.value > 1) {
+  // In the selection mode a second click ticks again, it does not open (Gezgin, K129).
+  if (touches.value > 1 && !fileStore.multiple) {
     open();
   }
 

@@ -159,6 +159,11 @@ main {
   color: var(--textPrimary);
 }
 
+.breadcrumbs .breadcrumbs-tools {
+  margin-left: auto;
+  padding-left: 0.5em;
+}
+
 .breadcrumbs a {
   color: inherit;
   transition: 0.1s ease-in;
