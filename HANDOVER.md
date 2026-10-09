@@ -704,7 +704,11 @@ so the API (400) and `config set` refuse the same; unset values take the default
   (zipped file), "İndir" without count; at 375 pixels the path row held both and the ⋮ menu
   neither. Found on the way: the right-click menu was placed before it was measured, so near the
   right edge it ran off the window and near the bottom its last items were cut; it now moves
-  left, and up only as far as it must, never under the header.
+  left, and up only as far as it must, never under the header. Live on nrm (`54d43511`, the operator's
+  session in a tab of its own, looking only): the sidebar "Favoriler", "Paylaşılanlar",
+  "Dosyalarım", "Çöp"; the path row's view button and "Seç"; a right click on `movies` gave
+  "Paylaş", "Favorilerden çıkar", "Yeniden adlandır", "Kopyala", "Taşı", "Arşiv oluştur", "Sil",
+  "İndir" (no count), "Bilgi", closed unused.
 
 ### 4.4 New decisions to put to the operator
 
