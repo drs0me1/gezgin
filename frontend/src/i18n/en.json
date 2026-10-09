@@ -106,7 +106,11 @@
     },
     "fileEncoding": "File Encoding",
     "itemCount": "{count} item | {count} items",
-    "noNewHere": "Open a folder in My files to make a new folder or file in it."
+    "noNewHere": "Open a folder in My files to make a new folder or file in it.",
+    "favoriteMark": "Favourite",
+    "sharedMark": "Shared: {kinds}",
+    "sharedLinks": "{n} link | {n} links",
+    "sharedDav": "{n} WebDAV"
   },
   "help": {
     "click": "select file or directory",
@@ -243,7 +247,16 @@
     "search": "Search...",
     "typeToSearch": "Type to search...",
     "types": "Types",
-    "video": "Video"
+    "video": "Video",
+    "title": "Search",
+    "results": "Results for \"{query}\"",
+    "in": "in {folder}",
+    "count": "{count} item | {count} items",
+    "searching": "Searching…",
+    "stop": "Stop",
+    "capped": "The first {max} results are shown; narrow the search.",
+    "none": "No results.",
+    "openLocation": "Open the folder it is in"
   },
   "settings": {
     "aceEditorTheme": "Ace editor theme",

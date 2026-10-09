@@ -220,6 +220,9 @@
             v-bind:count="item.count"
             v-bind:sizeUnknown="item.sizeUnknown"
             v-bind:path="item.path"
+            v-bind:favorite="item.favorite"
+            v-bind:sharedLinks="item.sharedLinks"
+            v-bind:sharedDav="item.sharedDav"
           >
           </item>
         </div>
@@ -241,6 +244,9 @@
             v-bind:count="item.count"
             v-bind:sizeUnknown="item.sizeUnknown"
             v-bind:path="item.path"
+            v-bind:favorite="item.favorite"
+            v-bind:sharedLinks="item.sharedLinks"
+            v-bind:sharedDav="item.sharedDav"
           >
           </item>
         </div>
@@ -500,9 +506,11 @@ const toggleFavorite = async () => {
   try {
     if (isFavorite.value) {
       await favoritesStore.remove(item.path);
+      item.favorite = false;
       $showSuccess(t("favorites.removed", { name: item.name }));
     } else {
       await favoritesStore.add(item.path);
+      item.favorite = true;
       $showSuccess(t("favorites.added", { name: item.name }));
     }
   } catch (e: any) {
@@ -610,6 +618,15 @@ const keyEvent = (event: KeyboardEvent) => {
     return;
   }
 
+  // Keys typed in a field, the search bar's, are the field's (Gezgin, K110).
+  const target = event.target as HTMLElement | null;
+  if (
+    target?.isContentEditable ||
+    ["INPUT", "TEXTAREA", "SELECT"].includes(target?.tagName ?? "")
+  ) {
+    return;
+  }
+
   if (event.key === "Escape") {
     // Reset files selection.
     fileStore.selected = [];
@@ -639,7 +656,7 @@ const keyEvent = (event: KeyboardEvent) => {
     case "F":
       if (event.shiftKey) {
         event.preventDefault();
-        layoutStore.showHover("search");
+        openSearch();
       }
       break;
     case "c":
@@ -1014,8 +1031,14 @@ const sort = async (by: string) => {
   fileStore.reload = true;
 };
 
+// On a phone the magnifier opens the search bar over the header; on a computer the bar is there,
+// and the cursor goes into it (Gezgin, K110).
 const openSearch = () => {
-  layoutStore.showHover("search");
+  if (isMobile.value) {
+    layoutStore.showHover("search");
+    return;
+  }
+  document.querySelector<HTMLInputElement>("#search input")?.focus();
 };
 
 const toggleMultipleSelection = () => {

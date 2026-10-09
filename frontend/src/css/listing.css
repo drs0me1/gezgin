@@ -52,6 +52,38 @@ html[dir="rtl"] #listing {
 
 #listing .item .name {
   font-weight: bold;
+  /* The marks stay beside a long name, which is cut instead (Gezgin, K114-K115). */
+  display: flex;
+  align-items: center;
+  gap: 0.25em;
+  min-width: 0;
+}
+
+#listing .item .name .name-text {
+  min-width: 0;
+}
+
+#listing:not(.list) .item .name .name-text {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+#listing .item .name .mark {
+  flex: 0 0 auto;
+  font-size: 1.15em;
+}
+
+#listing .item .name .mark.favorite {
+  color: var(--icon-yellow);
+}
+
+#listing .item .name .mark.shared {
+  color: var(--icon-violet);
+}
+
+#listing .item[aria-selected="true"] .name .mark {
+  color: var(--item-selected);
 }
 
 #listing .item i {

@@ -13,6 +13,10 @@ interface ResourceBase {
   // (Gezgin).
   count?: number;
   sizeUnknown?: boolean;
+  // Marks the server sets as it lists (Gezgin, K114-K116): a favourite, and the shares in force.
+  favorite?: boolean;
+  sharedLinks?: number;
+  sharedDav?: number;
 }
 
 interface Resource extends ResourceBase {
@@ -32,6 +36,8 @@ interface Resource extends ResourceBase {
   favorites?: boolean;
   // The trash page (Gezgin), whose items no path reaches.
   trash?: boolean;
+  // The search results (Gezgin, K111), whose items are shortcuts to items elsewhere.
+  search?: boolean;
 }
 
 interface ResourceItem extends ResourceBase {

@@ -115,13 +115,17 @@ const applyPreSelection = () => {
   const preselect = fileStore.preselect;
   fileStore.preselect = null;
 
-  if (!fileStore.req?.isDir || fileStore.oldReq === null) return;
+  if (!fileStore.req?.isDir) return;
 
   let index = -1;
   if (preselect) {
-    // Find item with the specified path
+    // Find item with the specified path, also when coming from a page that is not a folder's
+    // (Gezgin: the search results' "Bulunduğu klasörü aç").
     index = fileStore.req.items.findIndex((item) => item.path === preselect);
-  } else if (fileStore.oldReq.path.startsWith(fileStore.req.path)) {
+  } else if (
+    fileStore.oldReq !== null &&
+    fileStore.oldReq.path.startsWith(fileStore.req.path)
+  ) {
     // Get immediate child folder of the previous path
     const name = fileStore.oldReq.path
       .substring(fileStore.req.path.length)

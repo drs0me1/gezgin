@@ -78,6 +78,7 @@ func listFavorites(d *data, sizes rules.Checker) (*files.Listing, error) {
 			return nil, err
 		}
 	}
+	d.markItems(listing.Items)
 	listing.ApplySort()
 	return listing, nil
 }

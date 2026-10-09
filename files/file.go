@@ -61,6 +61,11 @@ type FileInfo struct {
 	// for its folders' sizes.
 	Count       *int `json:"count,omitempty"`
 	SizeUnknown bool `json:"sizeUnknown,omitempty"`
+	// Favorite marks a listed item the user keeps as a favourite, and SharedLinks and SharedDAV
+	// count its shares in force (Gezgin, K114-K116); set by the server as it lists.
+	Favorite    bool `json:"favorite,omitempty"`
+	SharedLinks int  `json:"sharedLinks,omitempty"`
+	SharedDAV   int  `json:"sharedDav,omitempty"`
 }
 
 // FileOptions are the options when getting a file info.

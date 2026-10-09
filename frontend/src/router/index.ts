@@ -13,6 +13,7 @@ import Errors from "@/views/Errors.vue";
 import Trash from "@/views/Trash.vue";
 import Favorites from "@/views/Favorites.vue";
 import Shares from "@/views/Shares.vue";
+import SearchResults from "@/views/SearchResults.vue";
 import { useAuthStore } from "@/stores/auth";
 import { baseURL, name } from "@/utils/constants";
 import i18n from "@/i18n";
@@ -25,6 +26,7 @@ const titles = {
   Trash: "trash.title",
   Favorites: "favorites.title",
   Shares: "shares.title",
+  Search: "search.title",
   Settings: "sidebar.settings",
   ProfileSettings: "settings.profileSettings",
   GlobalSettings: "settings.globalSettings",
@@ -77,6 +79,21 @@ const routes = [
         path: "",
         name: "Favorites",
         component: Favorites,
+      },
+    ],
+  },
+  {
+    // The search results of a folder (Gezgin, K111).
+    path: "/search",
+    component: Layout,
+    meta: {
+      requiresAuth: true,
+    },
+    children: [
+      {
+        path: ":path*",
+        name: "Search",
+        component: SearchResults,
       },
     ],
   },

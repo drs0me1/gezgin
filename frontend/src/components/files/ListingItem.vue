@@ -32,7 +32,25 @@
     </div>
 
     <div>
-      <p class="name">{{ name }}</p>
+      <p class="name">
+        <span class="name-text">{{ name }}</span>
+        <span
+          v-if="favorite"
+          class="material-icons mark favorite"
+          role="img"
+          :title="t('files.favoriteMark')"
+          :aria-label="t('files.favoriteMark')"
+          >star</span
+        >
+        <span
+          v-if="sharedText"
+          class="material-icons mark shared"
+          role="img"
+          :title="sharedText"
+          :aria-label="sharedText"
+          >share</span
+        >
+      </p>
 
       <p v-if="isDir" class="size" :data-order="folderSize">
         {{ folderFacts }}
@@ -91,6 +109,10 @@ const props = defineProps<{
   // An item in the trash (Gezgin): no path reaches it, so it has no thumbnail and does not open,
   // and nothing is dragged from it or dropped on it.
   trashed?: boolean;
+  // Marks beside the name (Gezgin, K114-K115): a favourite's star, and the shares in force.
+  favorite?: boolean;
+  sharedLinks?: number;
+  sharedDav?: number;
 }>();
 
 const authStore = useAuthStore();
@@ -135,6 +157,20 @@ const thumbnailUrl = computed(() => {
 
 const isThumbsEnabled = computed(() => {
   return enableThumbs;
+});
+
+// The shared mark's text (Gezgin, K115): how many links and WebDAV shares the item has.
+const sharedText = computed(() => {
+  const kinds: string[] = [];
+  if (props.sharedLinks) {
+    kinds.push(
+      t("files.sharedLinks", { n: props.sharedLinks }, props.sharedLinks)
+    );
+  }
+  if (props.sharedDav) {
+    kinds.push(t("files.sharedDav", { n: props.sharedDav }));
+  }
+  return kinds.length ? t("files.sharedMark", { kinds: kinds.join(", ") }) : "";
 });
 
 // A folder's line (Gezgin): its item count and size, as the listing gives them.

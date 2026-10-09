@@ -141,6 +141,8 @@
             :count="item.count"
             :sizeUnknown="item.sizeUnknown"
             :path="item.path"
+            :sharedLinks="item.sharedLinks"
+            :sharedDav="item.sharedDav"
             :title="`${t('favorites.location')}: ${item.location}`"
             shortcut
           >

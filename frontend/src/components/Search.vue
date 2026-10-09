@@ -1,252 +1,103 @@
 <template>
-  <div id="search" @click="open" v-bind:class="{ active, ongoing }">
+  <form id="search" role="search" :class="{ active }" @submit.prevent="submit">
     <div id="input">
       <button
         v-if="active"
+        type="button"
         class="action"
         @click="close"
-        :aria-label="closeButtonTitle"
-        :title="closeButtonTitle"
+        :aria-label="t('buttons.close')"
+        :title="t('buttons.close')"
       >
-        <i v-if="ongoing" class="material-icons">stop_circle</i>
-        <icon v-else name="arrow_back" />
+        <icon name="arrow_back" />
       </button>
       <icon v-else name="search" />
       <input
-        type="text"
-        @keyup.exact="keyup"
-        @keyup.enter="submit"
         ref="input"
-        :autofocus="active"
-        v-model.trim="prompt"
-        :aria-label="$t('search.search')"
-        :placeholder="$t('search.search')"
+        type="text"
+        autocomplete="off"
+        enterkeyhint="search"
+        v-model="prompt"
+        @keydown.esc.prevent="clear"
+        :aria-label="t('search.search')"
+        :placeholder="t('search.search')"
       />
-      <i
-        v-show="ongoing"
-        class="material-icons spin"
-        style="display: inline-block"
-        >autorenew
-      </i>
-      <span style="margin-top: 5px" v-show="results.length > 0">
-        {{ results.length }}
-      </span>
+      <button
+        v-if="prompt !== ''"
+        type="button"
+        class="action clear"
+        @click="clear"
+        :aria-label="t('buttons.clear')"
+        :title="t('buttons.clear')"
+      >
+        <icon name="close" />
+      </button>
     </div>
-
-    <div id="result" ref="result">
-      <div>
-        <template v-if="isEmpty">
-          <p>{{ text }}</p>
-
-          <template v-if="prompt.length === 0">
-            <div class="boxes">
-              <h3>{{ $t("search.types") }}</h3>
-              <div>
-                <div
-                  tabindex="0"
-                  v-for="(v, k) in boxes"
-                  :key="k"
-                  role="button"
-                  @click="init('type:' + k)"
-                  :aria-label="$t('search.' + v.label)"
-                >
-                  <i class="material-icons">{{ v.icon }}</i>
-                  <p>{{ $t("search." + v.label) }}</p>
-                </div>
-              </div>
-            </div>
-          </template>
-        </template>
-        <ul v-show="results.length > 0">
-          <li v-for="(s, k) in filteredResults" :key="k">
-            <router-link v-on:click="close" :to="s.url">
-              <i v-if="s.dir" class="material-icons">folder</i>
-              <i v-else class="material-icons">insert_drive_file</i>
-              <span>./{{ s.path }}</span>
-            </router-link>
-          </li>
-        </ul>
-      </div>
-    </div>
-  </div>
+  </form>
 </template>
 
 <script setup lang="ts">
 import Icon from "@/components/Icon.vue";
-import { useFileStore } from "@/stores/file";
 import { useLayoutStore } from "@/stores/layout";
-
-import url from "@/utils/url";
-import { search } from "@/api";
-import { computed, inject, onMounted, ref, watch, onUnmounted } from "vue";
-import { useI18n } from "vue-i18n";
-import { useRoute } from "vue-router";
 import { storeToRefs } from "pinia";
-import { StatusError } from "@/api/utils";
+import { computed, nextTick, ref, watch } from "vue";
+import { useI18n } from "vue-i18n";
+import { useRoute, useRouter } from "vue-router";
 
-const boxes = {
-  image: { label: "images", icon: "insert_photo" },
-  audio: { label: "music", icon: "volume_up" },
-  video: { label: "video", icon: "movie" },
-  pdf: { label: "pdf", icon: "picture_as_pdf" },
-};
-
-const layoutStore = useLayoutStore();
-const fileStore = useFileStore();
-let searchAbortController = new AbortController();
-
-const { currentPromptName } = storeToRefs(layoutStore);
-
-const prompt = ref<string>("");
-const active = ref<boolean>(false);
-const ongoing = ref<boolean>(false);
-const results = ref<any[]>([]);
-const reload = ref<boolean>(false);
-const resultsCount = ref<number>(50);
-
-const $showError = inject<IToastError>("$showError")!;
-
-const input = ref<HTMLInputElement | null>(null);
-const result = ref<HTMLElement | null>(null);
+// The search bar (Gezgin, K110): typed in where it is; Enter searches the open folder and shows
+// the results as a folder view of their own (K111), Esc or × empties it. On a phone the
+// magnifier opens it over the header (the "search" hover). Conditions such as type:image or
+// case:sensitive go in the query.
 
 const { t } = useI18n();
-
 const route = useRoute();
+const router = useRouter();
+const layoutStore = useLayoutStore();
+const { currentPromptName } = storeToRefs(layoutStore);
 
-watch(currentPromptName, (newVal, oldVal) => {
-  active.value = newVal === "search";
+const input = ref<HTMLInputElement | null>(null);
+const active = computed(() => currentPromptName.value === "search");
 
-  if (oldVal === "search" && !active.value) {
-    if (reload.value) {
-      fileStore.reload = true;
-    }
+// On the results page the bar keeps the query.
+const queryOf = () =>
+  route.name === "Search" ? String(route.query.q ?? "") : "";
+const prompt = ref<string>(queryOf());
+watch(
+  () => route.fullPath,
+  () => (prompt.value = queryOf())
+);
 
-    document.body.style.overflow = "auto";
-    reset();
-    prompt.value = "";
-    active.value = false;
-    input.value?.blur();
-  } else if (active.value) {
-    reload.value = false;
-    input.value?.focus();
-    document.body.style.overflow = "hidden";
-  }
+watch(active, async (open) => {
+  if (!open) return;
+  await nextTick();
+  input.value?.focus();
 });
 
-watch(prompt, () => {
-  reset();
-});
+// The folder searched: the one open, or the one the results are of.
+const base = () => {
+  const prefix = route.name === "Search" ? "/search" : "/files";
+  const p = route.path.slice(prefix.length) || "/";
+  return p.endsWith("/") ? p : p + "/";
+};
 
-// ...mapState(useFileStore, ["isListing"]),
-// ...mapState(useLayoutStore, ["show"]),
-// ...mapWritableState(useFileStore, { sReload: "reload" }),
+const submit = () => {
+  const q = prompt.value.trim();
+  if (q === "") return;
+  if (active.value) layoutStore.closeHovers();
+  input.value?.blur();
+  router.push({ path: "/search" + base(), query: { q } });
+};
 
-const isEmpty = computed(() => {
-  return results.value.length === 0;
-});
-const text = computed(() => {
-  if (ongoing.value) {
-    return "";
-  }
-
-  return prompt.value === ""
-    ? t("search.typeToSearch")
-    : t("search.pressToSearch");
-});
-const filteredResults = computed(() => {
-  return results.value.slice(0, resultsCount.value);
-});
-
-const closeButtonTitle = computed(() => {
-  return ongoing.value ? t("buttons.stopSearch") : t("buttons.close");
-});
-
-onMounted(() => {
-  if (result.value === null) {
+const clear = () => {
+  if (prompt.value === "" && active.value) {
+    close();
     return;
   }
-  result.value.addEventListener("scroll", (event: Event) => {
-    if (
-      (event.target as HTMLElement).offsetHeight +
-        (event.target as HTMLElement).scrollTop >=
-      (event.target as HTMLElement).scrollHeight - 100
-    ) {
-      resultsCount.value += 50;
-    }
-  });
-});
-
-onUnmounted(() => {
-  abortLastSearch();
-});
-
-const open = () => {
-  !active.value && layoutStore.showHover("search");
+  prompt.value = "";
+  input.value?.focus();
 };
 
-const close = (event: Event) => {
-  if (ongoing.value) {
-    abortLastSearch();
-    ongoing.value = false;
-  } else {
-    event.stopPropagation();
-    event.preventDefault();
-    layoutStore.closeHovers();
-  }
-};
-
-const keyup = (event: KeyboardEvent) => {
-  if (event.key === "Escape") {
-    close(event);
-    return;
-  }
-  results.value.length = 0;
-};
-
-const init = (string: string) => {
-  prompt.value = `${string} `;
-  input.value !== null ? input.value.focus() : "";
-};
-
-const reset = () => {
-  abortLastSearch();
-  ongoing.value = false;
-  resultsCount.value = 50;
-  results.value = [];
-};
-
-const abortLastSearch = () => {
-  searchAbortController.abort();
-};
-
-const submit = async (event: Event) => {
-  event.preventDefault();
-
-  if (prompt.value === "") {
-    return;
-  }
-
-  let path = route.path;
-  if (!fileStore.isListing) {
-    path = url.removeLastDir(path) + "/";
-  }
-
-  ongoing.value = true;
-
-  try {
-    abortLastSearch();
-    searchAbortController = new AbortController();
-    results.value = [];
-    await search(path, prompt.value, searchAbortController.signal, (item) =>
-      results.value.push(item)
-    );
-  } catch (error: any) {
-    if (error instanceof StatusError && error.is_canceled) {
-      return;
-    }
-    $showError(error);
-  }
-
-  ongoing.value = false;
+const close = () => {
+  layoutStore.closeHovers();
 };
 </script>

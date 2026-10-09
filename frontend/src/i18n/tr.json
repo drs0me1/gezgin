@@ -106,7 +106,11 @@
     },
     "fileEncoding": "Karakter kodlaması",
     "itemCount": "{count} öğe",
-    "noNewHere": "Yeni klasör ya da dosya için Dosyalarım'da bir klasör açın."
+    "noNewHere": "Yeni klasör ya da dosya için Dosyalarım'da bir klasör açın.",
+    "favoriteMark": "Sık kullanılan",
+    "sharedMark": "Paylaşıldı: {kinds}",
+    "sharedLinks": "{n} bağlantı",
+    "sharedDav": "{n} WebDAV"
   },
   "help": {
     "click": "dosya veya klasör seçin",
@@ -243,7 +247,16 @@
     "search": "Ara...",
     "typeToSearch": "Aramak için yazın...",
     "types": "Türler",
-    "video": "Video"
+    "video": "Video",
+    "title": "Arama",
+    "results": "\"{query}\" için sonuçlar",
+    "in": "{folder} içinde",
+    "count": "{count} öğe",
+    "searching": "Aranıyor…",
+    "stop": "Durdur",
+    "capped": "İlk {max} sonuç gösteriliyor; aramayı daraltın.",
+    "none": "Sonuç yok.",
+    "openLocation": "Bulunduğu klasörü aç"
   },
   "settings": {
     "aceEditorTheme": "Düzenleyici teması",

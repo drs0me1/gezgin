@@ -341,6 +341,7 @@ export default {
 
         this.links.push(res);
         this.sort();
+        this.countShare(res, 1);
 
         this.time = 7;
         this.unit = "days";
@@ -357,6 +358,7 @@ export default {
       try {
         await api.share.remove(link.hash);
         this.links = this.links.filter((item) => item.hash !== link.hash);
+        this.countShare(link, -1);
 
         if (this.links.length == 0) {
           this.listing = false;
@@ -364,6 +366,12 @@ export default {
       } catch (e) {
         this.$showError(e);
       }
+    },
+    // The listed item's shared mark follows its shares (Gezgin, K115).
+    countShare(link, step) {
+      if (!this.item) return;
+      const key = link.kind === "webdav" ? "sharedDav" : "sharedLinks";
+      this.item[key] = Math.max(0, (this.item[key] || 0) + step);
     },
     humanTime(time) {
       return dayjs(time * 1000).fromNow();

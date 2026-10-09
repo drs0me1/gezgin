@@ -177,6 +177,17 @@ Work in progress. Until the first Gezgin release this tree is File Browser's las
   bar narrows, down to 10em, before the header overflows. The buttons are drawn with thin
   outline icons (Tabler Icons, MIT), "Taşı" as a folder with an arrow, and the help window lists
   the keys, in Turkish.
+- Search: the search bar is typed in where it is; no layer opens over the page. Enter searches
+  the open folder and shows the results as a folder view of their own (tiles or list, icons,
+  thumbnails, the user's sorting), coming in as they are found, at most 500, each a shortcut
+  opening its item in its place, with "Bulunduğu klasörü aç" in its menu; back returns to the
+  folder. Conditions such as `type:image` or `case:sensitive` go in the query. On a phone the
+  magnifier opens the bar over the header. Keys typed in the bar no longer reach the folder
+  (Delete, F2, Ctrl+A).
+- Marks: a favourite has a yellow star beside its name, and an item with a share in force a
+  purple share sign, whose tooltip counts its links and WebDAV shares (a user's own; an admin's
+  everyone's), in folders, favourites and search results. The server sets them as it lists, so
+  they follow renames, moves and expiries.
 - Gezgin's own logo, a pale blue folder, in place of File Browser's, with its favicons and app
   icons; the `branding` folder goes. The version is the short commit the image was built from
   ("Gezgin 5074d927" in the sidebar, the log and `filebrowser version`), and the command line

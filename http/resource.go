@@ -44,6 +44,7 @@ var resourceGetHandler = withUser(func(w http.ResponseWriter, r *http.Request, d
 	if file.IsDir {
 		file.Sorting = d.user.Sorting
 		file.ApplySort()
+		d.markItems(file.Items)
 		return renderJSON(w, r, file)
 	} else if encoding == "true" {
 		if !d.user.Perm.Download {

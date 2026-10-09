@@ -6,9 +6,12 @@ import (
 	"errors"
 	"net/http"
 	"os"
+	"path"
+	"slices"
 	"sync"
 	"time"
 
+	"github.com/filebrowser/filebrowser/v2/files"
 	"github.com/filebrowser/filebrowser/v2/search"
 )
 
@@ -58,13 +61,11 @@ var searchHandler = withUser(func(w http.ResponseWriter, r *http.Request, d *dat
 	}()
 	query := r.URL.Query().Get("query")
 
-	err := search.Search(ctx, d.user.Fs, r.URL.Path, query, d, func(path string, f os.FileInfo) error {
+	marks := d.shareMarks()
+	err := search.Search(ctx, d.user.Fs, r.URL.Path, query, d, func(p string, f os.FileInfo) error {
 		select {
 		case <-ctx.Done():
-		case response <- map[string]interface{}{
-			"dir":  f.IsDir(),
-			"path": path,
-		}:
+		case response <- searchResult(d, marks, r.URL.Path, p, f):
 		}
 		return context.Cause(ctx)
 	})
@@ -80,3 +81,27 @@ var searchHandler = withUser(func(w http.ResponseWriter, r *http.Request, d *dat
 
 	return 0, nil
 })
+
+// searchResult describes a found item as the folder view shows it (Gezgin, K111): where it lies
+// under the searched folder, its name, size, time and type, and its marks (K114-K116).
+func searchResult(d *data, marks map[string]shareMark, base, p string, f os.FileInfo) map[string]interface{} {
+	full := path.Join("/", base, p)
+	result := map[string]interface{}{
+		"dir":      f.IsDir(),
+		"isDir":    f.IsDir(),
+		"path":     p,
+		"name":     f.Name(),
+		"modified": f.ModTime(),
+	}
+	if !f.IsDir() {
+		result["size"] = f.Size()
+		result["type"] = files.NameType(f.Name(), f.Size())
+	}
+	if slices.Contains(d.user.Favorites, full) {
+		result["favorite"] = true
+	}
+	if m := marks[full]; m.links > 0 || m.dav > 0 {
+		result["sharedLinks"], result["sharedDav"] = m.links, m.dav
+	}
+	return result
+}

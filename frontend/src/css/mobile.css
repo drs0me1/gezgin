@@ -1,13 +1,14 @@
-/* 12em fits "Sık kullanılanlar" (Gezgin), which 10em cut. */
+/* 12.75em fits "Sık kullanılanlar" (Gezgin), which 10em cut, also beside the sidebar's scrollbar
+   in a short window (K113). */
 @media (max-width: 1024px) {
   nav {
-    width: 12em;
+    width: 12.75em;
   }
 }
 
 @media (max-width: 1024px) {
   main {
-    width: calc(100% - 15em);
+    width: calc(100% - 15.75em);
   }
 }
 

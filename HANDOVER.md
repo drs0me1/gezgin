@@ -50,7 +50,7 @@ Commit messages and README's "Changes from File Browser" describe each change.
 
 ## 3. Decisions taken
 
-The next decision number is **K110** (K110-K116 are proposed, see 4.3). "Recommended" means the operator accepted the recommendation
+The next decision number is **K117**. "Recommended" means the operator accepted the recommendation
 made in the report.
 
 **Stage B (start).** Multi-user with an admin; File Browser's forms stay even where Konsol has its
@@ -322,6 +322,27 @@ so the API (400) and `config set` refuse the same; unset values take the default
   item's actions only the favourite star stays (with the view, upload and multiple selection,
   which the menu does not have). Download goes too, Ctrl+S still downloads; in "Çöp" restore
   and delete for good stay in the menu and the bar above the items. A phone keeps its bar and ⋮.
+- K110 (recommended): the search bar is typed in where it is; a click only puts the cursor in it;
+  Enter searches, Esc or × empties it; keys typed in it no longer reach the folder (Delete, F2,
+  Ctrl+A, Ctrl+S); Ctrl+Shift+F puts the cursor in it.
+- K111 (operator chose B): the results are a page of their own (`/search/<folder>?q=`), a folder
+  view of shortcuts like the favourites' (tiles or list, icons, thumbnails, the user's sorting
+  applied in the browser as the server sorts, `utils/listingOrder.ts`), coming in as found with
+  "Aranıyor…" and "Durdur", at most 500; the search sends each result's name, size, time, type
+  and marks; a result's menu: "Bulunduğu klasörü aç" (the folder, the result selected), share,
+  star, download, Info; back returns to the folder.
+- K112 (operator, changed): no chips for the kinds: the query's conditions (`type:image`, ...)
+  are enough. On a phone the magnifier opens the bar over the header, not a page.
+- K113 (recommended): the sidebar scrolls up and down only, with a thin bar in the theme's
+  colours; below 1024 pixels it is 12.75em, so "Sık kullanılanlar" fits beside the bar.
+- K114 (recommended): a small yellow star after a favourite's name, in folders and search
+  results, not on the favourites page.
+- K115 (recommended): a small purple share sign after the name of an item with a share in force,
+  its tooltip "Paylaşıldı: N bağlantı, N WebDAV"; a user's own shares, an admin's everyone's;
+  the icon keeps its colour (videos are already that purple).
+- K116 (recommended): the server marks each listed item (`favorite`, `sharedLinks`,
+  `sharedDav`) in folders, favourites and search results; the star and the share dialog update
+  the marks in place.
 
 ## 4. Tasks
 
@@ -552,7 +573,7 @@ so the API (400) and `config set` refuse the same; unset values take the default
   cached for a day under the same name, so a browser kept the old one; fixed in `59d2f8ad` (the
   logo's, favicons' and manifest icons' addresses carry `?v=<version>`), live on nrm, the
   folder logo shown.
-- [ ] **Search without its menu** (operator, 2026-10-09: a click on the search bar opens a
+- [x] **Search without its menu** (operator, 2026-10-09: a click on the search bar opens a
   separate menu; type in the visible field and search instead). Today a click turns the bar
   into a full-page layer with the type boxes (images, music, video, PDF) and the results as a
   list of paths. Proposed with a mock-up, waiting: K110, a click only puts the cursor in the
@@ -567,7 +588,7 @@ so the API (400) and `config set` refuse the same; unset values take the default
   K113: under about 700 pixels of height the sidebar scrolls and shows a white vertical and a
   horizontal scrollbar in the dark theme, cutting "Sık kullanılanlar"; proposed: no sideways
   scroll and a thin scrollbar in the theme's colours.
-- [ ] **Marks for shared and favourite items** (operator, 2026-10-09: mark the shared and the
+- [x] **Marks for shared and favourite items** (operator, 2026-10-09: mark the shared and the
   favourite files and folders; the shared in the purple of sharing, the favourites with a star
   beside the name). Proposed with a mock-up, waiting: K114, a small yellow star right after the
   name of a favourite, in the folder view (tiles and list) and the search results, not on the
@@ -577,6 +598,18 @@ so the API (400) and `config set` refuse the same; unset values take the default
   colour, as videos are already that purple (`--icon-violet`); K116, the server marks each
   listed item (`favorite`, `shares`) as it lists, so the marks follow renames, moves, deletes
   and expiries without another request.
+  Both done as K110-K116 (section 3). Go tests `TestListingMarks` (favourite, two links, a WebDAV
+  share, an expired share unmarked, the admin seeing a user's share, another user seeing none)
+  and `TestSearchResultsDescribeTheirItems`; frontend `utils/__tests__/listingOrder.test.ts`.
+  Checked in the browser on a local build: `albüm` and `tur` showed the star and the purple sign
+  (in tiles and list; "Paylaşıldı: 1 bağlantı", "1 WebDAV"), the favourites page the sign only; a
+  click on the search bar opened nothing; "png" and Enter gave 15 results with thumbnails as
+  tiles, the header's star with one selected, a menu of five with outline icons; "Bulunduğu
+  klasörü aç" opened `silinecek` with `foto.png` selected, back returned to the results with
+  the query kept; at 375 pixels the magnifier opened the bar over the header and "tur" gave the
+  folder with its marks; at 860 by 600 the sidebar had a thin dark scrollbar, no sideways one,
+  and "Sık kullanılanlar" whole. Found on the way: coming from a page that is not a folder's,
+  `Files.vue` skipped the preselection; it no longer needs the previous listing for it.
 
 ### 4.4 New decisions to put to the operator
 

@@ -58,6 +58,20 @@ nav {
   left: 0;
   height: calc(100vh - 4em);
   overflow-y: auto;
+  /* A short window scrolls the sidebar: up and down only, with a thin bar in the theme's colours
+     (Gezgin, K113); a wide light bar and a sideways one used to cut "Sık kullanılanlar". */
+  overflow-x: hidden;
+  scrollbar-width: thin;
+  scrollbar-color: var(--borderSecondary) transparent;
+}
+
+nav::-webkit-scrollbar {
+  width: 6px;
+}
+
+nav::-webkit-scrollbar-thumb {
+  background: var(--borderSecondary);
+  border-radius: 3px;
 }
 
 html[dir="rtl"] nav {
