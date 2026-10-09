@@ -9,6 +9,7 @@ import (
 	"path/filepath"
 
 	fberrors "github.com/filebrowser/filebrowser/v2/errors"
+	"github.com/filebrowser/filebrowser/v2/files"
 	"github.com/filebrowser/filebrowser/v2/trash"
 )
 
@@ -16,9 +17,17 @@ import (
 // it is restored, deleted for good, or swept once it expires.
 
 type trashList struct {
-	Items []trash.Item `json:"items"`
+	Items []trashEntry `json:"items"`
 	Count int          `json:"count"`
 	Size  int64        `json:"size"`
+}
+
+// trashEntry is an item of the trash as the page shows it in a folder's view (Gezgin): a file with
+// its type by its name, a folder with how many items it holds.
+type trashEntry struct {
+	trash.Item
+	Type  string `json:"type"`
+	Count *int   `json:"count,omitempty"`
 }
 
 type trashIDs struct {
@@ -63,9 +72,20 @@ var trashListHandler = withUser(func(w http.ResponseWriter, r *http.Request, d *
 	if err != nil {
 		return http.StatusInternalServerError, err
 	}
-	list := trashList{Items: items, Count: len(items)}
+	bin := d.bin()
+	list := trashList{Items: []trashEntry{}, Count: len(items)}
 	for _, item := range items {
 		list.Size += item.Size
+		entry := trashEntry{Item: item}
+		if item.IsDir {
+			if names, err := os.ReadDir(bin.Path(item)); err == nil {
+				n := len(names)
+				entry.Count = &n
+			}
+		} else {
+			entry.Type = files.NameType(item.Name, item.Size)
+		}
+		list.Items = append(list.Items, entry)
 	}
 	return renderJSON(w, r, list)
 })

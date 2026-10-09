@@ -263,3 +263,42 @@ func TestTrashDaysSetting(t *testing.T) {
 		}
 	}
 }
+
+// The trash page shows its items in a folder's view (Gezgin): a file with its type by its name, a
+// folder with how many items it holds.
+func TestTrashListTypesAndCounts(t *testing.T) {
+	env := newFileEnv(t)
+	env.write("tatil/a.jpg", "jpeg", 0o644)
+	env.write("tatil/b.jpg", "jpeg", 0o644)
+	env.write("film.mkv", "film", 0o644)
+	for _, p := range []string{"/api/resources/tatil", "/api/resources/film.mkv"} {
+		if code := env.send(http.MethodDelete, p, nil); code != http.StatusNoContent {
+			t.Fatalf("delete %s = %d", p, code)
+		}
+	}
+	var list struct {
+		Items []struct {
+			Name  string `json:"name"`
+			Type  string `json:"type"`
+			Count *int   `json:"count"`
+			Size  int64  `json:"size"`
+		} `json:"items"`
+	}
+	if err := json.Unmarshal(env.call(http.MethodGet, "/api/trash", "").Body.Bytes(), &list); err != nil {
+		t.Fatal(err)
+	}
+	for _, item := range list.Items {
+		switch item.Name {
+		case "tatil":
+			if item.Count == nil || *item.Count != 2 || item.Size != 8 {
+				t.Errorf("tatil: %+v; want 2 items, 8 bytes", item)
+			}
+		case "film.mkv":
+			if item.Type != "video" || item.Count != nil {
+				t.Errorf("film.mkv: %+v; want a video", item)
+			}
+		default:
+			t.Errorf("unexpected %s", item.Name)
+		}
+	}
+}

@@ -105,7 +105,8 @@
       "both": "İkisi de (,) ve (;)"
     },
     "fileEncoding": "Karakter kodlaması",
-    "itemCount": "{count} öğe"
+    "itemCount": "{count} öğe",
+    "noNewHere": "Yeni klasör ya da dosya için Dosyalarım'da bir klasör açın."
   },
   "help": {
     "click": "dosya veya klasör seçin",
@@ -369,7 +370,8 @@
     "keepDays": "Saklama süresi (gün)",
     "keepDaysHelp": "Silinen öğeler bu kadar gün sonra kalıcı silinir; 0 verilirse çöp boşaltılana kadar kalır.",
     "usage": "Bütün kullanıcıların çöpü: {count} öğe",
-    "emptyAll": "Bütün çöpleri boşalt"
+    "emptyAll": "Bütün çöpleri boşalt",
+    "noNew": "Çöpte yeni klasör ya da dosya oluşturulamaz."
   },
   "archive": {
     "title": "Arşivler",
@@ -426,6 +428,7 @@
     "nothing": "Henüz sık kullanılan yok: bir dosya ya da klasör seçip yıldıza basın.",
     "added": "{name} sık kullanılanlara eklendi",
     "removed": "{name} sık kullanılanlardan çıkarıldı",
-    "tooMany": "En fazla {max} sık kullanılan olabilir."
+    "tooMany": "En fazla {max} sık kullanılan olabilir.",
+    "noNew": "Sık kullanılanlarda yeni klasör ya da dosya oluşturulamaz: koyacağınız klasörü açın."
   }
 }

@@ -36,7 +36,7 @@
 
       <div v-if="user.perm.create">
         <button
-          @click="showHover('newDir')"
+          @click="newItem('newDir')"
           class="action"
           :aria-label="$t('sidebar.newFolder')"
           :title="$t('sidebar.newFolder')"
@@ -46,7 +46,7 @@
         </button>
 
         <button
-          @click="showHover('newFile')"
+          @click="newItem('newFile')"
           class="action"
           :aria-label="$t('sidebar.newFile')"
           :title="$t('sidebar.newFile')"
@@ -166,6 +166,20 @@ export default {
     toRoot() {
       this.$router.push({ path: "/files" });
       this.closeHovers();
+    },
+    // A new folder or file goes into the folder open in "Dosyalarım" (Gezgin). Elsewhere it used to
+    // land at the top of the user's files without a word; now the page says why it cannot.
+    newItem(prompt) {
+      if (this.isFiles) {
+        this.showHover(prompt);
+        return;
+      }
+      this.closeHovers();
+      const reasons = {
+        Trash: "trash.noNew",
+        Favorites: "favorites.noNew",
+      };
+      this.$showError(this.$t(reasons[this.$route.name] ?? "files.noNewHere"));
     },
     toFavorites() {
       this.$router.push({ path: "/favorites" });

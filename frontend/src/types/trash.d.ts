@@ -5,6 +5,9 @@ interface ITrashItem {
   deleted: string;
   size: number;
   isDir: boolean;
+  // A file's type by its name, and a folder's item count (Gezgin).
+  type?: ResourceType;
+  count?: number;
 }
 
 interface ITrashList {

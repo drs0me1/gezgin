@@ -30,13 +30,17 @@ interface Resource extends ResourceBase {
   version?: string;
   // The favourites page (Gezgin), whose items are shortcuts to items elsewhere.
   favorites?: boolean;
+  // The trash page (Gezgin), whose items no path reaches.
+  trash?: boolean;
 }
 
 interface ResourceItem extends ResourceBase {
   index: number;
   subtitles?: string[];
-  // Where a shortcut's item lies (Gezgin: the favourites page).
+  // Where a shortcut's item lies, or where a trashed item was (Gezgin).
   location?: string;
+  // A trashed item's id (Gezgin).
+  id?: string;
 }
 
 type ResourceType =

@@ -29,10 +29,13 @@ export const useFileStore = defineStore("file", {
     //   const layoutStore = useLayoutStore();
     //   return !layoutStore.loading && state.route._value.name === "Files";
     // },
-    // A folder's listing, or the favourites page, which shows its shortcuts as one (Gezgin).
+    // A folder's listing, or the favourites or trash page, which show their items as one (Gezgin).
     isListing: (state) => {
       return (
-        (state.isFiles || state.req?.favorites === true) && state?.req?.isDir
+        (state.isFiles ||
+          state.req?.favorites === true ||
+          state.req?.trash === true) &&
+        state?.req?.isDir
       );
     },
   },

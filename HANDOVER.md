@@ -50,7 +50,7 @@ Commit messages and README's "Changes from File Browser" describe each change.
 
 ## 3. Decisions taken
 
-The next decision number is **K92**. "Recommended" means the operator accepted the recommendation
+The next decision number is **K94**. "Recommended" means the operator accepted the recommendation
 made in the report.
 
 **Stage B (start).** Multi-user with an admin; File Browser's forms stay even where Konsol has its
@@ -255,6 +255,16 @@ so the API (400) and `config set` refuse the same; unset values take the default
   Info window. No folder or links on disk.
 - K91 (recommended): there, an item is opened, shared, downloaded, looked at, or taken out with the
   star; rename, move, copy, delete and archive are done in its own folder; no drag and drop.
+- K92 (operator): the Trash page uses the same view: tiles or list, icons by type (`/api/trash`
+  gives `type` by name, `files.NameType`, and a folder's `count`), the user's sorting and view
+  mode, the deletion time in place of the modification time, the old place as tooltip and in the
+  Info window ("Eski yeri"); an item there does not open, has no thumbnail or checksum and is not
+  dragged (`ListingItem`'s `trashed`); restore, delete for good and the two-step empty stay, in a
+  bar above the items, the header, the phone's bar and the context menu.
+- K93 (operator, widened): "Yeni klasör" and "Yeni dosya" in the sidebar are refused with a clear
+  message in the trash; also, as they silently made the item at the top of the user's files from
+  any page that is not a folder of "Dosyalarım", in favourites and on every other page, each with
+  its own message.
 
 ## 4. Tasks
 
@@ -419,6 +429,14 @@ so the API (400) and `config set` refuse the same; unset values take the default
   1.6 GiB" with "Konum: Dosyalarım" as its tooltip, not draggable, and the star took it out again,
   leaving the operator's own favourite (`movies`); no CSP violation. The first image build of
   `c233903f` failed on a passing ghcr.io login error and passed when rerun.
+
+- [x] **The Trash page in the folder view, and no new items outside a folder** (operator,
+  2026-10-09): K92-K93 (section 3); Go test `TestTrashListTypesAndCounts`; checked in the browser
+  on a local build: a trashed folder reads "1 öğe · 3 B", a PNG and a WebM their icons, a double
+  click only selects, the Info window gives "Eski yeri" and "Silinme" without checksums, restore
+  puts the PNG back, the empty takes two clicks; "Yeni klasör" in the trash says "Çöpte yeni
+  klasör ya da dosya oluşturulamaz.", in favourites and settings their own messages, and still
+  opens its prompt in a folder.
 
 ### 4.4 New decisions to put to the operator
 

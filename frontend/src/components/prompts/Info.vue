@@ -19,7 +19,12 @@
       </p>
 
       <p v-if="location !== null">
-        <strong>{{ $t("favorites.location") }}:</strong> {{ location }}
+        <strong
+          >{{
+            req.trash ? $t("trash.origin") : $t("favorites.location")
+          }}:</strong
+        >
+        {{ location }}
       </p>
 
       <p v-if="itemCount !== null">
@@ -32,7 +37,12 @@
       </div>
 
       <p v-if="selected.length < 2" :title="modTime">
-        <strong>{{ $t("prompts.lastModified") }}:</strong> {{ humanTime }}
+        <strong
+          >{{
+            req.trash ? $t("trash.deleted") : $t("prompts.lastModified")
+          }}:</strong
+        >
+        {{ humanTime }}
       </p>
 
       <template v-if="dir && selected.length === 0">
@@ -44,7 +54,8 @@
         </p>
       </template>
 
-      <template v-if="!dir">
+      <!-- A trashed file is reached by no path, so it has no checksum to show. -->
+      <template v-if="!dir && !req.trash">
         <p>
           <strong>MD5: </strong
           ><code

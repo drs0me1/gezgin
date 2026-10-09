@@ -373,7 +373,7 @@ func (i *FileInfo) readFirstBytes() []byte {
 }
 
 func (i *FileInfo) detectSubtitles() {
-	if i.Type != "video" {
+	if i.Type != "video" || i.Fs == nil {
 		return
 	}
 
@@ -527,6 +527,16 @@ func (i *FileInfo) readListing(checker, dirSizes rules.Checker, calcImgRes bool)
 
 	i.Listing = listing
 	return nil
+}
+
+// NameType is the type a listing gives a file of that name and size, without reading it (Gezgin:
+// the trash, whose items are not reachable by a path).
+func NameType(name string, size int64) string {
+	file := &FileInfo{Name: name, Extension: filepath.Ext(name), Size: size}
+	if err := file.detectType(true, false, false, false); err != nil {
+		return "blob"
+	}
+	return file.Type
 }
 
 // ListingItems gives the items at paths as one listing would show them (Gezgin: the favourites

@@ -42,7 +42,12 @@ Work in progress. Until the first Gezgin release this tree is File Browser's las
   the trash. "Delete permanently" stays in the delete dialog, and is the only way for an item on
   another disk. Items expire after 30 days by default (global settings, 0 = never); an admin sees
   how much every trash holds and can empty them all. Shares of a trashed item end and do not come
-  back with a restore.
+  back with a restore. The Trash page shows the items in the same view as a folder of files (tiles or list, icons,
+  a folder's item count and size, the user's sorting, the deletion time in place of the
+  modification time); an item there does not open, and its old place is its tooltip.
+- "Yeni klasör" and "Yeni dosya" in the sidebar make the item in the folder open in "Dosyalarım";
+  elsewhere they used to make it at the top of the user's files without a word, and now say why
+  they cannot (in the trash: "Çöpte yeni klasör ya da dosya oluşturulamaz.").
 - Viewer: the EPUB reader is removed; an `.epub` has no preview, like other files without one.
 - Editor: Ace's modes, themes and workers ship with Gezgin (no CDN). Texts in UTF-8 and in the
   Turkish code page (Windows-1254) open decoded and save back in their encoding; a text no

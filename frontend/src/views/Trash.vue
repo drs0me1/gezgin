@@ -1,134 +1,309 @@
 <template>
-  <div class="dashboard">
-    <header-bar showMenu showLogo />
+  <div>
+    <header-bar showMenu showLogo>
+      <title />
 
-    <errors v-if="error" :errorCode="error.status" />
-    <div class="row" v-else>
-      <div class="column">
-        <div class="card" id="trash">
-          <div class="card-title">
-            <h2>{{ t("trash.title") }}</h2>
-            <span class="small" v-if="list.count > 0">
-              {{ t("trash.summary", { count: list.count }) }} ·
-              {{ filesize(list.size) }}
-            </span>
-          </div>
+      <template #actions>
+        <template v-if="!isMobile">
+          <action
+            v-if="canRestore && fileStore.selectedCount > 0"
+            icon="restore_from_trash"
+            :label="t('trash.restore')"
+            @action="restoreSelected"
+          />
+          <action
+            v-if="canDelete && fileStore.selectedCount > 0"
+            icon="delete_forever"
+            :label="t('trash.deletePermanently')"
+            @action="purgeSelected"
+          />
+        </template>
+        <action
+          :icon="viewIcon"
+          :label="t('buttons.switchView')"
+          @action="switchView"
+        />
+        <action icon="info" :label="t('buttons.info')" show="info" />
+      </template>
+    </header-bar>
 
-          <div class="card-content full" v-if="list.items.length > 0">
-            <table>
-              <tr>
-                <th class="small">
-                  <input
-                    type="checkbox"
-                    :checked="allSelected"
-                    @change="toggleAll"
-                    :aria-label="t('buttons.selectMultiple')"
-                  />
-                </th>
-                <th>{{ t("trash.name") }}</th>
-                <th>{{ t("trash.origin") }}</th>
-                <th>{{ t("trash.deleted") }}</th>
-                <th>{{ t("trash.size") }}</th>
-              </tr>
+    <div v-if="isMobile && fileStore.selectedCount > 0" id="file-selection">
+      <span>
+        {{ t("prompts.filesSelected", fileStore.selectedCount) }}
+      </span>
+      <action
+        v-if="canRestore"
+        icon="restore_from_trash"
+        :label="t('trash.restore')"
+        @action="restoreSelected"
+      />
+      <action
+        v-if="canDelete"
+        icon="delete_forever"
+        :label="t('trash.deletePermanently')"
+        @action="purgeSelected"
+      />
+    </div>
 
-              <tr v-for="item in list.items" :key="item.id">
-                <td class="small">
-                  <input type="checkbox" :value="item.id" v-model="selected" />
-                </td>
-                <td>
-                  <i class="material-icons">{{
-                    item.isDir ? "folder" : "insert_drive_file"
-                  }}</i>
-                  {{ item.name }}
-                </td>
-                <td>{{ item.origin }}</td>
-                <td :title="item.deleted">{{ fromNow(item.deleted) }}</td>
-                <td>{{ filesize(item.size) }}</td>
-              </tr>
-            </table>
-          </div>
-          <h2 class="message" v-else-if="!loading">
-            <i class="material-icons">delete_outline</i>
-            <span>{{ t("trash.nothing") }}</span>
-          </h2>
+    <div v-if="loading">
+      <h2 class="message delayed">
+        <div class="spinner">
+          <div class="bounce1"></div>
+          <div class="bounce2"></div>
+          <div class="bounce3"></div>
+        </div>
+        <span>{{ t("files.loading") }}</span>
+      </h2>
+    </div>
+    <errors v-else-if="error" :errorCode="error.status" />
+    <h2 class="message" v-else-if="items.length === 0">
+      <i class="material-icons">delete_outline</i>
+      <span>{{ t("trash.nothing") }}</span>
+    </h2>
+    <template v-else>
+      <div id="trash-bar">
+        <span class="small">
+          {{ t("trash.summary", { count: summary.count }) }} ·
+          {{ filesize(summary.size) }}
+        </span>
+        <button
+          v-if="canRestore"
+          class="button button--flat"
+          :disabled="fileStore.selectedCount === 0"
+          @click="restoreSelected"
+        >
+          {{ t("trash.restore") }}
+        </button>
+        <button
+          v-if="canDelete"
+          class="button button--flat button--red"
+          :disabled="fileStore.selectedCount === 0"
+          @click="purgeSelected"
+        >
+          {{ t("trash.deletePermanently") }}
+        </button>
+        <button
+          v-if="canDelete"
+          class="button button--flat button--red"
+          @click="emptyTrash"
+        >
+          {{ confirmEmpty ? t("trash.confirmEmpty") : t("trash.empty") }}
+        </button>
+      </div>
 
-          <div class="card-action" v-if="list.items.length > 0">
-            <button
-              v-if="canDelete && !confirmEmpty"
-              class="button button--flat button--red"
-              @click="confirmEmpty = true"
-            >
-              {{ t("trash.empty") }}
-            </button>
-            <button
-              v-if="canDelete && confirmEmpty"
-              class="button button--flat button--red"
-              @click="emptyTrash"
-            >
-              {{ t("trash.confirmEmpty") }}
-            </button>
-            <button
-              v-if="canDelete"
-              class="button button--flat button--red"
-              :disabled="selected.length === 0"
-              @click="purgeSelected"
-            >
-              {{ t("trash.deletePermanently") }}
-            </button>
-            <button
-              v-if="canRestore"
-              class="button button--flat"
-              :disabled="selected.length === 0"
-              @click="restoreSelected"
-            >
-              {{ t("trash.restore") }}
-            </button>
+      <div
+        id="listing"
+        class="file-icons"
+        data-clear-on-click="true"
+        :class="authStore.user?.viewMode ?? ''"
+        @click="handleEmptyAreaClick"
+      >
+        <div>
+          <div class="item header">
+            <div>
+              <p
+                v-for="column in columns"
+                :key="column.by"
+                :class="[column.by, { active: sorting.by === column.by }]"
+                role="button"
+                tabindex="0"
+                @click="sort(column.by)"
+                :title="column.label"
+                :aria-label="column.label"
+              >
+                <span>{{ column.label }}</span>
+                <i class="material-icons">{{ sortIcon(column.by) }}</i>
+              </p>
+            </div>
           </div>
         </div>
+
+        <template v-for="group in groups" :key="group.title">
+          <h2 data-clear-on-click="true" v-if="group.items.length > 0">
+            {{ t(group.title) }}
+          </h2>
+          <div
+            v-if="group.items.length > 0"
+            data-clear-on-click="true"
+            @contextmenu="showContextMenu"
+          >
+            <item
+              v-for="item in group.items"
+              :key="item.id"
+              :index="item.index"
+              :name="item.name"
+              :isDir="item.isDir"
+              :url="item.url"
+              :modified="item.modified"
+              :type="item.type"
+              :size="item.size"
+              :count="item.count"
+              :title="`${t('trash.origin')}: ${item.location}`"
+              trashed
+            >
+            </item>
+          </div>
+        </template>
+
+        <context-menu
+          :show="isContextMenuVisible"
+          :pos="contextMenuPos"
+          @hide="isContextMenuVisible = false"
+        >
+          <action
+            v-if="canRestore"
+            icon="restore_from_trash"
+            :label="t('trash.restore')"
+            @action="restoreSelected"
+          />
+          <action
+            v-if="canDelete"
+            icon="delete_forever"
+            :label="t('trash.deletePermanently')"
+            @action="purgeSelected"
+          />
+          <action icon="info" :label="t('buttons.info')" show="info" />
+        </context-menu>
       </div>
-    </div>
+    </template>
   </div>
 </template>
 
 <script setup lang="ts">
-import { trash as api } from "@/api";
+import { trash as api, users } from "@/api";
 import { StatusError } from "@/api/utils";
+import ContextMenu from "@/components/ContextMenu.vue";
+import Action from "@/components/header/Action.vue";
 import HeaderBar from "@/components/header/HeaderBar.vue";
+import Item from "@/components/files/ListingItem.vue";
 import { useAuthStore } from "@/stores/auth";
+import { useFileStore } from "@/stores/file";
+import { useLayoutStore } from "@/stores/layout";
 import { filesize } from "@/utils";
 import Errors from "@/views/Errors.vue";
-import dayjs from "dayjs";
-import { computed, inject, onMounted, ref } from "vue";
+import { computed, inject, onBeforeUnmount, onMounted, ref } from "vue";
 import { useI18n } from "vue-i18n";
+
+// The trash (Gezgin): its items in the same view as a folder of the user's files. No path reaches
+// them, so they do not open; they are restored or deleted for good, and the trash is emptied.
 
 const { t } = useI18n();
 const authStore = useAuthStore();
+const fileStore = useFileStore();
+const layoutStore = useLayoutStore();
 const $showError = inject<IToastError>("$showError")!;
 const $showSuccess = inject<IToastSuccess>("$showSuccess")!;
 
 const list = ref<ITrashList>({ items: [], count: 0, size: 0 });
-const selected = ref<string[]>([]);
 const loading = ref<boolean>(true);
 const confirmEmpty = ref<boolean>(false);
 const error = ref<StatusError | null>(null);
+const width = ref<number>(window.innerWidth);
+const isContextMenuVisible = ref<boolean>(false);
+const contextMenuPos = ref<{ x: number; y: number }>({ x: 0, y: 0 });
 
+const isMobile = computed(() => width.value <= 736);
 const canRestore = computed(() => authStore.user?.perm.create === true);
 const canDelete = computed(() => authStore.user?.perm.delete === true);
-const allSelected = computed(
-  () =>
-    list.value.items.length > 0 &&
-    selected.value.length === list.value.items.length
-);
 
-const fromNow = (time: string) => dayjs(time).fromNow();
+const summary = computed(() => list.value);
+const items = computed(() => (fileStore.req?.trash ? fileStore.req.items : []));
+const groups = computed(() => [
+  { title: "files.folders", items: items.value.filter((i) => i.isDir) },
+  { title: "files.files", items: items.value.filter((i) => !i.isDir) },
+]);
+
+// The user's sorting, as their folders are sorted; "modified" is when an item was deleted.
+const sorting = computed(
+  () => authStore.user?.sorting ?? { by: "name", asc: false }
+);
+const columns = computed(() => [
+  { by: "name", label: t("files.name") },
+  { by: "size", label: t("files.size") },
+  { by: "modified", label: t("trash.deleted") },
+]);
+
+const viewIcon = computed(() => {
+  const icons = {
+    list: "view_module",
+    mosaic: "grid_view",
+    "mosaic gallery": "view_list",
+  };
+  return icons[authStore.user?.viewMode ?? "list"];
+});
+
+const selectedIds = () =>
+  fileStore.selected
+    .map((i) => items.value[i]?.id)
+    .filter((id): id is string => id !== undefined);
+
+// Where an item was: its folder, or "Dosyalarım" for the top.
+const locationOf = (origin: string) =>
+  origin === "" || origin === "/" ? t("sidebar.myFiles") : origin;
+
+// The server's order for a folder (files.Listing.ApplySort): folders first by name, and File
+// Browser's reading of "asc".
+const ordered = (entries: ITrashItem[]) => {
+  const { by, asc } = sorting.value;
+  const byName = (a: ITrashItem, b: ITrashItem) =>
+    a.name.localeCompare(b.name, undefined, { numeric: true });
+  const sortedEntries = [...entries];
+  if (by === "size" || by === "modified") {
+    const key = (e: ITrashItem) =>
+      by === "size" ? e.size : Date.parse(e.deleted);
+    sortedEntries.sort((a, b) =>
+      a.isDir !== b.isDir ? (a.isDir ? -1 : 1) : key(a) - key(b)
+    );
+    if (!asc) sortedEntries.reverse();
+    return sortedEntries;
+  }
+  sortedEntries.sort((a, b) =>
+    a.isDir !== b.isDir ? (a.isDir ? -1 : 1) : asc ? byName(b, a) : byName(a, b)
+  );
+  return sortedEntries;
+};
+
+const show = () => {
+  const entries = ordered(list.value.items);
+  fileStore.updateRequest({
+    path: "/",
+    name: t("trash.title"),
+    size: list.value.size,
+    extension: "",
+    modified: "",
+    mode: 0,
+    isDir: true,
+    isSymlink: false,
+    type: "dir" as ResourceType,
+    url: "/trash/",
+    trash: true,
+    index: 0,
+    numDirs: entries.filter((e) => e.isDir).length,
+    numFiles: entries.filter((e) => !e.isDir).length,
+    sorting: sorting.value,
+    items: entries.map((entry, index) => ({
+      id: entry.id,
+      index,
+      name: entry.name,
+      path: "",
+      url: "",
+      size: entry.size,
+      count: entry.count,
+      extension: entry.isDir ? "" : (entry.name.match(/\.[^.]+$/)?.[0] ?? ""),
+      modified: entry.deleted,
+      mode: 0,
+      isDir: entry.isDir,
+      isSymlink: false,
+      type: entry.isDir ? ("dir" as ResourceType) : (entry.type ?? "blob"),
+      location: locationOf(entry.origin),
+    })),
+  });
+};
 
 const load = async () => {
-  loading.value = true;
   try {
     list.value = await api.list();
-    selected.value = selected.value.filter((id) =>
-      list.value.items.some((item) => item.id === id)
-    );
+    show();
   } catch (e) {
     if (e instanceof StatusError) error.value = e;
   } finally {
@@ -137,15 +312,10 @@ const load = async () => {
   }
 };
 
-const toggleAll = () => {
-  selected.value = allSelected.value
-    ? []
-    : list.value.items.map((item) => item.id);
-};
-
 const restoreSelected = async () => {
+  isContextMenuVisible.value = false;
   try {
-    const done = await api.restore(selected.value);
+    const done = await api.restore(selectedIds());
     $showSuccess(t("trash.restored", { count: done.length }));
   } catch (e: any) {
     $showError(e);
@@ -154,8 +324,9 @@ const restoreSelected = async () => {
 };
 
 const purgeSelected = async () => {
+  isContextMenuVisible.value = false;
   try {
-    await api.purge(selected.value);
+    await api.purge(selectedIds());
     $showSuccess(t("trash.purged"));
   } catch (e: any) {
     $showError(e);
@@ -163,7 +334,12 @@ const purgeSelected = async () => {
   await load();
 };
 
+// The trash is emptied only on a second click.
 const emptyTrash = async () => {
+  if (!confirmEmpty.value) {
+    confirmEmpty.value = true;
+    return;
+  }
   try {
     await api.empty();
     $showSuccess(t("trash.emptied"));
@@ -173,5 +349,87 @@ const emptyTrash = async () => {
   await load();
 };
 
-onMounted(load);
+// The arrows follow the folder listing's (FileListing.vue).
+const sortIcon = (by: string) => {
+  const { asc } = sorting.value;
+  const active = sorting.value.by === by;
+  if (by === "name") return active && !asc ? "arrow_upward" : "arrow_downward";
+  return active && asc ? "arrow_downward" : "arrow_upward";
+};
+
+const sort = async (by: string) => {
+  const asc = sortIcon(by) === "arrow_upward";
+  const data = { id: authStore.user?.id, sorting: { by, asc } };
+  authStore.updateUser(data);
+  show();
+  try {
+    if (data.id) await users.update(data, ["sorting"]);
+  } catch (e: any) {
+    $showError(e);
+  }
+};
+
+const switchView = async () => {
+  layoutStore.closeHovers();
+  const modes = {
+    list: "mosaic",
+    mosaic: "mosaic gallery",
+    "mosaic gallery": "list",
+  };
+  const data = {
+    id: authStore.user?.id,
+    viewMode: (modes[authStore.user?.viewMode ?? "list"] ||
+      "list") as ViewModeType,
+  };
+  users.update(data, ["viewMode"]).catch($showError);
+  authStore.updateUser(data);
+};
+
+const showContextMenu = (event: MouseEvent) => {
+  event.preventDefault();
+  isContextMenuVisible.value = true;
+  contextMenuPos.value = {
+    x: event.clientX + 8,
+    y: event.clientY + Math.floor(window.scrollY),
+  };
+};
+
+const handleEmptyAreaClick = (e: MouseEvent) => {
+  const target = e.target;
+  if (target instanceof HTMLElement && target.dataset.clearOnClick === "true") {
+    fileStore.selected = [];
+  }
+};
+
+const resize = () => {
+  width.value = window.innerWidth;
+};
+
+onMounted(() => {
+  window.addEventListener("resize", resize);
+  load();
+});
+
+onBeforeUnmount(() => {
+  window.removeEventListener("resize", resize);
+  fileStore.updateRequest(null);
+});
 </script>
+
+<style scoped>
+#listing {
+  min-height: calc(100vh - 11rem);
+}
+
+#trash-bar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5em;
+  margin: 0 0 0.5em;
+}
+
+#trash-bar .small {
+  flex: 1;
+}
+</style>

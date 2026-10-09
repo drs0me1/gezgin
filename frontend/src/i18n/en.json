@@ -105,7 +105,8 @@
       "both": "Both (,) and (;)"
     },
     "fileEncoding": "File Encoding",
-    "itemCount": "{count} item | {count} items"
+    "itemCount": "{count} item | {count} items",
+    "noNewHere": "Open a folder in My files to make a new folder or file in it."
   },
   "help": {
     "click": "select file or directory",
@@ -369,7 +370,8 @@
     "keepDays": "Days to keep",
     "keepDaysHelp": "Deleted items are deleted for good after this many days; 0 keeps them until the trash is emptied.",
     "usage": "Every user's trash: {count} items",
-    "emptyAll": "Empty every trash"
+    "emptyAll": "Empty every trash",
+    "noNew": "New folders and files cannot be made in the trash."
   },
   "archive": {
     "title": "Archives",
@@ -426,6 +428,7 @@
     "nothing": "No favorites yet: select a file or folder and press its star.",
     "added": "{name} added to favorites",
     "removed": "{name} removed from favorites",
-    "tooMany": "At most {max} favorites."
+    "tooMany": "At most {max} favorites.",
+    "noNew": "New folders and files cannot be made in favorites: open the folder they should go in."
   }
 }

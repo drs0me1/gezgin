@@ -24,7 +24,7 @@
   >
     <div>
       <img
-        v-if="!readOnly && type === 'image' && isThumbsEnabled"
+        v-if="!readOnly && !trashed && type === 'image' && isThumbsEnabled"
         v-lazy="thumbnailUrl"
         :alt="name"
       />
@@ -88,6 +88,9 @@ const props = defineProps<{
   // A shortcut to an item elsewhere (Gezgin: the favourites page): it opens the item in its place,
   // and nothing is dragged from it or dropped on it.
   shortcut?: boolean;
+  // An item in the trash (Gezgin): no path reaches it, so it has no thumbnail and does not open,
+  // and nothing is dragged from it or dropped on it.
+  trashed?: boolean;
 }>();
 
 const authStore = useAuthStore();
@@ -101,11 +104,16 @@ const isSelected = computed(
   () => fileStore.selected.indexOf(props.index) !== -1
 );
 const isDraggable = computed(
-  () => !props.readOnly && !props.shortcut && authStore.user?.perm.rename
+  () =>
+    !props.readOnly &&
+    !props.shortcut &&
+    !props.trashed &&
+    authStore.user?.perm.rename
 );
 
 const canDrop = computed(() => {
-  if (!props.isDir || props.readOnly || props.shortcut) return false;
+  if (!props.isDir || props.readOnly || props.shortcut || props.trashed)
+    return false;
 
   for (const i of fileStore.selected) {
     if (fileStore.req?.items[i].url === props.url) {
@@ -342,6 +350,7 @@ const click = (event: Event | KeyboardEvent) => {
 };
 
 const open = () => {
+  if (props.trashed) return;
   router.push({ path: props.url });
 };
 
