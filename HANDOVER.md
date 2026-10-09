@@ -397,7 +397,10 @@ so the API (400) and `config set` refuse the same; unset values take the default
   the `Dockerfile` pins the copies by the official digests (`85fe1e81…`, `5cec3fc1…`). The
   build pulls only from GitHub, signed in. When a base changes: update both the workflow and the
   `Dockerfile`, run the workflow, then push. The package is private, as GitHub makes new ones;
-  the image's build reads it through the repository.
+  the image's build reads it through the repository. The build's own builder came from Docker
+  Hub as well (`docker/setup-buildx-action` pulls `moby/buildkit`; its timeout failed the image
+  of `4eaecfe1`): the workflow now uses the runner's Docker daemon as the builder
+  (`driver: docker`), which needs no pull and builds the one amd64 image the same.
 - K136 (operator: the username and the link at the top, to be copied; the window to fit the
   screen): the share's Info window opens with the link (WebDAV: the address) and a WebDAV
   share's username, each in a read-only field with a copy button, the field keeping a long value
@@ -413,7 +416,9 @@ so the API (400) and `config set` refuse the same; unset values take the default
   all five pages, in the three views and scrolled, it stays at 64 pixels from the top, 48 high;
   an empty page keeps it too ("0 öğe"), without the view and "Seç". Live on nrm (`429205c4`, the
   operator's session in a tab of its own, looking only): 64 and 48 on the shares, favourites
-  and folder pages; the operator's trash was empty and showed no line, now fixed as well.
+  and folder pages; the operator's trash was empty and showed no line, now fixed as well
+  (live on nrm, `d35364b7`: the empty trash shows "0 öğe · 0 B" at 64 and 48, without the view
+  and "Seç"; the folder, favourites and shares pages the same, with them).
 
 ## 4. Tasks
 
@@ -850,7 +855,8 @@ so the API (400) and `config set` refuse the same; unset values take the default
 
 The image's bases come from GitHub's registry (`ghcr.io/drs0me1/gezgin-base`, K135), copied there
 from Amazon's mirror of Docker's official images by the `Gezgin base images` workflow, run by hand
-when a base changes; Docker Hub is not used, as its limit on anonymous pulls failed builds.
+when a base changes, and the build runs on the runner's own Docker daemon (`driver: docker`);
+Docker Hub is not used, as its limit on anonymous pulls and its timeouts failed builds.
 
 - A push to `main` builds `ghcr.io/drs0me1/gezgin:main` in about five minutes; the image config's
   `org.opencontainers.image.revision` label names the commit it was built from.
