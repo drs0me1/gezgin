@@ -50,7 +50,7 @@ Commit messages and README's "Changes from File Browser" describe each change.
 
 ## 3. Decisions taken
 
-The next decision number is **K99** (K99-K103 are proposed, see 4.3). "Recommended" means the operator accepted the recommendation
+The next decision number is **K99** (K99-K105 are proposed, see 4.3). "Recommended" means the operator accepted the recommendation
 made in the report.
 
 **Stage B (start).** Multi-user with an admin; File Browser's forms stay even where Konsol has its
@@ -498,7 +498,17 @@ so the API (400) and `config set` refuse the same; unset values take the default
   and off folders, Alt+↑ (⌘↑) as in Explorer and Finder; K102, home opens the top of
   "Dosyalarım", dimmed there, the breadcrumb's house kept; K103, a phone shows back, up and home
   (the header has 221 of 375 pixels free: three take 129, four 172); tooltips name the keys for
-  the platform, and the help window lists them.
+  the platform, and the help window lists them. The buttons on the right stay as they are: view,
+  download, upload, info and multiple selection, and, with a selection, share, favourite,
+  rename, copy, move, extract, archive and delete before them (up to 13, 43 pixels each). Found
+  while measuring: between 737 and about 1030 pixels, with one item selected, the header needs
+  1029 pixels, and "Sil" is cut in half while view, download, upload, info and multiple
+  selection fall off the right edge, out of reach. Hence K104: when the header does not fit,
+  the search bar first narrows (to 10em), then becomes its magnifier (opening full width, as on
+  a phone), and last the buttons go into the ⋮ menu with their names; measured by the page, as
+  the number of buttons changes with the selection. K105: "Dosyayı taşı" gets a folder with an
+  arrow (`drive_file_move`) in place of the right arrow (`forward`), which beside the new
+  forward arrow would read as "İleri"; also in the phone's selection bar.
 
 ### 4.4 New decisions to put to the operator
 
