@@ -76,6 +76,7 @@ import { users as usersApi } from "@/api";
 import { useAuthStore } from "@/stores/auth";
 import * as auth from "@/utils/auth";
 import { name, logoURL } from "@/utils/constants";
+import { serverMessage } from "@/utils/serverErrors";
 import { computed, inject, ref } from "vue";
 import { useI18n } from "vue-i18n";
 import { useRoute, useRouter } from "vue-router";
@@ -112,15 +113,7 @@ const statusMessage = (e: StatusError): string | null => {
   }
   if (e.status === 409) return t("login.usernameTaken");
   if (e.status === 403) return t("login.wrongCredentials");
-  if (e.status === 400) {
-    const match = e.message.match(/minimum length is (\d+)/);
-    if (match) return t("login.passwordTooShort", { min: match[1] });
-    if (e.message.includes("must differ")) return t("login.passwordUnchanged");
-    if (e.message.includes("current password is incorrect")) {
-      return t("login.currentPasswordIncorrect");
-    }
-    return e.message;
-  }
+  if (e.status === 400) return serverMessage(e.message) ?? e.message;
   return null;
 };
 

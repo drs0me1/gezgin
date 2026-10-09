@@ -326,6 +326,9 @@ func getSharePasswordHash(body share.CreateBody) (data []byte, statuscode int, e
 	if body.Password == "" {
 		return nil, 0, nil
 	}
+	if len(body.Password) > users.MaxPasswordBytes {
+		return nil, http.StatusBadRequest, fberrors.ErrPasswordTooLong
+	}
 
 	hash, err := bcrypt.GenerateFromPassword([]byte(body.Password), bcrypt.DefaultCost)
 	if err != nil {

@@ -2,8 +2,6 @@ package settings
 
 import (
 	fberrors "github.com/filebrowser/filebrowser/v2/errors"
-	"github.com/filebrowser/filebrowser/v2/rules"
-	"github.com/filebrowser/filebrowser/v2/users"
 )
 
 // StorageBackend is a settings storage backend.
@@ -35,10 +33,6 @@ func (s *Storage) Get() (*Settings, error) {
 		set.UserHomeBasePath = DefaultUsersHomeBasePath
 	}
 
-	if set.LogoutPage == "" {
-		set.LogoutPage = DefaultLogoutPage
-	}
-
 	if set.MinimumPasswordLength == 0 {
 		set.MinimumPasswordLength = DefaultMinimumPasswordLength
 	}
@@ -48,6 +42,10 @@ func (s *Storage) Get() (*Settings, error) {
 			ChunkSize:  DefaultTusChunkSize,
 			RetryCount: DefaultTusRetryCount,
 		}
+	}
+	// A chunk size of 0 had the browser send empty chunks without end; no save takes it now.
+	if set.Tus.ChunkSize == 0 {
+		set.Tus.ChunkSize = DefaultTusChunkSize
 	}
 
 	if set.FileMode == 0 {
@@ -67,19 +65,8 @@ func (s *Storage) Save(set *Settings) error {
 		return fberrors.ErrEmptyKey
 	}
 
-	if set.Defaults.Locale == "" {
-		set.Defaults.Locale = "tr"
-	}
-
-	if set.Defaults.ViewMode == "" {
-		set.Defaults.ViewMode = users.MosaicViewMode
-	}
-
-	if set.Rules == nil {
-		set.Rules = []rules.Rule{}
-	}
-
-	if err := rules.Validate(set.Rules); err != nil {
+	set.normalize()
+	if err := set.Validate(); err != nil {
 		return err
 	}
 

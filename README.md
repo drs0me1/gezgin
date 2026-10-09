@@ -126,8 +126,22 @@ Work in progress. Until the first Gezgin release this tree is File Browser's las
   `--disableExec` is still accepted and changes nothing; settings and users saved with these
   fields load as before, without them.
 - The container image keeps generated thumbnails in `/database/cache` (`FB_CACHE_DIR`).
-- Passwords need at least 8 characters by default (File Browser: 12); the admin can change it in
-  the global settings. Quick setup's generated admin password stays 16 characters.
+- Passwords need at least 8 letters by default (File Browser: 12 bytes); the admin can set 8 to 32
+  in the global settings, and a letter such as "ğ" counts once. A password over 72 bytes, which
+  bcrypt cannot take, is refused with HTTP 400 (a share link's answered 500). Quick setup's
+  generated admin password stays 16 characters.
+- Global settings: a value out of bounds is refused when saved (HTTP 400; `config set` refuses it
+  too): the minimum password length is 8 to 32, the upload chunk size 1 MB to 1 GB (a size of 0
+  had browsers send empty chunks without end), the retries 0 to 20, and the default language,
+  view mode and theme must be known values. No scope, home base folder or default scope can lie
+  in Gezgin's folders (`.gezgin-cop`, `.gezgin-yukleme`, `.gezgin-arsiv`); a user scoped there was
+  created and then refused everything. The defaults never grant the admin permission, and share
+  comes with download. The brand is fixed: the instance name, colour, branding folder (custom
+  styles and images), "disable external links", "hide the login button" and the custom logout
+  page are removed; share pages never show a login link, logging out always opens the login
+  screen, and error messages no longer offer to report an issue to File Browser. The theme and
+  the disk usage bar stay, under "Appearance". The screen's texts are in Turkish, and a saved
+  change to the theme, the disk bar or uploads reloads the page.
 
 Details: [docs/authentication.md](docs/authentication.md).
 

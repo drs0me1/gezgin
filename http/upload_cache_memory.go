@@ -13,11 +13,13 @@ import (
 	"time"
 
 	"github.com/jellydator/ttlcache/v3"
+
+	"github.com/filebrowser/filebrowser/v2/settings"
 )
 
 // UploadsDir is the folder at the server root that holds the data of the uploads in progress
 // (Gezgin). No user path reaches it: the rule check refuses it, as it refuses the trash.
-const UploadsDir = ".gezgin-yukleme"
+const UploadsDir = settings.UploadsDir
 
 const uploadCacheTTL = 3 * time.Minute
 

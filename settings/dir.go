@@ -12,8 +12,6 @@ import (
 	"github.com/spf13/afero"
 
 	fberrors "github.com/filebrowser/filebrowser/v2/errors"
-	"github.com/filebrowser/filebrowser/v2/trash"
-	"github.com/filebrowser/filebrowser/v2/users"
 )
 
 var (
@@ -36,9 +34,10 @@ func (s *Settings) MakeUserDir(username, userScope, serverRoot string) (string, 
 
 	userScope = path.Join("/", userScope)
 
-	// The trash folder holds every user's deleted files; it is nobody's scope.
-	if bin := "/" + trash.Dir; userScope == bin || strings.HasPrefix(userScope, bin+"/") {
-		return "", fmt.Errorf("%w: the trash cannot be a scope", fberrors.ErrInvalidRequestParams)
+	// Gezgin's folders (the trash, the uploads in progress, the archive jobs) are nobody's scope:
+	// no path reaches them. Letter case is ignored, as the disk may ignore it.
+	if IsReserved(userScope, true) {
+		return "", fmt.Errorf("%w: %s", fberrors.ErrInvalidRequestParams, reservedScope)
 	}
 
 	fs := afero.NewBasePathFs(afero.NewOsFs(), serverRoot)
@@ -46,33 +45,6 @@ func (s *Settings) MakeUserDir(username, userScope, serverRoot string) (string, 
 		return "", fmt.Errorf("failed to create user home dir: [%s]: %w", userScope, err)
 	}
 	return userScope, nil
-}
-
-// CreateUserHome derives and creates the home directory for a user that is
-// being provisioned (via signup or proxy auth) and sets user.Scope
-// to the resulting path. When CreateUserDir is enabled and the caller did not
-// supply an explicit scope, the scope is cleared so that MakeUserDir derives a
-// per-user home from the username instead of falling back to the default scope
-// (which normalizes to the server root, leaving every provisioned user sharing
-// it).
-//
-// It reports whether the scope was derived from the username. A derived scope
-// must be persisted with users.Storage.SaveProvisioned, which rejects a scope
-// already owned by another user so that distinct usernames cannot silently
-// share one home directory.
-func (s *Settings) CreateUserHome(user *users.User, serverRoot string, explicitScope bool) (derived bool, err error) {
-	derived = s.CreateUserDir && !explicitScope
-	if derived {
-		user.Scope = ""
-	}
-
-	userHome, err := s.MakeUserDir(user.Username, user.Scope, serverRoot)
-	if err != nil {
-		return false, err
-	}
-	user.Scope = userHome
-
-	return derived, nil
 }
 
 func cleanUsername(s string) string {

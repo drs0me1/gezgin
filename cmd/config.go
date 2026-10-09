@@ -30,7 +30,6 @@ func addConfigFlags(flags *pflag.FlagSet) {
 	addServerFlags(flags)
 	addUserFlags(flags)
 
-	flags.Bool("hideLoginButton", false, "hide login button from public pages")
 	flags.Bool("createUserDir", false, "generate user's home directory automatically")
 	flags.Uint("minimumPasswordLength", settings.DefaultMinimumPasswordLength, "minimum password length for new users")
 
@@ -40,13 +39,8 @@ func addConfigFlags(flags *pflag.FlagSet) {
 	flags.String("dirMode", fmt.Sprintf("%O", settings.DefaultDirMode), "mode bits that new directories are created with")
 
 	flags.String("auth.method", string(auth.MethodJSONAuth), "authentication type (json)")
-	flags.String("auth.logoutPage", "", "url of custom logout page")
 
-	flags.String("branding.name", "", "replace 'File Browser' by this name")
-	flags.String("branding.theme", "", "set the theme")
-	flags.String("branding.color", "", "set the theme color")
-	flags.String("branding.files", "", "path to directory with images and custom styles")
-	flags.Bool("branding.disableExternal", false, "disable external links such as GitHub links")
+	flags.String("branding.theme", "", "set the theme: light, dark, or empty to follow the system")
 	flags.Bool("branding.disableUsedPercentage", false, "disable used disk percentage graph")
 
 	flags.Uint64("tus.chunkSize", settings.DefaultTusChunkSize, "the tus chunk size")
@@ -89,18 +83,12 @@ func getAuthentication(flags *pflag.FlagSet, defaults ...interface{}) (settings.
 func printSettings(ser *settings.Server, set *settings.Settings, auther auth.Auther) error {
 	w := tabwriter.NewWriter(os.Stdout, 0, 0, 2, ' ', 0)
 
-	fmt.Fprintf(w, "Hide Login Button:\t%t\n", set.HideLoginButton)
 	fmt.Fprintf(w, "Create User Dir:\t%t\n", set.CreateUserDir)
-	fmt.Fprintf(w, "Logout Page:\t%s\n", set.LogoutPage)
 	fmt.Fprintf(w, "Minimum Password Length:\t%d\n", set.MinimumPasswordLength)
 	fmt.Fprintf(w, "Auth Method:\t%s\n", set.AuthMethod)
 
 	fmt.Fprintln(w, "\nBranding:")
-	fmt.Fprintf(w, "\tName:\t%s\n", set.Branding.Name)
-	fmt.Fprintf(w, "\tFiles override:\t%s\n", set.Branding.Files)
-	fmt.Fprintf(w, "\tDisable external links:\t%t\n", set.Branding.DisableExternal)
 	fmt.Fprintf(w, "\tDisable used disk percentage graph:\t%t\n", set.Branding.DisableUsedPercentage)
-	fmt.Fprintf(w, "\tColor:\t%s\n", set.Branding.Color)
 	fmt.Fprintf(w, "\tTheme:\t%s\n", set.Branding.Theme)
 
 	fmt.Fprintln(w, "\nServer:")
@@ -199,8 +187,6 @@ func getSettings(flags *pflag.FlagSet, set *settings.Settings, ser *settings.Ser
 			ser.WebDAVPort, err = flags.GetString(flag.Name)
 
 		// Settings flags from [addConfigFlags]
-		case "hideLoginButton":
-			set.HideLoginButton, err = flags.GetBool(flag.Name)
 		case "createUserDir":
 			set.CreateUserDir, err = flags.GetBool(flag.Name)
 		case "minimumPasswordLength":
@@ -211,18 +197,8 @@ func getSettings(flags *pflag.FlagSet, set *settings.Settings, ser *settings.Ser
 			set.DirMode, err = getAndParseFileMode(flags, flag.Name)
 		case "auth.method":
 			hasAuth = true
-		case "auth.logoutPage":
-			set.LogoutPage, err = flags.GetString(flag.Name)
-		case "branding.name":
-			set.Branding.Name, err = flags.GetString(flag.Name)
 		case "branding.theme":
 			set.Branding.Theme, err = flags.GetString(flag.Name)
-		case "branding.color":
-			set.Branding.Color, err = flags.GetString(flag.Name)
-		case "branding.files":
-			set.Branding.Files, err = flags.GetString(flag.Name)
-		case "branding.disableExternal":
-			set.Branding.DisableExternal, err = flags.GetBool(flag.Name)
 		case "branding.disableUsedPercentage":
 			set.Branding.DisableUsedPercentage, err = flags.GetBool(flag.Name)
 		case "tus.chunkSize":

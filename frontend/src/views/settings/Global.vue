@@ -14,11 +14,6 @@
           </p>
 
           <p>
-            <input type="checkbox" v-model="settings.hideLoginButton" />
-            {{ t("settings.hideLoginButton") }}
-          </p>
-
-          <p>
             <label class="small">{{ t("settings.userHomeBasePath") }}</label>
             <input
               class="input input--block"
@@ -35,7 +30,8 @@
               controls
               v-model.number="settings.minimumPasswordLength"
               id="minimumPasswordLength"
-              :min="1"
+              :min="minPasswordLength"
+              :max="maxPasswordLength"
             />
           </p>
 
@@ -70,39 +66,7 @@
           <p class="small">{{ t("settings.globalRules") }}</p>
           <rules v-model:rules="settings.rules" />
 
-          <h3>{{ t("settings.branding") }}</h3>
-
-          <i18n-t
-            keypath="settings.brandingHelp"
-            tag="p"
-            class="small"
-            scope="global"
-          >
-            <a
-              class="link"
-              target="_blank"
-              href="https://github.com/filebrowser/filebrowser/blob/master/docs/customization.md#custom-branding"
-              >{{ t("settings.documentation") }}</a
-            >
-          </i18n-t>
-
-          <p>
-            <input
-              type="checkbox"
-              v-model="settings.branding.disableExternal"
-              id="branding-links"
-            />
-            {{ t("settings.disableExternalLinks") }}
-          </p>
-
-          <p>
-            <input
-              type="checkbox"
-              v-model="settings.branding.disableUsedPercentage"
-              id="branding-used-disk"
-            />
-            {{ t("settings.disableUsedDiskPercentage") }}
-          </p>
+          <h3>{{ t("settings.appearance") }}</h3>
 
           <p>
             <label for="theme">{{ t("settings.themes.title") }}</label>
@@ -114,25 +78,12 @@
           </p>
 
           <p>
-            <label for="branding-name">{{ t("settings.instanceName") }}</label>
             <input
-              class="input input--block"
-              type="text"
-              v-model="settings.branding.name"
-              id="branding-name"
+              type="checkbox"
+              v-model="settings.branding.disableUsedPercentage"
+              id="branding-used-disk"
             />
-          </p>
-
-          <p>
-            <label for="branding-files">{{
-              t("settings.brandingDirectoryPath")
-            }}</label>
-            <input
-              class="input input--block"
-              type="text"
-              v-model="settings.branding.files"
-              id="branding-files"
-            />
+            {{ t("settings.disableUsedDiskPercentage") }}
           </p>
 
           <h3>{{ t("settings.tusUploads") }}</h3>
@@ -147,7 +98,7 @@
               <input
                 class="input input--block"
                 type="text"
-                v-model="formattedChunkSize"
+                v-model="chunkSizeText"
                 id="tus-chunkSize"
               />
             </p>
@@ -161,6 +112,7 @@
                 v-model.number="settings.tus.retryCount"
                 id="tus-retryCount"
                 :min="0"
+                :max="maxRetryCount"
               />
             </p>
           </div>
@@ -212,16 +164,23 @@ import Rules from "@/components/settings/Rules.vue";
 import Themes from "@/components/settings/Themes.vue";
 import UserForm from "@/components/settings/UserForm.vue";
 import { useLayoutStore } from "@/stores/layout";
+import { formatSize, parseSize } from "@/utils/size";
 import { getTheme, setTheme } from "@/utils/theme";
 import Errors from "@/views/Errors.vue";
-import { computed, inject, onBeforeUnmount, onMounted, ref } from "vue";
+import { inject, onMounted, ref } from "vue";
 import { useI18n } from "vue-i18n";
+
+// The bounds the server holds the settings to (settings.Validate).
+const minPasswordLength = 8;
+const maxPasswordLength = 32;
+const minChunkSize = 1024 ** 2;
+const maxChunkSize = 1024 ** 3;
+const maxRetryCount = 20;
 
 const error = ref<StatusError | null>(null);
 const originalSettings = ref<ISettings | null>(null);
 const settings = ref<ISettings | null>(null);
-const debounceTimeout = ref<number | null>(null);
-const pendingChunkSize = ref<string | null>(null);
+const chunkSizeText = ref<string>("");
 const trashUsage = ref<{ count: number; size: number } | null>(null);
 const confirmEmptyAll = ref<boolean>(false);
 
@@ -232,99 +191,76 @@ const { t } = useI18n();
 
 const layoutStore = useLayoutStore();
 
-const formattedChunkSize = computed({
-  get() {
-    return settings?.value?.tus?.chunkSize
-      ? formatBytes(settings?.value?.tus?.chunkSize)
-      : "";
-  },
-  set(value: string) {
-    // Use debouncing to allow the user to type freely without
-    // interruption by the formatter
-    // Clear the previous timeout if it exists
-    if (debounceTimeout.value) {
-      clearTimeout(debounceTimeout.value);
-    }
-
-    pendingChunkSize.value = value;
-
-    // Set a new timeout to apply the format after a short delay
-    debounceTimeout.value = window.setTimeout(applyChunkSize, 1500);
-  },
-});
-
-// applyChunkSize commits what the user typed. Saving must flush it first:
-// otherwise submitting within the debounce window persists the previous value,
-// and the setting appears to refuse the change.
-const applyChunkSize = () => {
-  if (debounceTimeout.value) {
-    clearTimeout(debounceTimeout.value);
-    debounceTimeout.value = null;
+// check returns what is wrong with the settings, as the server would say it, or null.
+const check = (s: ISettings): string | null => {
+  const length = s.minimumPasswordLength;
+  if (
+    !Number.isInteger(length) ||
+    length < minPasswordLength ||
+    length > maxPasswordLength
+  ) {
+    return t("settings.errors.passwordLength", {
+      min: minPasswordLength,
+      max: maxPasswordLength,
+    });
   }
-
-  if (pendingChunkSize.value === null) return;
-
-  if (settings.value) {
-    settings.value.tus.chunkSize = parseBytes(pendingChunkSize.value);
+  const chunkSize = s.tus.chunkSize;
+  if (chunkSize < minChunkSize || chunkSize > maxChunkSize) {
+    return t("settings.errors.chunkSize", {
+      min: filesize(minChunkSize),
+      max: filesize(maxChunkSize),
+    });
   }
-  pendingChunkSize.value = null;
+  const retries = s.tus.retryCount;
+  if (!Number.isInteger(retries) || retries < 0 || retries > maxRetryCount) {
+    return t("settings.errors.retryCount", { min: 0, max: maxRetryCount });
+  }
+  return null;
 };
 
-// Define funcs
-const save = async () => {
-  if (settings.value === null) return false;
-  applyChunkSize();
-  const newSettings: ISettings = { ...settings.value };
+// The interface reads these when the page loads; a change to them reloads it.
+const interfaceSettings = (s: ISettings) => JSON.stringify([s.branding, s.tus]);
 
-  if (newSettings.branding.theme !== getTheme()) {
-    setTheme(newSettings.branding.theme);
+const save = async () => {
+  if (settings.value === null || originalSettings.value === null) return;
+
+  // The text shown rounds the size; left as shown, it keeps the size as it was.
+  const chunkSize =
+    chunkSizeText.value === formatSize(settings.value.tus.chunkSize)
+      ? settings.value.tus.chunkSize
+      : parseSize(chunkSizeText.value);
+  if (chunkSize === null) {
+    $showError(t("settings.errors.chunkSizeUnreadable"));
+    return;
+  }
+  const newSettings: ISettings = {
+    ...settings.value,
+    tus: { ...settings.value.tus, chunkSize },
+  };
+  const problem = check(newSettings);
+  if (problem !== null) {
+    $showError(problem);
+    return;
   }
 
   try {
     await api.update(newSettings);
-    $showSuccess(t("settings.settingsUpdated"));
   } catch (e: any) {
     $showError(e);
+    return;
   }
 
-  return true;
-};
-// Parse the user-friendly input (e.g., "20M" or "1T") to bytes
-const parseBytes = (input: string) => {
-  const regex = /^(\d+)(\.\d+)?(B|K|KB|M|MB|G|GB|T|TB)?$/i;
-  const matches = input.match(regex);
-  if (matches) {
-    const size = parseFloat(matches[1].concat(matches[2] || ""));
-    // The unit is optional: a bare number is already a count of bytes. Reading
-    // it unguarded throws, and the throw happens inside the debounce callback,
-    // so the setting is silently never updated.
-    let unit: keyof SettingsUnit = (
-      matches[3] ?? "B"
-    ).toUpperCase() as keyof SettingsUnit;
-    if (!unit.endsWith("B")) {
-      unit += "B";
+  $showSuccess(t("settings.settingsUpdated"));
+  if (
+    interfaceSettings(newSettings) !== interfaceSettings(originalSettings.value)
+  ) {
+    if (newSettings.branding.theme !== getTheme()) {
+      setTheme(newSettings.branding.theme);
     }
-    const units: SettingsUnit = {
-      KB: 1024,
-      MB: 1024 ** 2,
-      GB: 1024 ** 3,
-      TB: 1024 ** 4,
-    };
-    return size * (units[unit as keyof SettingsUnit] || 1);
-  } else {
-    return 1024 ** 2;
+    window.setTimeout(() => window.location.reload(), 1000);
+    return;
   }
-};
-// Format the chunk size in bytes to user-friendly format
-const formatBytes = (bytes: number) => {
-  const units = ["B", "KB", "MB", "GB", "TB"];
-  let size = bytes;
-  let unitIndex = 0;
-  while (size >= 1024 && unitIndex < units.length - 1) {
-    size /= 1024;
-    unitIndex++;
-  }
-  return `${size}${units[unitIndex]}`;
+  originalSettings.value = JSON.parse(JSON.stringify(newSettings));
 };
 
 const loadTrashUsage = async () => {
@@ -359,7 +295,8 @@ onMounted(async () => {
     const original: ISettings = await api.get();
 
     originalSettings.value = original;
-    settings.value = { ...original };
+    settings.value = JSON.parse(JSON.stringify(original));
+    chunkSizeText.value = formatSize(original.tus.chunkSize);
     await loadTrashUsage();
   } catch (err) {
     if (err instanceof Error) {
@@ -367,13 +304,6 @@ onMounted(async () => {
     }
   } finally {
     layoutStore.loading = false;
-  }
-});
-
-// Clear the debounce timeout when the component is destroyed
-onBeforeUnmount(() => {
-  if (debounceTimeout.value) {
-    clearTimeout(debounceTimeout.value);
   }
 });
 </script>

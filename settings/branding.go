@@ -1,11 +1,9 @@
 package settings
 
-// Branding contains the branding settings of the app.
+// Branding holds how the interface looks. Gezgin's brand is fixed: File Browser's instance name,
+// colour, branding folder (custom styles and images) and external links option are gone, and a
+// database that still has them loads without them.
 type Branding struct {
-	Name                  string `json:"name"`
-	DisableExternal       bool   `json:"disableExternal"`
-	DisableUsedPercentage bool   `json:"disableUsedPercentage"`
-	Files                 string `json:"files"`
 	Theme                 string `json:"theme"`
-	Color                 string `json:"color"`
+	DisableUsedPercentage bool   `json:"disableUsedPercentage"`
 }

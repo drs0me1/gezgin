@@ -478,7 +478,6 @@ func quickSetup(v *viper.Viper, s *storage.Storage) error {
 
 	set := &settings.Settings{
 		Key:                   generateKey(),
-		HideLoginButton:       true,
 		CreateUserDir:         false,
 		MinimumPasswordLength: settings.DefaultMinimumPasswordLength,
 		UserHomeBasePath:      settings.DefaultUsersHomeBasePath,

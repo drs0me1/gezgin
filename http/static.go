@@ -8,11 +8,9 @@ import (
 	"html/template"
 	"io"
 	"io/fs"
-	"log"
 	"net/http"
 	"os"
 	"path"
-	"path/filepath"
 	"strings"
 
 	"github.com/filebrowser/filebrowser/v2/settings"
@@ -23,42 +21,18 @@ import (
 func handleWithStaticData(w http.ResponseWriter, _ *http.Request, d *data, fSys fs.FS, file, contentType string) (int, error) {
 	w.Header().Set("Content-Type", contentType)
 
-	auther, err := d.store.Auth.Get(d.settings.AuthMethod)
-	if err != nil {
-		return http.StatusInternalServerError, err
-	}
-
+	// Gezgin's brand is fixed: no instance name, colour, custom styles or images (K70).
 	data := map[string]interface{}{
-		"Name":                  d.settings.Branding.Name,
-		"DisableExternal":       d.settings.Branding.DisableExternal,
 		"DisableUsedPercentage": d.settings.Branding.DisableUsedPercentage,
-		"Color":                 d.settings.Branding.Color,
 		"BaseURL":               d.server.BaseURL,
 		"Version":               version.Version,
 		"StaticURL":             path.Join(d.server.BaseURL, "/static"),
 		"AuthMethod":            d.settings.AuthMethod,
-		"LogoutPage":            d.settings.LogoutPage,
-		"LoginPage":             auther.LoginPage(),
-		"CSS":                   false,
 		"Theme":                 d.settings.Branding.Theme,
 		"EnableThumbs":          d.server.EnableThumbnails,
 		"ResizePreview":         d.server.ResizePreview,
 		"TusSettings":           d.settings.Tus,
-		"HideLoginButton":       d.settings.HideLoginButton,
 		"WebDAVPort":            d.server.WebDAVPort,
-	}
-
-	if d.settings.Branding.Files != "" {
-		fPath := filepath.Join(d.settings.Branding.Files, "custom.css")
-		_, err := os.Stat(fPath)
-
-		if err != nil && !os.IsNotExist(err) {
-			log.Printf("couldn't load custom styles: %v", err)
-		}
-
-		if err == nil {
-			data["CSS"] = true
-		}
 	}
 
 	b, err := json.Marshal(data)
@@ -95,7 +69,7 @@ func getStaticHandlers(store *storage.Storage, server *settings.Server, assetsFs
 		return handleWithStaticData(w, r, d, assetsFs, "public/index.html", "text/html; charset=utf-8")
 	}, "", store, server)
 
-	static = handle(func(w http.ResponseWriter, r *http.Request, d *data) (int, error) {
+	static = handle(func(w http.ResponseWriter, r *http.Request, _ *data) (int, error) {
 		if r.Method != http.MethodGet {
 			return http.StatusNotFound, nil
 		}
@@ -107,22 +81,6 @@ func getStaticHandlers(store *storage.Storage, server *settings.Server, assetsFs
 		const maxAge = 86400 // 1 day
 		w.Header().Set("Cache-Control", fmt.Sprintf("public, max-age=%v", maxAge))
 		w.Header().Set("X-Content-Type-Options", "nosniff")
-
-		if d.settings.Branding.Files != "" {
-			if strings.HasPrefix(r.URL.Path, "img/") {
-				fPath := filepath.Join(d.settings.Branding.Files, r.URL.Path)
-				_, err := os.Stat(fPath)
-				if err != nil && !os.IsNotExist(err) {
-					log.Printf("could not load branding file override: %v", err)
-				} else if err == nil {
-					http.ServeFile(w, r, fPath)
-					return 0, nil
-				}
-			} else if r.URL.Path == "custom.css" && d.settings.Branding.Files != "" {
-				http.ServeFile(w, r, filepath.Join(d.settings.Branding.Files, "custom.css"))
-				return 0, nil
-			}
-		}
 
 		if !strings.HasSuffix(r.URL.Path, ".js") {
 			http.FileServer(http.FS(assetsFs)).ServeHTTP(w, r)

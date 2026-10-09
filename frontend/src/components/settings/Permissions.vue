@@ -3,7 +3,8 @@
     <h3>{{ $t("settings.permissions") }}</h3>
     <p class="small">{{ $t("settings.permissionsHelp") }}</p>
 
-    <p>
+    <!-- The defaults never grant the admin permission (Gezgin). -->
+    <p v-if="!isDefault">
       <input type="checkbox" v-model="admin" />
       {{ $t("settings.administrator") }}
     </p>
@@ -42,7 +43,7 @@
 <script>
 export default {
   name: "permissions",
-  props: ["perm"],
+  props: ["perm", "isDefault"],
   computed: {
     admin: {
       get() {

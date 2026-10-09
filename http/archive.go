@@ -27,7 +27,7 @@ import (
 	"github.com/spf13/afero"
 
 	"github.com/filebrowser/filebrowser/v2/pack"
-	"github.com/filebrowser/filebrowser/v2/trash"
+	"github.com/filebrowser/filebrowser/v2/settings"
 	"github.com/filebrowser/filebrowser/v2/unpack"
 )
 
@@ -38,7 +38,7 @@ import (
 
 // ArchiveDir is the folder at the server root where archive jobs build their results,
 // unreachable through any path.
-const ArchiveDir = ".gezgin-arsiv"
+const ArchiveDir = settings.ArchiveDir
 
 const (
 	archiveHistory = 20      // jobs kept to be listed
@@ -402,7 +402,7 @@ func newPackSource(d *data) packSource {
 		root = resolved
 	}
 	s := packSource{d: d}
-	for _, dir := range []string{trash.Dir, UploadsDir, ArchiveDir} {
+	for _, dir := range settings.ReservedDirs {
 		s.reserved = append(s.reserved, filepath.Join(root, dir))
 	}
 	return s

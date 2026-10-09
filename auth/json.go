@@ -55,8 +55,3 @@ func (a JSONAuth) Auth(r *http.Request, usr users.Store, _ *settings.Settings, s
 
 	return u, nil
 }
-
-// LoginPage tells that json auth doesn't require a login page.
-func (a JSONAuth) LoginPage() bool {
-	return true
-}

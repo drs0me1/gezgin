@@ -16,15 +16,10 @@ filebrowser config set [flags]
 ```
       --aceEditorTheme string            ace editor's syntax highlighting theme for users
   -a, --address string                   address to listen on (default "127.0.0.1")
-      --auth.logoutPage string           url of custom logout page
       --auth.method string               authentication type (json) (default "json")
   -b, --baseURL string                   base url
-      --branding.color string            set the theme color
-      --branding.disableExternal         disable external links such as GitHub links
       --branding.disableUsedPercentage   disable used disk percentage graph
-      --branding.files string            path to directory with images and custom styles
-      --branding.name string             replace 'File Browser' by this name
-      --branding.theme string            set the theme
+      --branding.theme string            set the theme: light, dark, or empty to follow the system
   -t, --cert string                      tls certificate
       --createUserDir                    generate user's home directory automatically
       --dateFormat                       use date format (true for absolute time, false for relative)
@@ -36,7 +31,6 @@ filebrowser config set [flags]
       --followExternalSymlinks           follow symlinks whose target is outside the user scope (unsafe)
   -h, --help                             help for set
       --hideDotfiles                     hide dotfiles in file listings
-      --hideLoginButton                  hide login button from public pages
   -k, --key string                       tls key
       --locale string                    locale for users (default "tr")
       --lockPassword                     lock password

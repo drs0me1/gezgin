@@ -8,9 +8,7 @@
       content="width=device-width, initial-scale=1"
     />
 
-    <title>
-      [{[ if .Name -]}][{[ .Name ]}][{[ else ]}]File Browser[{[ end ]}]
-    </title>
+    <title>Gezgin</title>
 
     <meta name="robots" content="noindex,nofollow" />
 
@@ -25,7 +23,7 @@
       sizes="180x180"
       href="[{[ .StaticURL ]}]/img/icons/apple-touch-icon.png"
     />
-    <meta name="apple-mobile-web-app-title" content="File Browser" />
+    <meta name="apple-mobile-web-app-title" content="Gezgin" />
 
     <!-- Add to home screen for Android and modern mobile browsers -->
     <link
@@ -33,10 +31,7 @@
       id="manifestPlaceholder"
       crossorigin="use-credentials"
     />
-    <meta
-      name="theme-color"
-      content="[{[ if .Color -]}][{[ .Color ]}][{[ else ]}]#2979ff[{[ end ]}]"
-    />
+    <meta name="theme-color" content="#2979ff" />
 
     <!-- Inject Some Variables and generate the manifest json -->
     <script>
@@ -47,8 +42,8 @@
         return `${window.FileBrowser.StaticURL}/${url.replace(/^\/+/, "")}`;
       };
       var dynamicManifest = {
-        name: window.FileBrowser.Name || "File Browser",
-        short_name: window.FileBrowser.Name || "File Browser",
+        name: "Gezgin",
+        short_name: "Gezgin",
         icons: [
           {
             src:
@@ -68,7 +63,7 @@
         start_url: window.location.origin + window.FileBrowser.BaseURL,
         display: "standalone",
         background_color: "#ffffff",
-        theme_color: window.FileBrowser.Color || "#455a64",
+        theme_color: "#455a64",
       };
 
       const stringManifest = JSON.stringify(dynamicManifest);
@@ -164,8 +159,5 @@
 
     <script type="module" src="/src/main.ts"></script>
 
-    [{[ if .CSS -]}]
-    <link rel="stylesheet" href="[{[ .StaticURL ]}]/custom.css" />
-    [{[ end ]}]
   </body>
 </html>

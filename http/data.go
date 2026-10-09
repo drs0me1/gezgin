@@ -5,14 +5,12 @@ import (
 	"net/http"
 	gopath "path"
 	"strconv"
-	"strings"
 
 	"github.com/tomasen/realip"
 
 	"github.com/filebrowser/filebrowser/v2/rules"
 	"github.com/filebrowser/filebrowser/v2/settings"
 	"github.com/filebrowser/filebrowser/v2/storage"
-	"github.com/filebrowser/filebrowser/v2/trash"
 	"github.com/filebrowser/filebrowser/v2/users"
 )
 
@@ -72,20 +70,7 @@ func (d *data) CheckRules(path string) bool {
 // at the server root: the trash and the uploads in progress. No path reaches
 // them, whatever the rules: they are only handled through their own endpoints.
 func (d *data) reserved(p string) bool {
-	full := gopath.Join("/", d.user.Scope, p)
-	if d.server.CaseInsensitiveFs {
-		full = strings.ToLower(full)
-	}
-	for _, dir := range []string{trash.Dir, UploadsDir, ArchiveDir} {
-		top := "/" + dir
-		if d.server.CaseInsensitiveFs {
-			top = strings.ToLower(top)
-		}
-		if full == top || strings.HasPrefix(full, top+"/") {
-			return true
-		}
-	}
-	return false
+	return settings.IsReserved(gopath.Join("/", d.user.Scope, p), d.server.CaseInsensitiveFs)
 }
 
 // rulePath canonicalizes path into the form the rules are written in.

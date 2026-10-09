@@ -59,7 +59,6 @@
         </button>
       </div>
       <button
-        v-if="canLogout"
         @click="logout"
         class="action"
         id="logout"
@@ -69,18 +68,6 @@
         <i class="material-icons">exit_to_app</i>
         <span>{{ $t("sidebar.logout") }}</span>
       </button>
-    </template>
-    <template v-else>
-      <router-link
-        v-if="!hideLoginButton"
-        class="action"
-        to="/login"
-        :aria-label="$t('sidebar.login')"
-        :title="$t('sidebar.login')"
-      >
-        <i class="material-icons">exit_to_app</i>
-        <span>{{ $t("sidebar.login") }}</span>
-      </router-link>
     </template>
 
     <div
@@ -95,14 +82,7 @@
 
     <p class="credits">
       <span>
-        <span v-if="disableExternal">File Browser</span>
-        <a
-          v-else
-          rel="noopener noreferrer"
-          target="_blank"
-          href="https://github.com/filebrowser/filebrowser"
-          >File Browser</a
-        >
+        <span>{{ name }}</span>
         <span> {{ " " }} {{ version }}</span>
       </span>
       <span>
@@ -120,14 +100,7 @@ import { useFileStore } from "@/stores/file";
 import { useLayoutStore } from "@/stores/layout";
 
 import * as auth from "@/utils/auth";
-import {
-  version,
-  hideLoginButton,
-  disableExternal,
-  disableUsedPercentage,
-  logoutPage,
-  loginPage,
-} from "@/utils/constants";
+import { name, version, disableUsedPercentage } from "@/utils/constants";
 import { files as api } from "@/api";
 import ProgressBar from "@/components/ProgressBar.vue";
 import prettyBytes from "pretty-bytes";
@@ -151,11 +124,9 @@ export default {
     active() {
       return this.currentPromptName === "sidebar";
     },
-    hideLoginButton: () => hideLoginButton,
+    name: () => name,
     version: () => version,
-    disableExternal: () => disableExternal,
     disableUsedPercentage: () => disableUsedPercentage,
-    canLogout: () => loginPage || logoutPage !== "/login",
   },
   methods: {
     ...mapActions(useLayoutStore, ["closeHovers", "showHover"]),

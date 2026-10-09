@@ -4,13 +4,11 @@ import (
 	"encoding/json"
 	"net/http"
 
-	fberrors "github.com/filebrowser/filebrowser/v2/errors"
 	"github.com/filebrowser/filebrowser/v2/rules"
 	"github.com/filebrowser/filebrowser/v2/settings"
 )
 
 type settingsData struct {
-	HideLoginButton       bool                  `json:"hideLoginButton"`
 	CreateUserDir         bool                  `json:"createUserDir"`
 	MinimumPasswordLength uint                  `json:"minimumPasswordLength"`
 	UserHomeBasePath      string                `json:"userHomeBasePath"`
@@ -24,7 +22,6 @@ type settingsData struct {
 
 var settingsGetHandler = withAdmin(func(w http.ResponseWriter, r *http.Request, d *data) (int, error) {
 	data := &settingsData{
-		HideLoginButton:       d.settings.HideLoginButton,
 		CreateUserDir:         d.settings.CreateUserDir,
 		MinimumPasswordLength: d.settings.MinimumPasswordLength,
 		UserHomeBasePath:      d.settings.UserHomeBasePath,
@@ -45,9 +42,6 @@ var settingsPutHandler = withAdmin(func(_ http.ResponseWriter, r *http.Request, 
 	if err != nil {
 		return http.StatusBadRequest, err
 	}
-	if req.TrashDays > settings.MaxTrashDays {
-		return http.StatusBadRequest, fberrors.ErrInvalidRequestParams
-	}
 
 	d.settings.CreateUserDir = req.CreateUserDir
 	d.settings.MinimumPasswordLength = req.MinimumPasswordLength
@@ -56,9 +50,9 @@ var settingsPutHandler = withAdmin(func(_ http.ResponseWriter, r *http.Request, 
 	d.settings.Rules = req.Rules
 	d.settings.Branding = req.Branding
 	d.settings.Tus = req.Tus
-	d.settings.HideLoginButton = req.HideLoginButton
 	d.settings.TrashDays = &req.TrashDays
 
+	// The store checks the settings (Gezgin): a value out of bounds answers 400.
 	err = d.store.Settings.Save(d.settings)
 	return errToStatus(err), err
 })

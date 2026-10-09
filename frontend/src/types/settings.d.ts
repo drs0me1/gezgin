@@ -1,6 +1,5 @@
 interface ISettings {
   createUserDir: boolean;
-  hideLoginButton: boolean;
   minimumPasswordLength: number;
   userHomeBasePath: string;
   defaults: SettingsDefaults;
@@ -25,12 +24,8 @@ interface SettingsDefaults {
 }
 
 interface SettingsBranding {
-  name: string;
-  disableExternal: boolean;
-  disableUsedPercentage: boolean;
-  files: string;
   theme: UserTheme;
-  color: string;
+  disableUsedPercentage: boolean;
 }
 
 interface SettingsTus {

@@ -14,7 +14,6 @@ import (
 // StorageBackend is the interface to implement for a users storage.
 type StorageBackend interface {
 	GetBy(interface{}) (*User, error)
-	GetByScope(scope string) (*User, error)
 	Gets() ([]*User, error)
 	Save(u *User) error
 	Update(u *User, fields ...string) error
@@ -25,11 +24,9 @@ type StorageBackend interface {
 
 type Store interface {
 	Get(baseScope string, followExternalSymlinks bool, id interface{}) (user *User, err error)
-	GetByScope(scope string) (*User, error)
 	Gets(baseScope string, followExternalSymlinks bool) ([]*User, error)
 	Update(user *User, fields ...string) error
 	Save(user *User) error
-	SaveProvisioned(user *User, derivedScope bool) error
 	Delete(id interface{}) error
 	LastUpdate(id uint) int64
 }
@@ -39,10 +36,6 @@ type Storage struct {
 	back    StorageBackend
 	updated map[uint]int64
 	mux     sync.RWMutex
-
-	// provision serializes the scope-collision check and the save of newly
-	// provisioned users, which must not interleave. See SaveProvisioned.
-	provision sync.Mutex
 
 	// guard serializes the checks that look at other users (a free username,
 	// the last admin) with the write they allow.
@@ -69,13 +62,6 @@ func (s *Storage) Get(baseScope string, followExternalSymlinks bool, id interfac
 		return nil, err
 	}
 	return
-}
-
-// GetByScope returns the first user whose scope matches the given one, or
-// ErrNotExist if none does. The user is returned as stored, without setting up
-// its filesystem, as it is meant for existence checks rather than serving.
-func (s *Storage) GetByScope(scope string) (*User, error) {
-	return s.back.GetByScope(scope)
 }
 
 // Gets gets a list of all users.
@@ -180,32 +166,6 @@ func (s *Storage) nameTaken(user *User) error {
 		}
 	}
 	return nil
-}
-
-// SaveProvisioned saves a user that is being provisioned (via signup or proxy
-// auth). When its scope was derived from the username, it first
-// rejects the save if another user already owns that scope, so that distinct
-// usernames cannot silently share one home directory.
-//
-// The check and the save are held under a single lock. Performing them as two
-// independent operations lets two concurrent provisioning requests both observe
-// a free scope and both save, leaving two users sharing one home directory.
-func (s *Storage) SaveProvisioned(user *User, derivedScope bool) error {
-	if !derivedScope {
-		return s.Save(user)
-	}
-
-	s.provision.Lock()
-	defer s.provision.Unlock()
-
-	switch _, err := s.back.GetByScope(user.Scope); {
-	case err == nil:
-		return fberrors.ErrExist
-	case !errors.Is(err, fberrors.ErrNotExist):
-		return err
-	}
-
-	return s.Save(user)
 }
 
 // Delete allows you to delete a user by its name or username. The provided

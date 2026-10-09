@@ -2,7 +2,7 @@ import { useAuthStore } from "@/stores/auth";
 import router from "@/router";
 import type { JwtPayload } from "jwt-decode";
 import { jwtDecode } from "jwt-decode";
-import { baseURL, logoutPage } from "./constants";
+import { baseURL } from "./constants";
 import { LoginLimitError, StatusError } from "@/api/utils";
 import { setSafeTimeout } from "@/api/utils";
 
@@ -94,18 +94,14 @@ export function logout(reason?: string) {
   authStore.clearUser();
 
   localStorage.setItem("jwt", "");
-  if (logoutPage !== "/login") {
-    document.location.href = `${logoutPage}`;
+  if (typeof reason === "string" && reason.trim() !== "") {
+    router.push({
+      path: "/login",
+      query: { "logout-reason": reason },
+    });
   } else {
-    if (typeof reason === "string" && reason.trim() !== "") {
-      router.push({
-        path: "/login",
-        query: { "logout-reason": reason },
-      });
-    } else {
-      router.push({
-        path: "/login",
-      });
-    }
+    router.push({
+      path: "/login",
+    });
   }
 }

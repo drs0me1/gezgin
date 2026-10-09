@@ -3,16 +3,24 @@ package users
 import (
 	"crypto/rand"
 	"encoding/base64"
+	"unicode/utf8"
 
 	"golang.org/x/crypto/bcrypt"
 
 	fberrors "github.com/filebrowser/filebrowser/v2/errors"
 )
 
+// MaxPasswordBytes is the longest password bcrypt takes.
+const MaxPasswordBytes = 72
+
 // ValidateAndHashPwd validates and hashes a password.
 func ValidateAndHashPwd(password string, minimumLength uint) (string, error) {
-	if uint(len(password)) < minimumLength {
+	// The minimum counts letters (Gezgin): "ğ" is one, though it takes two bytes.
+	if uint(utf8.RuneCountInString(password)) < minimumLength {
 		return "", fberrors.ErrShortPassword{MinimumLength: minimumLength}
+	}
+	if len(password) > MaxPasswordBytes {
+		return "", fberrors.ErrPasswordTooLong
 	}
 
 	if _, ok := commonPasswords[password]; ok {

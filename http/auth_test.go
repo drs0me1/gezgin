@@ -14,8 +14,8 @@ import (
 )
 
 // Regression for GHSA-v3jv-rmh2-635j: proxy sign-in waived an expired token's expiry when a
-// logout page was set. Gezgin has no proxy sign-in (K61), so an expired token is refused whatever
-// the logout page.
+// logout page was set. Gezgin has neither proxy sign-in (K61) nor a logout page setting (K74), and
+// an expired token is refused.
 func TestExpiredTokenIsRefused(t *testing.T) {
 	key := []byte("test-signing-key")
 	perm := users.Permissions{Download: true}
@@ -24,7 +24,6 @@ func TestExpiredTokenIsRefused(t *testing.T) {
 	if err := st.Settings.Save(&settings.Settings{
 		Key:        key,
 		AuthMethod: fbAuth.MethodJSONAuth,
-		LogoutPage: "/logged-out",
 	}); err != nil {
 		t.Fatalf("failed to save settings: %v", err)
 	}

@@ -1,4 +1,3 @@
-import { disableExternal } from "@/utils/constants";
 import { createApp } from "vue";
 import VueNumberInput from "@chenfengyuan/vue-number-input";
 import VueLazyload from "vue-lazyload";
@@ -12,6 +11,7 @@ import router from "@/router";
 import i18n, { isRtl } from "@/i18n";
 import App from "@/App.vue";
 import CustomToast from "@/components/CustomToast.vue";
+import { serverMessage } from "@/utils/serverErrors";
 
 import dayjs from "dayjs";
 import localizedFormat from "dayjs/plugin/localizedFormat";
@@ -83,16 +83,14 @@ app.provide("$showSuccess", (message: string) => {
   );
 });
 
-app.provide("$showError", (error: Error | string, displayReport = true) => {
+app.provide("$showError", (error: Error | string) => {
   const $toast = useToast();
+  const message = (error as Error).message || (error as string);
   $toast.error(
     {
       component: CustomToast,
       props: {
-        message: (error as Error).message || error,
-        isReport: !disableExternal && displayReport,
-        // TODO: could you add this to the component itself?
-        reportText: i18n.global.t("buttons.reportIssue"),
+        message: serverMessage(message) ?? message,
       },
     },
     {

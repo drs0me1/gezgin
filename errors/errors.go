@@ -30,6 +30,7 @@ var (
 	ErrTypeMismatch             = errors.New("a file and a folder cannot replace each other")
 	ErrTrashOtherDisk           = errors.New("the item is on another disk than the trash; delete it permanently instead")
 	ErrFileChanged              = errors.New("the file changed since it was opened")
+	ErrPasswordTooLong          = errors.New("password is too long, maximum length is 72 bytes")
 )
 
 type ErrShortPassword struct {

@@ -55,7 +55,7 @@
       {{ t("settings.lockPassword") }}
     </p>
 
-    <permissions v-model:perm="user.perm" />
+    <permissions v-model:perm="user.perm" :isDefault="isDefault" />
 
     <div v-if="!isDefault">
       <h3>{{ t("settings.rules") }}</h3>
@@ -97,8 +97,9 @@ const passwordPlaceholder = computed(() =>
 const scopePlaceholder = computed(() =>
   createUserDirData.value ? t("settings.userScopeGenerationPlaceholder") : ""
 );
+// The box follows the setting, not its own state, so that it stays to be ticked again.
 const displayHomeDirectoryCheckbox = computed(
-  () => props.isNew && createUserDirData.value
+  () => props.isNew && props.createUserDir
 );
 
 watch(
@@ -109,11 +110,9 @@ watch(
   }
 );
 
+// Unticking the box gives the scope back: left empty, the server would make the home folder.
 watch(createUserDirData, () => {
-  if (props.user?.scope) {
-    props.user.scope = createUserDirData.value
-      ? ""
-      : (originalUserScope.value ?? "");
-  }
+  if (originalUserScope.value === null) return;
+  props.user.scope = createUserDirData.value ? "" : originalUserScope.value;
 });
 </script>
