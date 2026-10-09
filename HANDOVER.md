@@ -436,7 +436,10 @@ so the API (400) and `config set` refuse the same; unset values take the default
   click only selects, the Info window gives "Eski yeri" and "Silinme" without checksums, restore
   puts the PNG back, the empty takes two clicks; "Yeni klasör" in the trash says "Çöpte yeni
   klasör ya da dosya oluşturulamaz.", in favourites and settings their own messages, and still
-  opens its prompt in a folder.
+  opens its prompt in a folder. Live on nrm (`2d157c4e`, the operator's session, looking only):
+  the operator's trash reads "3 öğe · 840.38 MiB" in mosaic tiles, `rg-42386` "1 öğe · 840.38
+  MiB" with its old place as tooltip; "Yeni klasör" there shows the message and opens nothing; no
+  console error.
 
 ### 4.4 New decisions to put to the operator
 
@@ -527,7 +530,7 @@ so the API (400) and `config set` refuse the same; unset values take the default
   ```
 
 - Gezgin listens on the tailnet on port 8091, its WebDAV shares on 8092; the container's `/srv` is
-  the operator's media folder (`/srv/media` on the host). nrm runs the image of `c233903f`.
+  the operator's media folder (`/srv/media` on the host). nrm runs the image of `2d157c4e`.
 - Live checks through the operator's session: Claude opens `http://nrm:8091/login` in its
   built-in browser, the operator signs in there (Claude does not type a password on a host that
   is not local), and Claude runs the API checks with `fetch` from that page (its token is in
