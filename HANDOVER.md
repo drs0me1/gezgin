@@ -50,7 +50,7 @@ Commit messages and README's "Changes from File Browser" describe each change.
 
 ## 3. Decisions taken
 
-The next decision number is **K94**. "Recommended" means the operator accepted the recommendation
+The next decision number is **K94** (K94-K97 are proposed, see 4.3). "Recommended" means the operator accepted the recommendation
 made in the report.
 
 **Stage B (start).** Multi-user with an admin; File Browser's forms stay even where Konsol has its
@@ -440,6 +440,21 @@ so the API (400) and `config set` refuse the same; unset values take the default
   the operator's trash reads "3 öğe · 840.38 MiB" in mosaic tiles, `rg-42386` "1 öğe · 840.38
   MiB" with its old place as tooltip; "Yeni klasör" there shows the message and opens nothing; no
   console error.
+
+- [ ] **A "Paylaşılanlar" page** (operator, 2026-10-09: after "Sık kullanılanlar" in the sidebar,
+  the shares as a table, a fixed list view, shares editable; a design first). Today the shares
+  are only in Settings → "Paylaşım yönetimi" (path, duration, owner for an admin, delete, copy),
+  and a share cannot be changed: changing one meant a new share and a new address. Proposed with
+  a mock-up, waiting: K94, the page in the sidebar after "Sık kullanılanlar", for users who may
+  share, replacing the settings tab; K95, a fixed list: name with its icon (opening the item in
+  place) and its folder under it, a lock for a password, the kind ("Bağlantı", "WebDAV ·
+  salt okunur/okuma-yazma" with its username), the end ("5 gün sonra", "Süresiz", amber within a
+  day), "Paylaşan" for an admin; sorted by name or end; per row copy, edit, remove; K96, editing
+  keeps the address: a new duration counted from now (K37's units and 10 years) or permanent; a
+  link's password kept, replaced or removed (a change ends the downloads made with the old one);
+  a WebDAV share's password replaced (it stays mandatory) and read-only or read-write (for a user
+  who may create, change, rename and delete); K97, an admin sees and edits every user's shares,
+  others their own.
 
 ### 4.4 New decisions to put to the operator
 
