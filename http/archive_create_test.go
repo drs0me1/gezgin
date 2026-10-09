@@ -229,3 +229,25 @@ func TestDownloadsAreCompressedAndDoNotHang(t *testing.T) {
 		t.Errorf("entries %v", methods)
 	}
 }
+
+func TestSharedFolderDownloads(t *testing.T) {
+	env := newShareEnv(t)
+	env.write("docs/k/a.txt", "A", 0o644)
+	env.write("docs/k/alt/b.txt", "B", 0o644)
+	env.write("docs/gizli.txt", "outside the share", 0o644)
+	// A link in the shared folder to a file of the owner's outside it.
+	if err := os.Symlink("../gizli.txt", filepath.Join(env.root, "docs/k/bag.txt")); err != nil {
+		t.Fatal(err)
+	}
+	hash := env.mustShare("/docs/k", `{}`)
+	for target, want := range map[string][]string{
+		"/api/public/dl/" + hash + "?algo=zip":     {"a.txt=A", "alt/", "alt/b.txt=B"},
+		"/api/public/dl/" + hash + "/alt?algo=zip": {"b.txt=B"},
+	} {
+		rec := env.call(http.MethodGet, target, "")
+		if rec.Code != http.StatusOK {
+			t.Fatalf("%s: %d %s", target, rec.Code, rec.Body.String())
+		}
+		sameList(t, target, zipEntries(t, rec.Body.Bytes()), want...)
+	}
+}

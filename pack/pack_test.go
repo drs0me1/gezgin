@@ -477,7 +477,6 @@ func TestWhatIsLeftOut(t *testing.T) {
 		"k/CON.txt=device",
 		"k/soru?.txt=question",
 		"k/Buyuk.txt=upper",
-		"k/buyuk.txt=lower",
 		"k/alt/x.txt=x",
 		"dis/out.txt=outside",
 	)
@@ -493,7 +492,22 @@ func TestWhatIsLeftOut(t *testing.T) {
 	must(os.Symlink("yok.txt", filepath.Join(k, "kopuk.txt")))
 	must(os.Symlink("../dis/out.txt", filepath.Join(k, "disari.txt")))
 	must(os.Symlink("..", filepath.Join(k, "alt", "dongu")))
-	must(os.WriteFile(filepath.Join(k, "bozuk-\xff.txt"), []byte("not UTF-8"), 0o644))
+	want := []string{"izinli.txt=ok", "bag.txt=ok", "a_b.txt=backslash", "CON.txt=device", "soru?.txt=question",
+		"Buyuk.txt=upper", "alt/", "alt/x.txt=x"}
+	// gizli.txt, a_b.txt's twin, the FIFO, the dangling link, the link out and the loop; CON.txt
+	// and soru?.txt.
+	skipped, windows := 6, 2
+	// Two names in other letter case, which a file system that tells them apart holds (macOS's
+	// does not): Windows does not.
+	if _, err := os.Stat(filepath.Join(k, "BUYUK.TXT")); errors.Is(err, fs.ErrNotExist) {
+		must(os.WriteFile(filepath.Join(k, "buyuk.txt"), []byte("lower"), 0o644))
+		want = append(want, "buyuk.txt=lower")
+		windows++
+	}
+	// A name that is not UTF-8, where the file system takes one (macOS's does not).
+	if os.WriteFile(filepath.Join(k, "bozuk-\xff.txt"), []byte("not UTF-8"), 0o644) == nil {
+		skipped++
+	}
 
 	src := dirSource{root: k, refuse: func(name string) bool { return strings.HasSuffix(name, "gizli.txt") }}
 	done := make(chan struct{})
@@ -512,13 +526,9 @@ func TestWhatIsLeftOut(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	same(t, zipContents(t, filepath.Join(dir, "k.zip")),
-		"izinli.txt=ok", "bag.txt=ok", "a_b.txt=backslash", "CON.txt=device", "soru?.txt=question",
-		"Buyuk.txt=upper", "buyuk.txt=lower", "alt/", "alt/x.txt=x")
-	// gizli.txt, a_b.txt's twin, the FIFO, the dangling link, the link out, the loop and the
-	// name that is not UTF-8.
-	if p.Skipped != 7 || p.Windows != 3 {
-		t.Errorf("progress %+v", p)
+	same(t, zipContents(t, filepath.Join(dir, "k.zip")), want...)
+	if p.Skipped != skipped || p.Windows != windows {
+		t.Errorf("progress %+v; want %d skipped, %d Windows names", p, skipped, windows)
 	}
 
 	// A source that follows links out takes the file it leads to.
