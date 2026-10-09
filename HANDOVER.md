@@ -24,9 +24,8 @@ and verified live on nrm. On 2026-10-09 a local session fixed its three name che
 archive work, removed the EPUB reader, self-signup and proxy sign-in (K59-K61), limited transfers
 (K64-K65), and verified it all live on nrm (`45c22b38`); only the real-client trials of 4.1
 remain before heading 7 is closed. Heading 8, "Yönetim ayarları ekranı", was then reviewed, its
-proposals K66-K75 accepted as recommended, implemented (`a71c0a2e`) and deployed on nrm; the
-checks that need no sign-in passed there, and the signed-in live checks wait for the operator
-(4.3).
+proposals K66-K75 accepted as recommended, implemented (`a71c0a2e`), deployed on nrm and verified
+live there. Next: heading 9 (4.3).
 
 ## 2. Headings
 
@@ -39,7 +38,7 @@ checks that need no sign-in passed there, and the signed-in live checks wait for
 | 5 | Yükleme, indirme ve arama | K24-K31 | `36ad2a06` | Done, verified live |
 | 6 | Paylaşım (links and WebDAV) | K32-K44 | `c8da81f8`, `aaf43505`, `403d332e` | Done, verified live |
 | 7 | Komut çalıştırma, and archives in its place | K45-K58 | `116c3549`, `b0bb8b63`, `527111be`, `6d531015`, `601ddbaa` | Last step's follow-ups open (4.1) |
-| 8 | Yönetim ayarları ekranı | K66-K75 | `a71c0a2e` | Done, on nrm; signed-in live checks wait (4.3) |
+| 8 | Yönetim ayarları ekranı | K66-K75 | `a71c0a2e` | Done, verified live |
 | 9 | Altyapı, marka ve CSP | | | To do (4.3) |
 | 10 | Konsol'dan alınacaklar | | | To do (4.3); archives already done under 7 |
 
@@ -279,14 +278,16 @@ so the API (400) and `config set` refuse the same; unset values take the default
   `http/settings_test.go`, `users/password_test.go`) and frontend tests (`size`,
   `serverErrors`); checked in the browser on a local build (Turkish screen, both chunk size
   errors, the reload, the home folder box).
-- [ ] **Signed-in live checks of heading 8 on nrm.** `a71c0a2e` runs there and its checks without
-  sign-in pass (title Gezgin, no `custom.css`, the page's settings without the removed ones,
-  `/static/custom.css` 404). The test admin of section 6 could not be added: in auto mode, Claude
-  Code's permission check refuses stopping the container and writing to its database over SSH
-  ("Remote Shell Writes"). Either the operator allows it, or checks it in the browser: Settings →
-  Global: the screen is Turkish, "Görünüm" has the theme and disk bar, the defaults have no
-  "Yönetici" box; a chunk size of `0` or `on MB` is refused with a Turkish message; `20 MB` saves and reloads the page; a new user with scope
-  `/.gezgin-arsiv/x` is refused; then set the chunk size back to 10 MB.
+- [x] **Live checks of heading 8 on nrm** (2026-10-09, `a71c0a2e`). Without sign-in: title Gezgin,
+  no `custom.css` (`/static/custom.css` 404), the page's settings without the removed ones. Signed
+  in, through the operator's session in Claude's built-in browser (section 6): the branding holds
+  only the theme and the disk bar; nine refused values (password length 1 and 100, chunk size 0,
+  21 retries, home base and default scope in Gezgin's folders, language, view mode, theme) answer
+  400 with their messages and nothing is stored; a 74-byte share link password answers 400 and
+  makes no link; nrm's own settings save back unchanged (200). On the screen: Turkish, "Görünüm"
+  with the theme and disk bar, no "Yönetici" box in the defaults; a chunk size of `0` gives
+  "Parça boyutu 1 MiB ile 1 GiB arasında olmalı."; `20 MB` saves and reloads the page with the
+  new size in force; set back to 10 MB.
 - [ ] **9 — Altyapı, marka ve CSP.** Proposed: a CSP for the index page; the inline startup
   script moved to a file; Gezgin's name, logo, icons and PWA manifest; remove
   "File Browser (untracked)", the "Sorun bildir" and other upstream links and the "project
@@ -391,6 +392,11 @@ so the API (400) and `config set` refuse the same; unset values take the default
 
 - Gezgin listens on the tailnet on port 8091, its WebDAV shares on 8092; the container's `/srv` is
   the operator's media folder (`/srv/media` on the host). nrm runs the image of `a71c0a2e`.
+- Live checks through the operator's session: Claude opens `http://nrm:8091/login` in its
+  built-in browser, the operator signs in there (Claude does not type a password on a host that
+  is not local), and Claude runs the API checks with `fetch` from that page (its token is in
+  `localStorage.jwt`) and the screen checks by hand. Nothing is created or deleted. Used for
+  heading 8.
 - Live checks without the operator's password: read the image id while the container runs
   (`podman inspect --type container gezgin --format '{{.Image}}'`; Konsol's stop removes the
   container), stop `gezgin` through Konsol's API, add a test admin with a random password kept in a
