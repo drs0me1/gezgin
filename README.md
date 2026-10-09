@@ -93,6 +93,16 @@ Work in progress. Until the first Gezgin release this tree is File Browser's las
   and a move takes the share links along. The owner's permissions and rules hold, Gezgin's own
   files are not shown, and a symbolic link does not lead out of the shared folder. The share
   dialog offers it for folders when the port is set; it lasts 7 days unless told otherwise.
+- Shares page: "Paylaşılanlar", after "Sık kullanılanlar" in the sidebar for users who may share,
+  replaces Settings → "Paylaşım yönetimi". A fixed list gives each share's item with its icon (it
+  opens the item in its place) and folder, a lock when it has a password, its kind ("Bağlantı", or
+  "WebDAV" read-only or read-write with its username), its end (amber within a day) and, for an
+  admin, who made it; sorted by name or end. A share's address is copied, its settings changed or
+  the share removed there. A change keeps the address (`PATCH /api/share/<id>`): a new duration
+  counted from now (the same units and 10-year limit) or none; a link's password set, replaced or
+  removed, a new one ending the downloads begun with the old; a WebDAV share's password replaced
+  (it stays required) and the share made read-only or read-write (for an owner who may create,
+  change, rename and delete). An admin sees and changes every user's shares, others their own.
 - Archives: a user who may create opens ZIP, RAR, 7z and tar archives (plain, `.gz`, `.bz2`, `.xz`,
   `.zst`) on the server with "Arşivi aç"; a RAR set (`name.part1.rar`, `name.part1of3.rar`, or
   `name.rar` with `name.r00`, ...) opens by its `.rar` parts or `name.r00` to `name.r99`, and files

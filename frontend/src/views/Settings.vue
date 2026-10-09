@@ -10,11 +10,6 @@
               {{ t("settings.profileSettings") }}
             </li></router-link
           >
-          <router-link to="/settings/shares" v-if="user?.perm.share"
-            ><li :class="{ active: $route.path === '/settings/shares' }">
-              {{ t("settings.shareManagement") }}
-            </li></router-link
-          >
           <router-link to="/settings/global" v-if="user?.perm.admin"
             ><li :class="{ active: $route.path === '/settings/global' }">
               {{ t("settings.globalSettings") }}

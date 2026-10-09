@@ -39,6 +39,7 @@ const known: [RegExp, (m: RegExpMatchArray) => string][] = [
     /a scope cannot lie in Gezgin's folders/,
     () => i18n.global.t("settings.errors.reservedScope"),
   ],
+  [/a share lasts at most 10 years/, () => i18n.global.t("shares.tooLong")],
   [
     /at most (\d+) favourites/,
     (m) => i18n.global.t("favorites.tooMany", { max: m[1] }),

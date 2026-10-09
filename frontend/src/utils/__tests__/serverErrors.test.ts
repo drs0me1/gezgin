@@ -49,6 +49,11 @@ describe("serverMessage", () => {
         "400 Bad Request (invalid request params: at most 20 favourites)"
       )
     ).toBe('favorites.tooMany {"max":"20"}');
+    expect(
+      serverMessage(
+        "400 Bad Request (a share lasts at most 10 years: invalid request params)"
+      )
+    ).toBe("shares.tooLong");
   });
 
   it("leaves other errors alone", () => {

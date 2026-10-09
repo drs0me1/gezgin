@@ -9,10 +9,10 @@ import User from "@/views/settings/User.vue";
 import Settings from "@/views/Settings.vue";
 import GlobalSettings from "@/views/settings/Global.vue";
 import ProfileSettings from "@/views/settings/Profile.vue";
-import Shares from "@/views/settings/Shares.vue";
 import Errors from "@/views/Errors.vue";
 import Trash from "@/views/Trash.vue";
 import Favorites from "@/views/Favorites.vue";
+import Shares from "@/views/Shares.vue";
 import { useAuthStore } from "@/stores/auth";
 import { baseURL, name } from "@/utils/constants";
 import i18n from "@/i18n";
@@ -24,9 +24,9 @@ const titles = {
   Files: "files.files",
   Trash: "trash.title",
   Favorites: "favorites.title",
+  Shares: "shares.title",
   Settings: "sidebar.settings",
   ProfileSettings: "settings.profileSettings",
-  Shares: "settings.shareManagement",
   GlobalSettings: "settings.globalSettings",
   Users: "settings.users",
   User: "settings.user",
@@ -81,6 +81,20 @@ const routes = [
     ],
   },
   {
+    path: "/shares",
+    component: Layout,
+    meta: {
+      requiresAuth: true,
+    },
+    children: [
+      {
+        path: "",
+        name: "Shares",
+        component: Shares,
+      },
+    ],
+  },
+  {
     path: "/trash",
     component: Layout,
     meta: {
@@ -115,9 +129,9 @@ const routes = [
             component: ProfileSettings,
           },
           {
+            // The shares have their own page now (Gezgin, K94).
             path: "shares",
-            name: "Shares",
-            component: Shares,
+            redirect: "/shares",
           },
           {
             path: "global",

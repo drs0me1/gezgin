@@ -50,7 +50,7 @@ Commit messages and README's "Changes from File Browser" describe each change.
 
 ## 3. Decisions taken
 
-The next decision number is **K94** (K94-K97 are proposed, see 4.3). "Recommended" means the operator accepted the recommendation
+The next decision number is **K98**. "Recommended" means the operator accepted the recommendation
 made in the report.
 
 **Stage B (start).** Multi-user with an admin; File Browser's forms stay even where Konsol has its
@@ -265,6 +265,22 @@ so the API (400) and `config set` refuse the same; unset values take the default
   message in the trash; also, as they silently made the item at the top of the user's files from
   any page that is not a folder of "Dosyalarım", in favourites and on every other page, each with
   its own message.
+- K94 (operator, as proposed with a mock-up): a "Paylaşılanlar" page in the sidebar after "Sık
+  kullanılanlar", for users who may share, replaces Settings → "Paylaşım yönetimi"
+  (`/settings/shares` leads to `/shares`); "Yeni klasör" there gives its own message.
+- K95 (operator): a fixed list: the item's name with its icon, opening it in place, its folder
+  under it, a lock for a password; its kind ("Bağlantı", "WebDAV · salt okunur/okuma-yazma" with
+  its username); its end ("5 gün sonra", "Süresiz", "Süresi doldu", amber within a day);
+  "Paylaşan" for an admin; sorted by name or end; per row copy, edit, remove. Narrower than 1024
+  pixels the kind and owner go under the name, on a phone the end too (its sort beside the name's).
+  `/api/shares` gives each share's `name`, `isDir`, `type`, `folder`, `open` (the item's path in
+  the asker's scope, when they reach it) and `owner` (when not the asker).
+- K96 (operator): `PATCH /api/share/<id>` changes a share, its address kept: a new duration from
+  now (K37's units and limit) or none; a link's password set, replaced (a new token, so downloads
+  begun with the old one end) or removed; a WebDAV share's password replaced, held to the account
+  rules, never removed; read-only or read-write, the latter only for an owner who may create,
+  change, rename and delete (else 403).
+- K97 (operator): an admin sees and changes every user's shares, others only their own (403).
 
 ## 4. Tasks
 
@@ -442,19 +458,18 @@ so the API (400) and `config set` refuse the same; unset values take the default
   console error.
 
 - [ ] **A "Paylaşılanlar" page** (operator, 2026-10-09: after "Sık kullanılanlar" in the sidebar,
-  the shares as a table, a fixed list view, shares editable; a design first). Today the shares
-  are only in Settings → "Paylaşım yönetimi" (path, duration, owner for an admin, delete, copy),
-  and a share cannot be changed: changing one meant a new share and a new address. Proposed with
-  a mock-up, waiting: K94, the page in the sidebar after "Sık kullanılanlar", for users who may
-  share, replacing the settings tab; K95, a fixed list: name with its icon (opening the item in
-  place) and its folder under it, a lock for a password, the kind ("Bağlantı", "WebDAV ·
-  salt okunur/okuma-yazma" with its username), the end ("5 gün sonra", "Süresiz", amber within a
-  day), "Paylaşan" for an admin; sorted by name or end; per row copy, edit, remove; K96, editing
-  keeps the address: a new duration counted from now (K37's units and 10 years) or permanent; a
-  link's password kept, replaced or removed (a change ends the downloads made with the old one);
-  a WebDAV share's password replaced (it stays mandatory) and read-only or read-write (for a user
-  who may create, change, rename and delete); K97, an admin sees and edits every user's shares,
-  others their own.
+  the shares as a table, a fixed list view, shares editable; a design first): K94-K97 (section
+  3). Before, the shares were only in Settings → "Paylaşım yönetimi" and a share could not be
+  changed: changing one meant a new share and a new address. Go tests `TestShareEditLink`,
+  `TestShareEditWebDAV`, `TestShareEditOwnersAndList`; frontend `utils/__tests__/shares.test.ts`.
+  Checked in the browser on a local build with a WebDAV port: four shares of the admin and one of
+  a user listed with icons, folders, locks, kinds, ends (amber within a day) and owners; sorting
+  by name and end both ways; 5 days made 2 with a new password (the old one then refused, the new
+  one let in); a WebDAV share made read-write for 30 days; 3700 days refused with "Bir paylaşım en
+  fazla 10 yıl sürebilir."; a password removed and the link made permanent (it opened without
+  one); a share removed after a question naming it; `/settings/shares` led to the page; "Yeni
+  klasör" gave its message; no overflow at 841 and 375 pixels. Waiting: the image and the live
+  check on nrm.
 
 ### 4.4 New decisions to put to the operator
 

@@ -1,8 +1,20 @@
 import { fetchURL, fetchJSON, removePrefix, createURL } from "./utils";
 import { webdavPort } from "@/utils/constants";
 
+// SharedItem is a share as the "Paylaşılanlar" page lists it (Gezgin, K95): its item's name and
+// kind, the folder it lies in and, when the user can reach it, where it opens; and for an admin,
+// whose share it is when not their own.
+export interface SharedItem extends Share {
+  name: string;
+  isDir: boolean;
+  type?: ResourceType;
+  folder: string;
+  open?: string;
+  owner?: string;
+}
+
 export async function list() {
-  return fetchJSON<Share[]>("/api/shares");
+  return fetchJSON<SharedItem[]>("/api/shares");
 }
 
 export async function get(url: string) {
@@ -13,6 +25,23 @@ export async function get(url: string) {
 export async function remove(hash: string) {
   await fetchURL(`/api/share/${hash}`, {
     method: "DELETE",
+  });
+}
+
+// ShareUpdate changes a share where it is, its address kept (Gezgin, K96): a duration counted from
+// now ("0" for none), a password set or removed, a WebDAV share made read-only or read-write.
+export interface ShareUpdate {
+  expires?: string;
+  unit?: string;
+  passwordAction?: "keep" | "set" | "remove";
+  password?: string;
+  writable?: boolean;
+}
+
+export async function update(hash: string, body: ShareUpdate) {
+  return fetchJSON<Share>(`/api/share/${hash}`, {
+    method: "PATCH",
+    body: JSON.stringify(body),
   });
 }
 

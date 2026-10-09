@@ -25,6 +25,16 @@
         <span>{{ $t("favorites.title") }}</span>
       </button>
       <button
+        v-if="user.perm.share"
+        class="action"
+        @click="toShares"
+        :aria-label="$t('shares.title')"
+        :title="$t('shares.title')"
+      >
+        <i class="material-icons">share</i>
+        <span>{{ $t("shares.title") }}</span>
+      </button>
+      <button
         class="action"
         @click="toTrash"
         :aria-label="$t('trash.title')"
@@ -178,11 +188,16 @@ export default {
       const reasons = {
         Trash: "trash.noNew",
         Favorites: "favorites.noNew",
+        Shares: "shares.noNew",
       };
       this.$showError(this.$t(reasons[this.$route.name] ?? "files.noNewHere"));
     },
     toFavorites() {
       this.$router.push({ path: "/favorites" });
+      this.closeHovers();
+    },
+    toShares() {
+      this.$router.push({ path: "/shares" });
       this.closeHovers();
     },
     toTrash() {

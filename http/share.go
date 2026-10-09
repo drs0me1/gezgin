@@ -8,6 +8,7 @@ import (
 	"fmt"
 	"net/http"
 	"os"
+	"path"
 	"path/filepath"
 	"sort"
 	"strconv"
@@ -17,6 +18,7 @@ import (
 	"unicode/utf8"
 
 	fberrors "github.com/filebrowser/filebrowser/v2/errors"
+	"github.com/filebrowser/filebrowser/v2/files"
 	"github.com/filebrowser/filebrowser/v2/share"
 	"github.com/filebrowser/filebrowser/v2/users"
 	"golang.org/x/crypto/bcrypt"
@@ -93,8 +95,59 @@ var shareListHandler = withPermShare(func(w http.ResponseWriter, r *http.Request
 		return s[i].Expire < s[j].Expire
 	})
 
-	return renderJSON(w, r, toShareResponses(s))
+	owners := map[uint]*users.User{d.user.ID: d.user}
+	items := make([]shareListItem, 0, len(s))
+	for _, l := range s {
+		owner, ok := owners[l.UserID]
+		if !ok {
+			if owner, err = d.store.Users.Get(d.server.Root, d.server.FollowExternalSymlinks, l.UserID); err != nil {
+				owner = nil
+			}
+			owners[l.UserID] = owner
+		}
+		items = append(items, d.describeShare(l, owner))
+	}
+	return renderJSON(w, r, items)
 })
+
+// shareListItem is a share as the "Paylaşılanlar" page lists it (Gezgin, K95): with its item's
+// name, whether it is a folder and a file's type, the folder it lies in, the path the requesting
+// user opens it at when it lies in their scope, and, for an admin, the owner of another's share.
+type shareListItem struct {
+	shareResponse
+	Name   string `json:"name"`
+	IsDir  bool   `json:"isDir"`
+	Type   string `json:"type,omitempty"`
+	Folder string `json:"folder"`
+	Open   string `json:"open,omitempty"`
+	Owner  string `json:"owner,omitempty"`
+}
+
+func (d *data) describeShare(l *share.Link, owner *users.User) shareListItem {
+	item := shareListItem{shareResponse: *toShareResponse(l)}
+	if l.Path != "/" {
+		item.Name = path.Base(l.Path)
+	}
+	where := l.Path
+	if owner != nil {
+		if owner.ID != d.user.ID {
+			item.Owner = owner.Username
+		}
+		full := owner.FullPath(l.Path)
+		if info, err := os.Stat(full); err == nil {
+			item.IsDir = info.IsDir()
+			if !item.IsDir {
+				item.Type = files.NameType(info.Name(), info.Size())
+			}
+		}
+		if names, ok := d.inside(d.user.FullPath("/"), full); ok {
+			item.Open = "/" + strings.Join(names, "/")
+			where = item.Open
+		}
+	}
+	item.Folder = path.Dir(where)
+	return item
+}
 
 var shareGetsHandler = withPermShare(func(w http.ResponseWriter, r *http.Request, d *data) (int, error) {
 	var (
@@ -227,11 +280,9 @@ var sharePostHandler = withPermShare(func(w http.ResponseWriter, r *http.Request
 	// A link to a page takes its token to the downloads; WebDAV asks for the password every time.
 	var token string
 	if len(hash) > 0 && body.Kind == "" {
-		tokenBuffer := make([]byte, 96)
-		if _, err := rand.Read(tokenBuffer); err != nil {
+		if token, err = newShareToken(); err != nil {
 			return http.StatusInternalServerError, err
 		}
-		token = base64.URLEncoding.EncodeToString(tokenBuffer)
 	}
 
 	s = &share.Link{
@@ -251,6 +302,110 @@ var sharePostHandler = withPermShare(func(w http.ResponseWriter, r *http.Request
 	}
 
 	return renderJSON(w, r, toShareResponse(s))
+})
+
+// newShareToken returns the random token a password-protected link takes to its downloads.
+func newShareToken() (string, error) {
+	tokenBuffer := make([]byte, 96)
+	if _, err := rand.Read(tokenBuffer); err != nil {
+		return "", err
+	}
+	return base64.URLEncoding.EncodeToString(tokenBuffer), nil
+}
+
+// shareUpdate is a change to a share, whose address stays (Gezgin, K96). Expires, when set, gives
+// a new duration counted from now in Unit ("0": permanent); PasswordAction keeps ("" or "keep"),
+// sets or removes the password; Writable, when set, makes a WebDAV share read-only or read-write.
+type shareUpdate struct {
+	Expires        *string `json:"expires"`
+	Unit           string  `json:"unit"`
+	PasswordAction string  `json:"passwordAction"`
+	Password       string  `json:"password"`
+	Writable       *bool   `json:"writable"`
+}
+
+var sharePatchHandler = withPermShare(func(w http.ResponseWriter, r *http.Request, d *data) (int, error) {
+	hash := strings.Trim(r.URL.Path, "/")
+	if hash == "" {
+		return http.StatusBadRequest, nil
+	}
+	link, err := d.store.Share.GetByHash(hash)
+	if err != nil {
+		return errToStatus(err), err
+	}
+	// An admin changes everyone's shares, a user their own (K97).
+	if link.UserID != d.user.ID && !d.user.Perm.Admin {
+		return http.StatusForbidden, nil
+	}
+	var body shareUpdate
+	if err := json.NewDecoder(r.Body).Decode(&body); err != nil {
+		return http.StatusBadRequest, fmt.Errorf("%w: %w", fberrors.ErrInvalidRequestParams, err)
+	}
+
+	if body.Expires != nil {
+		expire, err := shareExpiry(share.CreateBody{Expires: *body.Expires, Unit: body.Unit}, time.Now())
+		if err != nil {
+			return http.StatusBadRequest, err
+		}
+		link.Expire = expire
+	}
+
+	switch body.PasswordAction {
+	case "", "keep":
+	case "set":
+		if link.Kind == share.KindWebDAV {
+			// A WebDAV password is held to the account rules (K41).
+			pwd, err := users.ValidateAndHashPwd(body.Password, d.settings.MinimumPasswordLength)
+			if err != nil {
+				return http.StatusBadRequest, err
+			}
+			link.PasswordHash = pwd
+			break
+		}
+		if body.Password == "" {
+			return http.StatusBadRequest, fberrors.ErrEmptyPassword
+		}
+		pwd, status, err := getSharePasswordHash(share.CreateBody{Password: body.Password})
+		if err != nil {
+			return status, err
+		}
+		link.PasswordHash = string(pwd)
+		// A new password ends the downloads the old one let through.
+		if link.Token, err = newShareToken(); err != nil {
+			return http.StatusInternalServerError, err
+		}
+	case "remove":
+		if link.Kind == share.KindWebDAV {
+			return http.StatusBadRequest, fmt.Errorf("a WebDAV share keeps a password: %w", fberrors.ErrInvalidRequestParams)
+		}
+		link.PasswordHash, link.Token = "", ""
+	default:
+		return http.StatusBadRequest, fmt.Errorf("unknown password action %q: %w", body.PasswordAction, fberrors.ErrInvalidRequestParams)
+	}
+
+	if body.Writable != nil && *body.Writable != link.Writable {
+		if link.Kind != share.KindWebDAV {
+			return http.StatusBadRequest, fmt.Errorf("only a WebDAV share is writable: %w", fberrors.ErrInvalidRequestParams)
+		}
+		if *body.Writable {
+			// The share writes as its owner, who must be allowed to (K42).
+			owner := d.user
+			if link.UserID != d.user.ID {
+				if owner, err = d.store.Users.Get(d.server.Root, d.server.FollowExternalSymlinks, link.UserID); err != nil {
+					return errToStatus(err), err
+				}
+			}
+			if !davCanWrite(owner.Perm) {
+				return http.StatusForbidden, errors.New("a writable WebDAV share needs the create, modify, rename and delete permissions")
+			}
+		}
+		link.Writable = *body.Writable
+	}
+
+	if err := d.store.Share.Save(link); err != nil {
+		return http.StatusInternalServerError, err
+	}
+	return renderJSON(w, r, toShareResponse(link))
 })
 
 // checkWebDAVShare checks the kind of a share about to be made of the item described by info
