@@ -301,6 +301,12 @@ four opening questions only multi-user was answered then: share links were later
 
 ## 5. How to work
 
+- Gezgin is a project of its own, apart from debian-server-installer (Konsol): its code, handover
+  and decisions live in this repository only. Work in a session opened in Gezgin's own local clone,
+  not in debian-server-installer's folder: claude-mem files a session's memory under the folder it
+  was opened in, so Gezgin's memory stays under its own project, `gezgin`. The first local session
+  ran in debian-server-installer's folder; its memory was moved with
+  `claude-mem project merge debian-server-installer gezgin`.
 - Commit and push to `main` unless the operator says otherwise.
 - Per heading: review (4.2), report in Turkish with numbered decisions and a recommendation,
   implement once the operator decides, test, commit, push, wait for the image, update nrm, verify
