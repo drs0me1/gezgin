@@ -28,7 +28,8 @@ proposals K66-K75 accepted as recommended, implemented (`a71c0a2e`), deployed on
 live there. Heading 9, "Altyapı, marka ve CSP", was then reviewed, decided (K76-K83, the logo after
 two drafts), implemented (`79805244`, `5074d927`) and deployed on nrm; its checks without sign-in
 passed there, signed in too. Heading 10, "Konsol'dan alınacaklar", was then reviewed and decided
-(K84-K89, K87 changed by the operator) and is being implemented (4.3).
+(K84-K89, K87 changed by the operator), implemented (`39ae53ce`) and verified live on nrm. The ten
+headings of stage D are done; open are 4.1's Windows trials and the later work of 4.5.
 
 ## 2. Headings
 
@@ -43,7 +44,7 @@ passed there, signed in too. Heading 10, "Konsol'dan alınacaklar", was then rev
 | 7 | Komut çalıştırma, and archives in its place | K45-K58 | `116c3549`, `b0bb8b63`, `527111be`, `6d531015`, `601ddbaa` | Last step's follow-ups open (4.1) |
 | 8 | Yönetim ayarları ekranı | K66-K75 | `a71c0a2e` | Done, verified live |
 | 9 | Altyapı, marka ve CSP | K76-K83 | `79805244`, `5074d927`, `c11a6b80` | Done, verified live |
-| 10 | Konsol'dan alınacaklar | K84-K89 | | Implemented, to be verified live (4.3) |
+| 10 | Konsol'dan alınacaklar | K84-K89 | `39ae53ce` | Done, verified live |
 
 Commit messages and README's "Changes from File Browser" describe each change.
 
@@ -395,7 +396,12 @@ so the API (400) and `config set` refuse the same; unset values take the default
   `http/dirsize_test.go`, `http/favorites_test.go`) and frontend tests (`folder`); checked in the
   browser on a local build: tiles read "4 öğe · 55 B", the Info window gives the folder's size and
   count, the star adds and the page lists, opens and removes favourites, no console error.
-- [ ] **Live checks of heading 10 on nrm**, through the operator's session.
+- [x] **Live checks of heading 10 on nrm** (`39ae53ce`, the operator's session): the tiles read
+  "20 öğe · 1.6 GiB" for the Acronis folder, as on the disk (20 entries, 1,719,335,538 bytes),
+  and "0 öğe" for the empty `movies` and `series`; a favourite added shows on the page and the ×
+  takes it out (nothing left in the operator's list); no console error. Seen there: between 737
+  and 1024 pixels wide the sidebar is 10em and cut "Sık kullanılanlar" (it needs 11.44em); it is
+  12em now (`frontend/src/css/mobile.css`).
 
 ### 4.4 New decisions to put to the operator
 

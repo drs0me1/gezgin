@@ -1,12 +1,13 @@
+/* 12em fits "Sık kullanılanlar" (Gezgin), which 10em cut. */
 @media (max-width: 1024px) {
   nav {
-    width: 10em;
+    width: 12em;
   }
 }
 
 @media (max-width: 1024px) {
   main {
-    width: calc(100% - 13em);
+    width: calc(100% - 15em);
   }
 }
 
