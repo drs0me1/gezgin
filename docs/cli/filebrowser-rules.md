@@ -27,7 +27,7 @@ rules.
 
 ## See Also
 
-* [filebrowser](filebrowser.md)	 - A stylish web-based file browser
+* [filebrowser](filebrowser.md)	 - Gezgin, a web file manager
 * [filebrowser rules add](filebrowser-rules-add.md)	 - Add a global rule or user rule
 * [filebrowser rules ls](filebrowser-rules-ls.md)	 - List global rules or user specific rules
 * [filebrowser rules rm](filebrowser-rules-rm.md)	 - Remove a global rule or user rule

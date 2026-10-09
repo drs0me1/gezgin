@@ -21,7 +21,7 @@ Users management utility.
 
 ## See Also
 
-* [filebrowser](filebrowser.md)	 - A stylish web-based file browser
+* [filebrowser](filebrowser.md)	 - Gezgin, a web file manager
 * [filebrowser users add](filebrowser-users-add.md)	 - Create a new user
 * [filebrowser users export](filebrowser-users-export.md)	 - Export all users to a file.
 * [filebrowser users find](filebrowser-users-find.md)	 - Find a user by username or id

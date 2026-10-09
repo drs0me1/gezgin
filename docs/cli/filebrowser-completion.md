@@ -23,7 +23,7 @@ See each sub-command's help for details on how to use the generated script.
 
 ## See Also
 
-* [filebrowser](filebrowser.md)	 - A stylish web-based file browser
+* [filebrowser](filebrowser.md)	 - Gezgin, a web file manager
 * [filebrowser completion bash](filebrowser-completion-bash.md)	 - Generate the autocompletion script for bash
 * [filebrowser completion fish](filebrowser-completion-fish.md)	 - Generate the autocompletion script for fish
 * [filebrowser completion powershell](filebrowser-completion-powershell.md)	 - Generate the autocompletion script for powershell

@@ -21,5 +21,5 @@ filebrowser version [flags]
 
 ## See Also
 
-* [filebrowser](filebrowser.md)	 - A stylish web-based file browser
+* [filebrowser](filebrowser.md)	 - Gezgin, a web file manager
 

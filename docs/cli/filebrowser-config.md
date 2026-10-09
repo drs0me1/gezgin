@@ -21,7 +21,7 @@ Configuration management utility.
 
 ## See Also
 
-* [filebrowser](filebrowser.md)	 - A stylish web-based file browser
+* [filebrowser](filebrowser.md)	 - Gezgin, a web file manager
 * [filebrowser config cat](filebrowser-config-cat.md)	 - Prints the configuration
 * [filebrowser config export](filebrowser-config-export.md)	 - Export the configuration to a file
 * [filebrowser config import](filebrowser-config-import.md)	 - Import a configuration file

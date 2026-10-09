@@ -1,7 +1,7 @@
 <template>
   <div id="login">
     <form v-if="changeMode" @submit="submitChange">
-      <img :src="logoURL" alt="File Browser" />
+      <img :src="logoURL" alt="Gezgin" />
       <h1>{{ name }}</h1>
       <p class="logout-message">{{ t("login.passwordChangeRequired") }}</p>
       <div v-if="error !== ''" class="wrong">{{ error }}</div>
@@ -40,7 +40,7 @@
     </form>
 
     <form v-else @submit="submit">
-      <img :src="logoURL" alt="File Browser" />
+      <img :src="logoURL" alt="Gezgin" />
       <h1>{{ name }}</h1>
       <p v-if="reason != null" class="logout-message">
         {{ t(`login.logout_reasons.${reason}`) }}

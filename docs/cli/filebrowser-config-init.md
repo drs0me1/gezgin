@@ -4,7 +4,7 @@ Initialize a new database
 
 ## Synopsis
 
-Initialize a new database to use with File Browser. All of
+Initialize a new database to use with Gezgin. All of
 this options can be changed in the future with the command
 'filebrowser config set'. The user related flags apply
 to the defaults when creating new users and you don't
