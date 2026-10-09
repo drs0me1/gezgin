@@ -3,6 +3,8 @@ package fbhttp
 import (
 	"archive/zip"
 	"bytes"
+	"errors"
+	"io"
 	"net/http"
 	"net/http/httptest"
 	"net/url"
@@ -13,9 +15,45 @@ import (
 	"testing"
 
 	"github.com/filebrowser/filebrowser/v2/files"
+	"github.com/filebrowser/filebrowser/v2/pack"
 	"github.com/filebrowser/filebrowser/v2/settings"
 	"github.com/filebrowser/filebrowser/v2/users"
 )
+
+// A download that fails answers with an error, not an attachment, until something was sent; then
+// it breaks the connection, so that what came is not taken for a whole archive.
+func TestFailedDownloads(t *testing.T) {
+	answer := func(err error) (*httptest.ResponseRecorder, int) {
+		rec := httptest.NewRecorder()
+		rec.Header().Set("Content-Disposition", "attachment; filename*=utf-8''k.zip")
+		status, _ := downloadFailed(rec, err, false)
+		return rec, status
+	}
+	rec, status := answer(&pack.Error{Code: pack.CodeEntries})
+	if status != 0 || rec.Code != http.StatusUnprocessableEntity || rec.Header().Get("Content-Disposition") != "" {
+		t.Errorf("too many entries: status %d, answered %d %q", status, rec.Code, rec.Header().Get("Content-Disposition"))
+	}
+	if rec, status = answer(errors.New("unreadable")); status != http.StatusInternalServerError ||
+		rec.Header().Get("Content-Disposition") != "" {
+		t.Errorf("another error: status %d, %q", status, rec.Header().Get("Content-Disposition"))
+	}
+
+	// Once under way, the client is left with a body that breaks off.
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
+		_, _ = w.Write([]byte("PK\x03\x04 the archive's start"))
+		w.(http.Flusher).Flush()
+		_, _ = downloadFailed(w, errors.New("a file got shorter"), true)
+	}))
+	defer server.Close()
+	res, err := http.Get(server.URL)
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer res.Body.Close()
+	if _, err := io.ReadAll(res.Body); err == nil {
+		t.Error("a download that failed under way ended as a whole one")
+	}
+}
 
 // Regression for the archive backslash-to-slash zip-slip (GHSA-83xp-526h-j3ww):
 // a single in-scope file whose name contains backslashes is a legal POSIX

@@ -373,7 +373,7 @@
     "creating": "Arşivleniyor: {percent} ({size} / {total})",
     "created": "{name} oluşturuldu",
     "createdParts": "{name} oluşturuldu ({count} parça)",
-    "skipped": "{count} öğe atlandı (izin verilmeyen, bağlantı, özel dosya ya da uygunsuz ad)",
+    "skipped": "{count} öğe atlandı (izin verilmeyen, bağlantı, özel dosya, uygunsuz ad ya da çok derinde)",
     "windows": "{count} ad Windows'ta açılırken sorun çıkarabilir.",
     "errors": {
       "notArchive": "Bu bir arşiv değil ya da Gezgin'in açtığı türden değil.",

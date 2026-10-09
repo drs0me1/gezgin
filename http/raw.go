@@ -1,7 +1,10 @@
 package fbhttp
 
 import (
+	"context"
 	"errors"
+	"io"
+	"log"
 	"net/http"
 	"net/url"
 	"path/filepath"
@@ -173,17 +176,41 @@ func rawDirHandler(w http.ResponseWriter, r *http.Request, d *data, file *files.
 			opt.Location = loc
 		}
 	}
-	if _, err := pack.Write(r.Context(), newPackSource(d), items, w, opt); err != nil {
-		var packErr *pack.Error
-		if errors.As(err, &packErr) && packErr.Code == pack.CodeEntries {
-			// Found while planning, before anything was sent: not an attachment but a message.
-			w.Header().Del("Content-Disposition")
-			http.Error(w, tooManyEntries, http.StatusUnprocessableEntity)
-			return 0, nil
-		}
-		return http.StatusInternalServerError, err
+	out := &sentWriter{Writer: w}
+	if _, err := pack.Write(r.Context(), newPackSource(d), items, out, opt); err != nil {
+		return downloadFailed(w, err, out.sent)
 	}
 	return 0, nil
+}
+
+// sentWriter tells whether anything was written through it.
+type sentWriter struct {
+	io.Writer
+	sent bool
+}
+
+func (s *sentWriter) Write(p []byte) (int, error) {
+	s.sent = s.sent || len(p) > 0
+	return s.Writer.Write(p)
+}
+
+// downloadFailed answers a download that failed. Before anything was sent it answers with an
+// error instead of the attachment; once the archive is under way it breaks the connection, so
+// that the browser does not take what came, with an error appended, for a whole archive.
+func downloadFailed(w http.ResponseWriter, err error, sent bool) (int, error) {
+	if sent {
+		if !errors.Is(err, context.Canceled) {
+			log.Printf("a download was cut short: %v", err)
+		}
+		panic(http.ErrAbortHandler)
+	}
+	w.Header().Del("Content-Disposition")
+	var packErr *pack.Error
+	if errors.As(err, &packErr) && packErr.Code == pack.CodeEntries {
+		http.Error(w, tooManyEntries, http.StatusUnprocessableEntity)
+		return 0, nil
+	}
+	return http.StatusInternalServerError, err
 }
 
 func rawFileHandler(w http.ResponseWriter, r *http.Request, file *files.FileInfo) (int, error) {

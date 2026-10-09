@@ -377,7 +377,7 @@
     "creating": "Archiving: {percent} ({size} / {total})",
     "created": "{name} created",
     "createdParts": "{name} created ({count} volumes)",
-    "skipped": "{count} items left out (not allowed, links, special files or unusable names)",
+    "skipped": "{count} items left out (not allowed, links, special files, unusable names or too deep)",
     "windows": "{count} names may cause trouble when opened on Windows.",
     "errors": {
       "notArchive": "This is not an archive, or not of a kind Gezgin opens.",
