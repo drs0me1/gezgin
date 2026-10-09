@@ -14,13 +14,16 @@ operator.
 | A | Konsol's Files module (myserver repository, before Gezgin): folder tiles with item count and size (DD-247), folder sizes in "Sistem (/)" (DD-248), a CodeMirror text editor (DD-249), favourite folders (DD-250), container logs unfiltered (DD-251); v2-229 to v2-234 | Done, myserver `main` (`6845d51`) |
 | B | Gezgin is started: File Browser v2.63.23 (archived upstream) forked into `drs0me1/gezgin`, named Gezgin, run as a Podman container, multi-user with an admin account, keeping its interface, login screen and forms. Konsol's Files module stays as it is; its features come over where they help. Each heading is reviewed with its endpoints and decided as we go | Done (`6f9fdfec`) |
 | C | Image and deployment: GHCR workflow (`1e5d96ee`); container `gezgin` on the test host nrm, made through Konsol's container API (tailnet port 8091 to 8080, volumes `gezgin-db` and `gezgin-config`, the media folder bound to `/srv`); later the WebDAV port 8092 | Done |
-| D | Heading-by-heading review: report the endpoints and verified problems, propose numbered decisions (K1, K2, ...), the operator decides, then implement, test, push, update nrm and verify live | **Current stage.** Headings 1-7 done; heading 7's last step (archives) is about to be completed; headings 8-10 left |
+| D | Heading-by-heading review: report the endpoints and verified problems, propose numbered decisions (K1, K2, ...), the operator decides, then implement, test, push, update nrm and verify live | **Current stage.** Headings 1-7 done; heading 7 waits only for the real-client trials (4.1); headings 8-10 left |
 | E | Later work ("ileride"), outside the headings | Listed in section 4.5 |
 
 **Where we stopped:** heading 7, "Komut çalıştırma". We analysed the command runner, removed the
 shell and the file-event hooks (K45-K46), and in their place added archive extraction and creation
 that run in Go inside Gezgin (K47-K58). The last step, creation (K54-K58), is pushed (`601ddbaa`)
-and verified live on nrm; its follow-ups in section 4.1 remain before heading 7 is closed.
+and verified live on nrm. On 2026-10-09 a local session fixed its three name checks, reviewed the
+archive work, removed the EPUB reader, self-signup and proxy sign-in (K59-K61), limited transfers
+(K64-K65), and verified it all live on nrm (`45c22b38`); only the real-client trials of 4.1
+remain before heading 7 is closed.
 
 ## 2. Headings
 
@@ -200,8 +203,12 @@ four opening questions only multi-user was answered then: share links were later
   with `unpack`. A file chosen alone whose name cannot be held is now skipped too, instead of
   going in unnamed.
 - [x] Code review of the archive work (4.2), then fix what it confirms.
-- [ ] Redeploy to nrm and repeat the live checks (section 7).
-- [ ] On nrm, delete the test folder `/k54-deneme` permanently (it holds a sparse 4.7 GB file).
+- [x] Redeploy to nrm and repeat the live checks (section 7). Done 2026-10-09 with `45c22b38`: 19
+  API checks passed, section 7's (without the 4.7 GB ZIP64 entry and the browser ones, the writers
+  being unchanged) and the new ones: no sign-up page or `/api/signup`, an `.epub` without a reader,
+  a C1 name left out of an archive that Gezgin then opens, 10,001 entries refused (422) and an
+  eleventh download at the same time refused (429), free again once the others ended.
+- [x] On nrm, delete the test folder `/k54-deneme` permanently (it held a sparse 4.7 GB file).
 - [ ] Try real clients: Windows 11 Explorer (a ZIP with Turkish names; times in local time), macOS
   Archive Utility, 7-Zip on Windows with a `.zip.001` set, an entry over 4 GiB on Windows, and a
   downloaded (streamed) ZIP in a reader that reads front to back (see 4.2's first note).
@@ -336,7 +343,16 @@ four opening questions only multi-user was answered then: share links were later
   ```
 
 - Gezgin listens on the tailnet on port 8091, its WebDAV shares on 8092; the container's `/srv` is
-  the operator's media folder. nrm runs the image of `601ddbaa`.
+  the operator's media folder (`/srv/media` on the host). nrm runs the image of `45c22b38`.
+- Live checks without the operator's password: read the image id while the container runs
+  (`podman inspect --type container gezgin --format '{{.Image}}'`; Konsol's stop removes the
+  container), stop `gezgin` through Konsol's API, add a test admin with a random password kept in a
+  root-only file (`podman run --rm --network none --user 1000:1000 -v gezgin-db:/database
+  --entrypoint /bin/filebrowser <image id> -d /database/filebrowser.db users add <name> <password>
+  --perm.admin`), start it again, and run the checks as root in its network namespace
+  (`nsenter -t <pid> -n`) against `127.0.0.1:8080`, so that the password never leaves the host.
+  Afterwards the test admin deletes itself (`DELETE /api/users/{id}` with `current_password`), which
+  empties its trash too, and the password file goes.
 
 ## 7. Live checks used for archives
 
