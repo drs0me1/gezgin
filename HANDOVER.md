@@ -1,88 +1,258 @@
 # Handover — 2026-10-09
 
-The work moves from a cloud session to a local session on the operator's MacBook. This file is the
-to-do list: tick items off, add new ones, and delete the file once it is empty. Run `git pull`
-first. Speak Turkish to the operator; code comments, docs and commit messages stay in English.
+The work moves from a cloud session to a local session on the operator's MacBook. Run `git pull`
+first, then read this file top to bottom: it holds the stages of the work, where each heading
+stands, every decision taken so far and the tasks left. Tick tasks off, add new ones, and update
+the decision list as decisions are taken. Speak Turkish to the operator; code comments, docs and
+commit messages stay in English. Gezgin's headings keep their Turkish names, as used with the
+operator.
 
-## Where things stand
+## 1. Stages of the work
 
-- `main`: this commit, on top of
-  - `601ddbaa` making ZIP, tar and tar.gz archives on the server (K54–K58);
-  - `6d531015` files only named like RAR parts stay files (K53);
-  - `527111be`, `b0bb8b63` opening archives on the server, in Go (K47–K51);
-  - `116c3549` command runner and file-event hooks removed (K45–K46).
-- The test host **nrm** runs the image built from `601ddbaa` (updated through Konsol), verified
-  live; see "Live checks" below. Its admin password is the operator's test password, not written
-  here.
-- Decisions are numbered K1–K58 so far; the next one is **K59**. Each decision's outcome is in
-  its commit message and in README's "Changes from File Browser".
-- The myserver repository has nothing pending from this work.
-- CI (`.github/workflows/ci.yaml`) runs on `master` and pull requests only, so a push to `main`
-  runs no tests, only the image build (`gezgin-image.yml`). Run the checks below before pushing.
+| Stage | What | State |
+|---|---|---|
+| A | Konsol's Files module (myserver repository, before Gezgin): folder tiles with item count and size (DD-247), folder sizes in "Sistem (/)" (DD-248), a CodeMirror text editor (DD-249), favourite folders (DD-250), container logs unfiltered (DD-251); v2-229 to v2-234 | Done, myserver `main` (`6845d51`) |
+| B | Gezgin is started: File Browser v2.63.23 (archived upstream) forked into `drs0me1/gezgin`, named Gezgin, run as a Podman container, multi-user with an admin account, keeping its interface, login screen and forms. Konsol's Files module stays as it is; its features come over where they help. Each heading is reviewed with its endpoints and decided as we go | Done (`6f9fdfec`) |
+| C | Image and deployment: GHCR workflow (`1e5d96ee`); container `gezgin` on the test host nrm, made through Konsol's container API (tailnet port 8091 to 8080, volumes `gezgin-db` and `gezgin-config`, the media folder bound to `/srv`); later the WebDAV port 8092 | Done |
+| D | Heading-by-heading review: report the endpoints and verified problems, propose numbered decisions (K1, K2, ...), the operator decides, then implement, test, push, update nrm and verify live | **Current stage.** Headings 1-7 done; heading 7's last step (archives) is about to be completed; headings 8-10 left |
+| E | Later work ("ileride"), outside the headings | Listed in section 4.5 |
 
-## To do
+**Where we stopped:** heading 7, "Komut çalıştırma". We analysed the command runner, removed the
+shell and the file-event hooks (K45-K46), and in their place added archive extraction and creation
+that run in Go inside Gezgin (K47-K58). The last step, creation (K54-K58), is pushed (`601ddbaa`)
+and verified live on nrm; its follow-ups in section 4.1 remain before heading 7 is closed.
 
-### 1. Archive creation follow-ups (commit `601ddbaa`)
+## 2. Headings
+
+| # | Heading | Decisions | Commits | State |
+|---|---|---|---|---|
+| 1 | Giriş ve oturum | K1-K6 | `2f1868bd` | Done, verified live |
+| 2 | Kullanıcılar ve izinler | K7-K13 | `62ca5ee3` | Done, verified live |
+| 3 | Dosya işlemleri | K14-K19, trash T1-T5 | `d8bf42e1`, `f914f099` | Done, verified live |
+| 4 | Görüntüleme ve düzenleme | K20-K23 | `1c88e247`, `c1137664` | Done, verified live |
+| 5 | Yükleme, indirme ve arama | K24-K31 | `36ad2a06` | Done, verified live |
+| 6 | Paylaşım (links and WebDAV) | K32-K44 | `c8da81f8`, `aaf43505`, `403d332e` | Done, verified live |
+| 7 | Komut çalıştırma, and archives in its place | K45-K58 | `116c3549`, `b0bb8b63`, `527111be`, `6d531015`, `601ddbaa` | Last step's follow-ups open (4.1) |
+| 8 | Yönetim ayarları ekranı | from K59 | | To do (4.3) |
+| 9 | Altyapı, marka ve CSP | | | To do (4.3) |
+| 10 | Konsol'dan alınacaklar | | | To do (4.3); archives already done under 7 |
+
+Commit messages and README's "Changes from File Browser" describe each change.
+
+## 3. Decisions taken
+
+The next decision number is **K59**. "Recommended" means the operator accepted the recommendation
+made in the report.
+
+**Stage B (start).** Multi-user with an admin; File Browser's forms stay even where Konsol has its
+own; the Files module of Konsol is not touched; decide heading by heading, not all at once. Of the
+four opening questions only multi-user was answered then: share links were later reviewed and kept
+(heading 6), proxy sign-in is K1, and the EPUB reader is still open (4.4).
+
+**1 — Giriş ve oturum** (all recommended)
+- K1: only `json` and `proxy` sign-in remain; `noauth` and `hook` removed (a database using them
+  refuses to start and says how to fix it). `proxy` stays until sign-on with Konsol is decided.
+- K2: option (a), a per-user security stamp: a password change, "Tüm oturumları kapat" or deleting
+  the user ends every session; a deleted user's token gets 401. Option (b), a server-side session
+  table with per-device logout, is deferred.
+- K3: login attempts limited, 5 per address and username and 20 per address in 15 minutes, then
+  429 with `Retry-After`.
+- K4: reCAPTCHA removed.
+- K5: self-signup kept as File Browser had it, off by default (see 4.4).
+- K6: the admin password quick setup generates must be changed at the first login.
+
+**2 — Kullanıcılar ve izinler** (all recommended)
+- K7: the only admin cannot lose the admin permission (form and CLI).
+- K8: only an admin deletes accounts.
+- K9: rules are checked when saved: a regex must compile, a path must not be empty (else 400).
+- K10: the fields a user may change on their own account, and those an admin may change, are
+  allowlists; the lock-password check is fixed.
+- K11: usernames are unique in any letter case; 409 "Kullanıcı adı mevcut".
+- K12: changing a user's scope creates its folder.
+- K13: the default language is Turkish.
+
+**3 — Dosya işlemleri** (all recommended; trash design approved as proposed)
+- K14: an upload over a file and a save write a temporary file and replace the file only when
+  complete, keeping its permissions.
+- K15: a file and a folder never replace each other (409); copy-and-delete is used only across
+  disks and never touches the destination when it fails.
+- K16 (a): a folder moved onto a folder of the same name merges into it, and the dialog says so.
+- K17: a trash. T1: `<root>/.gezgin-cop/<user id>/`, unreachable through any path. T2: items
+  expire after 30 days by default (global setting, 0 = never). T3: each user handles their own
+  trash; the admin sees every trash's size and can empty them all. T4: "Çöpe taşı" by default,
+  "Kalıcı sil" beside it; an item on another disk can only be deleted permanently; a restore puts
+  the item back, into the root when its folder is gone, with a number when the name is taken.
+  T5: a trashed item's share links end and do not come back with a restore.
+- K18: listings take an entry's type from its extension; `disableTypeDetectionByHeader` removed.
+- K19: the conflict dialogs are in Turkish.
+
+**4 — Görüntüleme ve düzenleme** (all recommended)
+- K20: Ace's modes, themes and workers ship with Gezgin; no CDN.
+- K21 (b): UTF-8 and Windows-1254 texts open decoded and save back in their encoding; others open
+  read-only; Windows-1254 subtitles reach the player as UTF-8.
+- K22: a save names the version opened; a file changed meanwhile gives 409 and an overwrite
+  prompt; Ctrl+S without a change writes nothing.
+- K23: thumbnails are cached in `/database/cache` (`FB_CACHE_DIR`).
+- The operator's own requests: tests run on the main `gezgin` container on nrm, not throwaway
+  ones; the minimum password length is 8 by default (`c1137664`).
+
+**5 — Yükleme, indirme ve arama** (all recommended)
+- K24: uploads are staged in `<root>/.gezgin-yukleme/` and put in place only when complete;
+  cancelling, abandoning (3 minutes) or a restart drops the staged data only; cancelling needs the
+  create permission.
+- K25: an upload that does not fit is refused at the start (507).
+- K26: the Redis upload cache is removed.
+- K27: search needs every word in the name.
+- K28: search ignores letter case, Turkish letters and accents; `case:sensitive` matches exactly.
+- K29: search does not enter folders the rules refuse.
+- K30: without the download permission, 403 instead of an empty 202.
+- K31: the download dialog offers zip, tar and tar.gz; the API keeps the other formats.
+
+**6 — Paylaşım** (all recommended; K32-K39 first, then the user's trash, then WebDAV)
+- K32: pruning expired links no longer crashes the list or keeps expired links.
+- K33: a link follows its item through renames and moves, other users' links too; it ends when the
+  item leaves its owner's reach or is deleted; overwriting the file keeps it.
+- K34: deleting a user deletes their links, and (approved follow-up, `aaf43505`) their trash.
+- K35: wrong passwords of a protected link are limited: 5 per link and 20 per address in 15
+  minutes, then 429.
+- K36: link IDs have 16 characters (96 bits); old links keep working.
+- K37: a duration must be a whole number of units, at most 10 years, else 400.
+- K38: the share dialog proposes 7 days; 0 means permanent.
+- K39: rules are checked when a link is made; refused paths, the trash and uploads give 403.
+- K40: WebDAV shares of folders on a port of their own (`--webdavPort`, `FB_WEBDAV_PORT`; 8092 in
+  the container and on the tailnet, instead of the planned 8081, so that the copied address is
+  right), at `/<share id>/`, built on `golang.org/x/net/webdav`; rclone is not embedded.
+- K41: each WebDAV share has its own username (proposed from the folder name) and a mandatory
+  password of at least 8 characters; wrong passwords are limited as in K35.
+- K42: read-only by default; read-write only for a user who may create, change, rename and delete,
+  with explicit consent; writes are atomic, deletes go to the owner's trash, rules hold,
+  `.gezgin-*` stays hidden, locking works for Finder.
+- K43: 7 days by default, 0 = permanent; Settings → Shares shows the type.
+- K44: nrm's `gezgin` container got the tailnet port 8092 and `FB_WEBDAV_PORT=8092` through
+  Konsol's API.
+
+**7 — Komut çalıştırma, then archives**
+- K45: the interactive shell is removed: `/api/command`, Shell.vue, the execute permission, the
+  per-user command list; `gorilla/websocket` dropped.
+- K46: file-event hooks are removed: the runner, the `shell` and `commands` settings, the `cmds`
+  CLI, the hooks form, their docs; `go-shlex` dropped. `--disableExec` is accepted and ignored.
+- (K45-K46 accepted once it was clear that nothing is lost today: copying, moving and the other
+  file operations never depended on them. Opening ZIP and RAR is one of the project's goals, so an
+  archive engine in Go takes the shell's place.)
+- K47: archives open inside Gezgin, in pure Go, with no external program: ZIP, RAR (old `.rNN` and
+  new `.partN` sets), 7z, tar (plain, gz, bz2, xz, zst); nested archives up to 5 layers; ZIPs that
+  each hold a part of a RAR set open together.
+- K48: creating archives on the server was first declined ("sunucuda zip işine girmeyelim");
+  superseded by K54 when the operator asked for creation.
+- K49: limits: the output must leave 1 GiB free on the disk, 10,000 files and folders, 5 layers, a
+  cancel button instead of a time limit, one job at a time.
+- K50: a password field for encrypted RAR and 7z; encrypted ZIPs are refused.
+- K51: no ISO extraction; the focus is compressing and extracting.
+- K52: retiring Konsol's own ZIP/RAR is a later myserver job (4.5).
+- K53: files only named like RAR parts (`.s19`, `.z64`, a split ZIP's `.z01`, orphan parts) stay
+  files; "Arşivi aç" is offered on `.rar`, `.partN.rar`, `.partNofM.rar` and `.r00`-`.r99`; a set
+  must be complete.
+- K54: ZIP, tar and tar.gz are made on the server; "Arşiv oluştur" is in the header, the context
+  menu and the phone's "more" menu.
+- K55: RAR and 7z are not made (RAR's compression is proprietary; Go has no 7z writer).
+- K56: an archive can be split in raw volumes `name.zip.001`, ... (25 MB, 100 MB, 1 GB, 4 GB for
+  FAT32, or a custom size); Gezgin opens `.zip.001`, `.7z.001` and split tar sets.
+- K57: creating needs the create and download permissions; what the rules refuse is skipped, as in
+  downloads, and counted.
+- K58: download ZIPs compress what is not compressed already; a FIFO no longer hangs a download,
+  Ctrl+S works again, Gezgin's temporary files stay out.
+
+## 4. Tasks
+
+### 4.1 Close heading 7: archive creation follow-ups (commit `601ddbaa`)
 
 - [ ] **C1 control characters.** `pack.archiveName` refuses only runes below 0x20 and 0x7f, while
-  `unpack.clean` refuses every `unicode.IsControl` rune (also U+0080–U+009F). A file with such a
-  name goes into the archive, and Gezgin's own "Arşivi aç" then refuses the whole archive
-  (`unsafe`). Use `unicode.IsControl` in `pack.archiveName` and in `http.archiveName`; add tests.
-- [ ] **Depth of files.** `pack`'s `walk` checks `maxDepth` (64 parts) only for folders. A file in
-  a folder 64 deep gets 65 parts and `unpack` refuses the archive. Check the depth in `add()` for
-  every entry; add a test.
-- [ ] **Chosen `.gezgin-` items.** Names starting `.gezgin-` are skipped inside folders, but an item
-  the user chooses directly (an upload's `.gezgin-*.tmp`, which listings show) is packed, and
-  `unpack` refuses that name. Refuse the prefix in `pack.archiveName` (skipped and counted).
-- [ ] **Independent review** of `git diff 6d531015 601ddbaa`: a review workflow was stopped before
-  it reported. Dimensions:
+  `unpack.clean` refuses every `unicode.IsControl` rune (also U+0080-U+009F). Such a name makes
+  Gezgin's own "Arşivi aç" refuse the archive (`unsafe`). Use `unicode.IsControl` in
+  `pack.archiveName` and `http.archiveName`; add tests.
+- [ ] **Depth of files.** `pack`'s `walk` checks `maxDepth` (64 parts) only for folders; a file in
+  a folder 64 deep gets 65 parts and `unpack` refuses the archive. Check every entry in `add()`.
+- [ ] **Chosen `.gezgin-` items.** Such names are skipped inside folders, but an item chosen
+  directly (an upload's `.gezgin-*.tmp`, which listings show) is packed and `unpack` refuses it.
+  Refuse the prefix in `pack.archiveName` (skipped and counted).
+- [ ] Code review of the archive work (4.2), then fix what it confirms.
+- [ ] Redeploy to nrm and repeat the live checks (section 7).
+- [ ] On nrm, delete the test folder `/k54-deneme` permanently (it holds a sparse 4.7 GB file).
+- [ ] Try real clients: Windows 11 Explorer (a ZIP with Turkish names; times in local time), macOS
+  Archive Utility, 7-Zip on Windows with a `.zip.001` set, an entry over 4 GiB on Windows.
+- [ ] Report heading 7 as closed to the operator.
+
+### 4.2 Reviews
+
+- [ ] **Archive work, `git diff 6d531015 601ddbaa`.** A review was started in the cloud session
+  and stopped before it reported. Dimensions:
   - ZIP/tar/volume writers (`pack/zip.go`, `tar.go`, `output.go`): APPNOTE fields and offsets,
     ZIP64 extras (local: both sizes; central: only the fields that are 0xFFFFFFFF), end records,
     stream-mode data descriptors, patching across volumes, byte and volume limits;
   - packing safety (`pack/pack.go`, `http/archive.go` `packSource`, `http/raw.go`): links and the
     reserved real paths, loops, special files, change detection (`os.SameFile` and ctime), rules,
-    names `unpack` takes back; downloads have no entry limit (memory on huge trees);
+    names `unpack` takes back, downloads with no entry limit;
   - HTTP jobs and UI (`http/archive.go`, `Archive.vue`, `ArchiveJobs.vue`, i18n): validation,
     permissions, `publishFiles` numbering, stale volumes and rollback, the job JSON;
-  - unpack (`unpack/names.go`, `formats.go`): K53's RAR part logic, volume sets, the joined
-    reader, which errors become `missingPart`.
-- [ ] Redeploy to nrm after the fixes and repeat the live checks.
-- [ ] On nrm, delete the test folder `/k54-deneme` permanently. It holds a sparse 4.7 GB
-  `buyuk/buyuk.bin` (it takes no space, but a download would send 4.7 GB), ZIPs and volume sets.
-- [ ] Try on real clients (not done yet): Windows 11 Explorer (a ZIP with Turkish names; times
-  should show in local time), macOS Archive Utility, 7-Zip on Windows with a `.zip.001` set, an
-  entry over 4 GiB on Windows.
+  - unpack (`unpack/names.go`, `formats.go`): K53's RAR part logic, volume sets, the joined reader,
+    which errors become `missingPart`.
+- [ ] **Each new heading** starts with its review: read the endpoints and the code, check on nrm,
+  and report in Turkish with the verified problems and numbered decisions (K59 onwards).
 
-### 2. Seen, not yet decided (bring to the operator)
+### 4.3 Next headings
 
-- [ ] Listings type `.001`, `.r00`, `.tgz` and similar files as plain files (icons) and small
-  archives as text (part of heading 9).
-- [ ] Unknown `/api/*` paths answer 200 with the app's `index.html` instead of 404 (heading 9).
-- [ ] Downloads have no entry limit and plan every entry in memory first, as File Browser did.
-- [ ] Should CI run on `main` instead of `master`?
+- [ ] **8 — Yönetim ayarları ekranı.** The opening overview proposed: remove the registration
+  settings (this conflicts with K5, which kept self-signup: decide again) and any leftovers of the
+  command settings (gone with K46); branding becomes a fixed Gezgin brand without custom CSS; keep
+  the default user settings, rules, upload settings, the minimum password length and the
+  permission modes.
+- [ ] **9 — Altyapı, marka ve CSP.** Proposed: a CSP for the index page; the inline startup
+  script moved to a file; Gezgin's name, logo, icons and PWA manifest; remove
+  "File Browser (untracked)", the "Sorun bildir" and other upstream links and the "project
+  archived" log lines; review the Turkish texts. Keep: one Go program with the interface built in,
+  BoltDB, the CLI (`users` resets an admin password), `/health`, the 34 languages with Turkish by
+  default, the local Material Icons and Roboto fonts; File Browser's own TLS and Unix socket stay
+  off (Caddy is in front). Already done: Gezgin's own image on port 8080. Seen since, for this
+  heading: listings type `.001`, `.r00`, `.tgz` and similar as plain files and small archives as
+  text; unknown `/api/*` paths answer 200 with `index.html` instead of 404.
+- [ ] **10 — Konsol'dan alınacaklar.** Folder sizes and item counts on folder tiles (Konsol
+  DD-247/248) and favourite folders (DD-250). Archive extraction and creation are done (7).
 
-### 3. Next headings, in the operator's order
+### 4.4 New decisions to put to the operator
 
-- [ ] **8 — Admin settings screen.** Remove the registration settings and any leftovers of the
-  command settings; branding becomes a fixed Gezgin brand without custom CSS; keep default user
-  settings, rules, upload settings, the minimum password length and the permission modes.
-- [ ] **9 — Infrastructure, branding, CSP.** A CSP for the index; the inline startup script moved
-  to a file; Gezgin's name, logo, icons and PWA manifest; remove "File Browser (untracked)", the
-  "Sorun bildir" and other upstream links, and the "project archived" log lines; review the
-  Turkish texts.
-- [ ] **Taken from Konsol's Files module.** Folder sizes and item counts, favorites (archive
-  extraction is done).
-- [ ] Later: K52, retiring Konsol's own ZIP/RAR (myserver repository); video transcoding; WebDAV
-  through Konsol's HTTPS; perhaps retiring Konsol's WebDAV.
+- [ ] The EPUB reader: kept or removed (an opening question, never answered; kept so far).
+- [ ] Self-signup: K5 kept it; heading 8's overview proposes removing the registration settings.
+- [ ] `proxy` sign-in: kept by K1 until sign-on with Konsol is decided.
+- [ ] Downloads have no entry limit and plan every entry in memory first (as File Browser did).
+- [ ] CI (`.github/workflows/ci.yaml`) runs on `master` and pull requests only, so a push to
+  `main` runs no tests, only the image build. Move its triggers to `main`?
+- [ ] The old `filebrowser` test container from stage B still runs on nrm (port 8090): remove it?
+- [ ] Konsol's Podman page could show a failed container's last log line and warn about ports
+  below 1024 for the Files account (suggested earlier; only if wanted).
 
-## How to work
+### 4.5 Later ("ileride")
+
+- [ ] K52: retire Konsol's own ZIP/RAR (myserver repository) once Gezgin's has proven itself.
+- [ ] WebDAV shares from the internet through Konsol's HTTPS (port 8092 is plain HTTP, tailnet
+  only); then perhaps retire Konsol's own WebDAV (port 61010).
+- [ ] Video transcoding for formats browsers cannot play.
+- [ ] K2 (b): a server-side session table with per-device logout.
+- [ ] If Gezgin goes behind Konsol's Caddy, the per-address login limits (K3, K35) would count every
+  request as one address: revisit them then.
+- [ ] Only if needed: a webhook (without a shell) for upload notifications, fetching a URL to the
+  server, checksums as a file action.
+
+## 5. How to work
 
 - Commit and push to `main` unless the operator says otherwise.
-- Per heading: read the endpoints and the code, check on nrm, report in Turkish with numbered
-  decisions and a recommendation, implement once approved, test, commit, push, wait for the image,
-  update nrm, verify live.
-- nrm is a disposable test host: data loss is acceptable, make no server-side backups, and test
-  with the main `gezgin` container instead of throwaway ones.
+- Per heading: review (4.2), report in Turkish with numbered decisions and a recommendation,
+  implement once the operator decides, test, commit, push, wait for the image, update nrm, verify
+  live, report what was run.
+- nrm is a disposable test host: data loss is acceptable, make no server-side backups, test with
+  the main `gezgin` container. Its admin password is the operator's test password, not written
+  here. The repository is public: no host addresses, credentials or personal paths in it.
+
+## 6. Checks, image and deployment
 
 ### Checks before a push
 
@@ -116,9 +286,9 @@ first. Speak Turkish to the operator; code comments, docs and commit messages st
   ```
 
 - Gezgin listens on the tailnet on port 8091, its WebDAV shares on 8092; the container's `/srv` is
-  the operator's media folder.
+  the operator's media folder. nrm runs the image of `601ddbaa`.
 
-### Live checks used for archives
+## 7. Live checks used for archives
 
 Through the API (`POST /api/archive`, then poll `GET /api/archive`):
 
