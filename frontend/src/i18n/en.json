@@ -320,7 +320,7 @@
     },
     "preferences": "Preferences",
     "singleClickHelp": "When off, a click selects and a double click opens.",
-    "dateFormatHelp": "When off, it reads like \"3 minutes ago\".",
+    "dateFormatHelp": "On: the exact date and time, as MM/DD/YYYY h:mm AM/PM (for example {example}). Off: like \"3 minutes ago\".",
     "passwordHelp": "A change ends the sessions on your other devices.",
     "passwordLocked": "Only an admin can change your password.",
     "closeAllSessionsConfirm": "Close all your sessions, this one included?",

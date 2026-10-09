@@ -50,7 +50,7 @@ Commit messages and README's "Changes from File Browser" describe each change.
 
 ## 3. Decisions taken
 
-The next decision number is **K157**. "Recommended" means the operator accepted the recommendation
+The next decision number is **K158**. "Recommended" means the operator accepted the recommendation
 made in the report.
 
 **Stage B (start).** Multi-user with an admin; File Browser's forms stay even where Konsol has its
@@ -498,6 +498,12 @@ uygulayabiliriz beğendim"):
   that is not whole MB (from the command line) stays as it is until changed. The size parser
   (`utils/size.ts`) served only that text and is gone. Checked on the Mac: "10", "+" gives 11
   and the save bar, "Vazgeç" 10; 12 saved (12,582,912 bytes) and back to 10.
+- K157 (operator: the help of "Tam tarihi göster" was not clear; to name the format and "xx
+  dakika önce"): it reads 'Açık: tarih ve saat tam yazılır, GG.AA.YYYY SS:DD biçiminde (örneğin
+  10.10.2026 02:00). Kapalı: "3 dakika önce" gibi yazılır.', the example being now, in the
+  listings' format and the interface's language. The setting changes the date line of the
+  folder views (list column, the tiles' second line; in the trash the deletion time); the
+  gallery has no date line, and the shares, the Info window and the share pages keep theirs.
 
 ## 4. Tasks
 

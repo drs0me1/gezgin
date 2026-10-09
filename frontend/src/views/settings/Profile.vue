@@ -37,7 +37,7 @@
       </setting-row>
       <setting-row
         :label="t('settings.setDateFormat')"
-        :help="t('settings.dateFormatHelp')"
+        :help="t('settings.dateFormatHelp', { example: exactNow })"
       >
         <toggle-switch
           v-model="prefs.dateFormat"
@@ -121,6 +121,7 @@ import { locales } from "@/i18n";
 import { useAuthStore } from "@/stores/auth";
 import { useLayoutStore } from "@/stores/layout";
 import * as auth from "@/utils/auth";
+import dayjs from "dayjs";
 import { computed, inject, onMounted, ref } from "vue";
 import { useI18n } from "vue-i18n";
 
@@ -134,6 +135,11 @@ const $showSuccess = inject<IToastSuccess>("$showSuccess")!;
 const $showError = inject<IToastError>("$showError")!;
 
 const user = computed(() => authStore.user);
+// The exact date as the listings write it, now, in the interface's language (K157).
+const exactNow = computed(() => {
+  void locale.value;
+  return dayjs().format("L LT");
+});
 const initial = computed(() =>
   (user.value?.username ?? "?").charAt(0).toLocaleUpperCase(locale.value)
 );

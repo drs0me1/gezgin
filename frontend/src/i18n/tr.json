@@ -320,7 +320,7 @@
     },
     "preferences": "Tercihler",
     "singleClickHelp": "Kapalıyken tek tık seçer, çift tık açar.",
-    "dateFormatHelp": "Kapalıyken \"3 dakika önce\" gibi yazar.",
+    "dateFormatHelp": "Açık: tarih ve saat tam yazılır, GG.AA.YYYY SS:DD biçiminde (örneğin {example}). Kapalı: \"3 dakika önce\" gibi yazılır.",
     "passwordHelp": "Değişince öteki cihazlardaki oturumlar kapanır.",
     "passwordLocked": "Şifrenizi yalnızca yönetici değiştirebilir.",
     "closeAllSessionsConfirm": "Bu cihaz dahil bütün oturumlarınız kapansın mı?",
