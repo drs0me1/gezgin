@@ -58,12 +58,6 @@
     z-index: 99999;
   }
 
-  html[dir="rtl"] #dropdown {
-    right: unset;
-    left: 1em;
-    transform-origin: top left;
-  }
-
   #dropdown > div {
     display: block;
   }
@@ -130,17 +124,8 @@
     left: -17em;
   }
 
-  html[dir="rtl"] nav {
-    left: unset;
-    right: -17em;
-  }
   nav.active {
     left: 0;
-  }
-
-  html[dir="rtl"] nav.active {
-    left: unset;
-    right: 0;
   }
 
   .shell__divider {
@@ -173,22 +158,6 @@
   }
   #listing {
     margin-bottom: 5em;
-  }
-
-  html[dir="rtl"] #listing {
-    margin-right: unset;
-  }
-
-  html[dir="rtl"] .breadcrumbs {
-    transform: translateX(16em);
-  }
-
-  html[dir="rtl"] #nav .wrapper {
-    margin-right: unset;
-  }
-
-  html[dir="rtl"] .dashboard .row {
-    margin-right: unset;
   }
 
   main {

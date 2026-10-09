@@ -1,43 +1,5 @@
-.dashboard {
-  margin: 1em 0;
-}
-
-.dashboard .row {
-  display: flex;
-  margin: 0 -0.5em;
-  flex-wrap: wrap;
-}
-
-html[dir="rtl"] .dashboard .row {
-  margin-right: 16em;
-}
-
-.dashboard .row .column {
-  display: flex;
-  padding: 0 0.5em;
-  width: 50%;
-}
-
-.dashboard .row .column .card {
-  flex-grow: 1;
-}
-
-@media (max-width: 1200px) {
-  .dashboard .row .column {
-    width: 100%;
-  }
-}
-
 a {
   color: inherit;
-}
-
-.dashboard p label {
-  margin-bottom: 0.2em;
-  display: block;
-  font-size: 0.8em;
-  font-weight: 500;
-  color: var(--textPrimary);
 }
 
 li code,
@@ -50,67 +12,6 @@ p code {
 .small {
   font-size: 0.8em;
   line-height: 1.5;
-}
-
-.dashboard #nav {
-  display: flex;
-  padding-bottom: 1em;
-  overflow: auto;
-}
-
-.dashboard #nav .wrapper {
-  display: flex;
-  flex-grow: 1;
-  border-bottom: 2px solid var(--divider);
-}
-
-html[dir="rtl"] .dashboard #nav .wrapper {
-  margin-right: 16em;
-}
-
-.dashboard #nav ul {
-  list-style: none;
-  display: flex;
-  color: var(--action);
-  font-weight: 500;
-  padding: 0;
-  margin: 0 0 -2px 0;
-  font-size: 0.8em;
-  text-align: center;
-  justify-content: left;
-}
-
-.dashboard #nav ul li {
-  position: relative;
-  padding: 1.5em 2em;
-  white-space: nowrap;
-  border-bottom: 2px solid transparent;
-  transition: 0.1s ease-in-out all;
-}
-
-.dashboard #nav ul li:hover {
-  background: var(--surfaceSecondary);
-}
-
-.dashboard #nav ul li.active {
-  border-color: var(--blue);
-  color: var(--blue);
-}
-
-.dashboard #nav ul li.active::before {
-  width: 100%;
-  height: 100%;
-  position: absolute;
-  top: 0;
-  left: 0;
-  content: "";
-  background: var(--blue);
-  opacity: 0.08;
-}
-
-.dashboard #nav i {
-  font-size: 1em;
-  vertical-align: middle;
 }
 
 table {
@@ -143,13 +44,6 @@ table td.small {
 
 table tr > *:first-child {
   padding-left: 1em;
-}
-
-html[dir="rtl"] table tr > * {
-  padding-left: unset;
-  padding-right: 1em;
-  text-align: right;
-  direction: ltr;
 }
 
 table tr > *:last-child {
@@ -198,11 +92,6 @@ table tr > *:last-child {
   margin-right: auto;
 }
 
-html[dir="rtl"] .card .card-title > *:first-child {
-  margin-right: 0;
-  text-align: right;
-}
-
 .card > div {
   padding: 1em 1em;
 }
@@ -221,10 +110,6 @@ html[dir="rtl"] .card .card-title > *:first-child {
 
 .card .card-action {
   text-align: right;
-}
-
-body.rtl .card .card-action {
-  text-align: left;
 }
 
 .card .card-content.full {
@@ -501,10 +386,4 @@ body.rtl .card .card-action {
 .card .card-action.full .action .title {
   font-size: 1.5em;
   font-weight: 500;
-}
-
-/*** RTL - Fix disk usage information (in english) ***/
-html[dir="rtl"] .credits {
-  text-align: right;
-  direction: ltr;
 }

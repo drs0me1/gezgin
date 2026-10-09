@@ -109,11 +109,6 @@ nav::-webkit-scrollbar-thumb {
   border-radius: 3px;
 }
 
-html[dir="rtl"] nav {
-  left: initial;
-  right: 0;
-}
-
 nav .action {
   width: 100%;
   display: block;
@@ -123,10 +118,6 @@ nav .action {
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
-}
-
-html[dir="rtl"] nav .action {
-  text-align: right;
 }
 
 nav > div {
@@ -187,10 +178,6 @@ main {
   color: inherit;
   transition: 0.1s ease-in;
   border-radius: 0.125em;
-}
-
-html[dir="rtl"] .breadcrumbs a {
-  transform: translateX(-16em);
 }
 
 .breadcrumbs a:hover {

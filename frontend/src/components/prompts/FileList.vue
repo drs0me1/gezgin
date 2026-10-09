@@ -41,6 +41,11 @@ export default {
       type: Array,
       default: () => [],
     },
+    // The listing to start from, when it is not the folder open (Gezgin, K148).
+    start: {
+      type: Object,
+      default: null,
+    },
   },
   data: function () {
     return {
@@ -63,7 +68,7 @@ export default {
     },
   },
   mounted() {
-    this.fillOptions(this.req);
+    this.fillOptions(this.start ?? this.req);
   },
   unmounted() {
     this.abortOngoingNext();

@@ -74,6 +74,10 @@ export const outlineIcons: Record<string, OutlineIcon> = {
   check_circle: {
     paths: ["M3 12a9 9 0 1 0 18 0a9 9 0 1 0 -18 0", "M9 12l2 2l4 -4"],
   },
+  // chevron-right
+  chevron_right: {
+    paths: ["M9 6l6 6l-6 6"],
+  },
   // x
   close: {
     paths: ["M18 6l-12 12", "M6 6l12 12"],
@@ -110,6 +114,15 @@ export const outlineIcons: Record<string, OutlineIcon> = {
       "M5 7l1 12a2 2 0 0 0 2 2h8a2 2 0 0 0 2 -2l1 -12",
       "M9 7v-3a1 1 0 0 1 1 -1h4a1 1 0 0 1 1 1v3",
       "M10 12l4 4m0 -4l-4 4",
+    ],
+  },
+  // server
+  dns: {
+    paths: [
+      "M3 7a3 3 0 0 1 3 -3h12a3 3 0 0 1 3 3v2a3 3 0 0 1 -3 3h-12a3 3 0 0 1 -3 -3v-2",
+      "M3 15a3 3 0 0 1 3 -3h12a3 3 0 0 1 3 3v2a3 3 0 0 1 -3 3h-12a3 3 0 0 1 -3 -3l0 -2",
+      "M7 8l0 .01",
+      "M7 16l0 .01",
     ],
   },
   // folder-share
@@ -155,6 +168,15 @@ export const outlineIcons: Record<string, OutlineIcon> = {
     paths: [
       "M4 6a2 2 0 0 1 2 -2h2a2 2 0 0 1 2 2v12a2 2 0 0 1 -2 2h-2a2 2 0 0 1 -2 -2l0 -12",
       "M14 6a2 2 0 0 1 2 -2h2a2 2 0 0 1 2 2v6a2 2 0 0 1 -2 2h-2a2 2 0 0 1 -2 -2l0 -6",
+    ],
+  },
+  // users
+  group: {
+    paths: [
+      "M5 7a4 4 0 1 0 8 0a4 4 0 1 0 -8 0",
+      "M3 21v-2a4 4 0 0 1 4 -4h4a4 4 0 0 1 4 4v2",
+      "M16 3.13a4 4 0 0 1 0 7.75",
+      "M21 21v-2a4 4 0 0 0 -3 -3.85",
     ],
   },
   // badge-hd
@@ -238,6 +260,15 @@ export const outlineIcons: Record<string, OutlineIcon> = {
       "M6 21v-2a4 4 0 0 1 4 -4h4a4 4 0 0 1 4 4v2",
     ],
   },
+  // user-plus
+  person_add: {
+    paths: [
+      "M8 7a4 4 0 1 0 8 0a4 4 0 0 0 -8 0",
+      "M16 19h6",
+      "M19 16v6",
+      "M6 21v-2a4 4 0 0 1 4 -4h4",
+    ],
+  },
   // eye
   preview: {
     paths: [
@@ -308,6 +339,20 @@ export const outlineIcons: Record<string, OutlineIcon> = {
   star_border: {
     paths: [
       "M12 17.75l-6.172 3.245l1.179 -6.873l-5 -4.867l6.9 -1l3.086 -6.253l3.086 6.253l6.9 1l-5 4.867l1.179 6.873l-6.158 -3.245",
+    ],
+  },
+  // adjustments
+  tune: {
+    paths: [
+      "M4 10a2 2 0 1 0 4 0a2 2 0 0 0 -4 0",
+      "M6 4v4",
+      "M6 12v8",
+      "M10 16a2 2 0 1 0 4 0a2 2 0 0 0 -4 0",
+      "M12 4v10",
+      "M12 18v2",
+      "M16 7a2 2 0 1 0 4 0a2 2 0 0 0 -4 0",
+      "M18 4v1",
+      "M18 9v11",
     ],
   },
   // package-export

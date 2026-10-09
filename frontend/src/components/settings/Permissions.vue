@@ -1,74 +1,71 @@
 <template>
   <div>
-    <h3>{{ $t("settings.permissions") }}</h3>
-    <p class="small">{{ $t("settings.permissionsHelp") }}</p>
-
     <!-- The defaults never grant the admin permission (Gezgin). -->
-    <p v-if="!isDefault">
-      <input type="checkbox" v-model="admin" />
-      {{ $t("settings.administrator") }}
-    </p>
-
-    <p>
-      <input type="checkbox" :disabled="admin" v-model="perm.create" />
-      {{ $t("settings.perm.create") }}
-    </p>
-    <p>
-      <input type="checkbox" :disabled="admin" v-model="perm.delete" />
-      {{ $t("settings.perm.delete") }}
-    </p>
-    <p>
-      <input
-        type="checkbox"
-        :disabled="admin || perm.share"
-        v-model="perm.download"
+    <setting-row
+      v-if="!isDefault"
+      :label="t('settings.administrator')"
+      :help="t('settings.adminHelp')"
+    >
+      <toggle-switch
+        :model-value="perm.admin"
+        :label="t('settings.administrator')"
+        @update:model-value="setAdmin"
       />
-      {{ $t("settings.perm.download") }}
-    </p>
-    <p>
-      <input type="checkbox" :disabled="admin" v-model="perm.modify" />
-      {{ $t("settings.perm.modify") }}
-    </p>
-    <p>
-      <input type="checkbox" :disabled="admin" v-model="perm.rename" />
-      {{ $t("settings.perm.rename") }}
-    </p>
-    <p>
-      <input type="checkbox" :disabled="admin" v-model="perm.share" />
-      {{ $t("settings.perm.share") }}
-    </p>
+    </setting-row>
+    <div class="perm-grid">
+      <setting-row
+        v-for="key in keys"
+        :key="key"
+        :label="t(`settings.permShort.${key}`)"
+        :help="key === 'share' ? t('settings.shareNeedsDownload') : undefined"
+      >
+        <toggle-switch
+          :model-value="perm[key]"
+          :label="t(`settings.permShort.${key}`)"
+          :disabled="perm.admin || (key === 'download' && perm.share)"
+          @update:model-value="(value: boolean) => set(key, value)"
+        />
+      </setting-row>
+    </div>
   </div>
 </template>
 
-<script>
-export default {
-  name: "permissions",
-  props: ["perm", "isDefault"],
-  computed: {
-    admin: {
-      get() {
-        return this.perm.admin;
-      },
-      set(value) {
-        if (value) {
-          for (const key in this.perm) {
-            this.perm[key] = true;
-          }
-        }
+<script setup lang="ts">
+import { useI18n } from "vue-i18n";
+import SettingRow from "./SettingRow.vue";
+import ToggleSwitch from "./ToggleSwitch.vue";
 
-        this.perm.admin = value;
-      },
-    },
-  },
-  watch: {
-    perm: {
-      deep: true,
-      handler() {
-        if (this.perm.share === true) {
-          this.perm.download = true;
-        }
-      },
-    },
-  },
+// A user's permissions as switches (Gezgin, K154): the admin's at the top, which turns every
+// other on, then the six of the files; sharing turns downloading on.
+const props = defineProps<{
+  perm: Permissions;
+  isDefault: boolean;
+}>();
+
+const emit = defineEmits<{
+  (e: "update:perm", value: Permissions): void;
+}>();
+
+const { t } = useI18n();
+
+const keys = [
+  "create",
+  "delete",
+  "download",
+  "modify",
+  "rename",
+  "share",
+] as const;
+
+const setAdmin = (admin: boolean) => {
+  const perm = { ...props.perm, admin };
+  if (admin) for (const key of keys) perm[key] = true;
+  emit("update:perm", perm);
+};
+
+const set = (key: (typeof keys)[number], value: boolean) => {
+  const perm = { ...props.perm, [key]: value };
+  if (perm.share) perm.download = true;
+  emit("update:perm", perm);
 };
 </script>

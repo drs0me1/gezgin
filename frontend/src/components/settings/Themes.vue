@@ -1,26 +1,41 @@
 <template>
-  <select v-on:change="change" :value="theme">
-    <option value="">{{ t("settings.themes.default") }}</option>
-    <option value="light">{{ t("settings.themes.light") }}</option>
-    <option value="dark">{{ t("settings.themes.dark") }}</option>
-  </select>
+  <div
+    class="segmented"
+    role="radiogroup"
+    :aria-label="t('settings.themes.title')"
+  >
+    <button
+      v-for="option in options"
+      :key="option.value"
+      type="button"
+      role="radio"
+      :aria-checked="theme === option.value"
+      :class="{ active: theme === option.value }"
+      @click="emit('update:theme', option.value)"
+    >
+      {{ option.label }}
+    </button>
+  </div>
 </template>
 
 <script setup lang="ts">
-import type { SelectHTMLAttributes } from "vue";
+import { computed } from "vue";
 import { useI18n } from "vue-i18n";
 
-const { t } = useI18n();
-
+// The interface's theme as three buttons (Gezgin, K151): the system's, light or dark.
 defineProps<{
   theme: UserTheme;
 }>();
 
 const emit = defineEmits<{
-  (e: "update:theme", val: string | null): void;
+  (e: "update:theme", value: UserTheme): void;
 }>();
 
-const change = (event: Event) => {
-  emit("update:theme", (event.target as SelectHTMLAttributes)?.value);
-};
+const { t } = useI18n();
+
+const options = computed<{ value: UserTheme; label: string }[]>(() => [
+  { value: "", label: t("settings.themes.default") },
+  { value: "light", label: t("settings.themes.light") },
+  { value: "dark", label: t("settings.themes.dark") },
+]);
 </script>

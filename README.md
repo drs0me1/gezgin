@@ -35,10 +35,15 @@ Work in progress. Until the first Gezgin release this tree is File Browser's las
   default language is Turkish. Every change of an account asks for the admin's password.
 - Languages: Turkish and English only. The other translations lacked about half of Gezgin's texts
   and every page carried all of them; an account or setting naming one of them reads as English.
-- The settings have a server page for admins: the version, the WebDAV port, thumbnails on or off,
-  how long an unused session lasts, the database's size and the thumbnail cache's, which it
-  clears (`GET /api/server`, `DELETE /api/server/cache`). These are the container's settings
-  and are only shown.
+- Settings: four tabs, "Hesabım" for everyone and "Genel", "Kullanıcılar", "Sunucu" for admins,
+  each a column of cards whose rows have the setting at the left and a switch or field at the
+  right; one save bar per page; uploads' chunks and the rules folded under "Gelişmiş". The users
+  list shows each user's role, access, permissions and password state; a user's access is all
+  files, their own folder or a folder picked in the tree.
+- The server tab shows the version, the WebDAV port, thumbnails on or off, how long an unused
+  session lasts, the database's size and the thumbnail cache's, which it clears
+  (`GET /api/server`, `DELETE /api/server/cache`). These are the container's settings and are
+  only shown.
 - Files: an upload over a file and a save replace the file only once the new content is complete,
   keeping its permissions; a file and a folder never replace each other on a move or copy; a
   folder moved onto a folder of the same name is merged into it, as a copy already was; a move

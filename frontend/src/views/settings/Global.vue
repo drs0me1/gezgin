@@ -1,174 +1,176 @@
 <template>
   <errors v-if="error" :errorCode="error.status" />
-  <div class="row" v-else-if="!layoutStore.loading && settings !== null">
-    <div class="column">
-      <form class="card" @submit.prevent="save">
-        <div class="card-title">
-          <h2>{{ t("settings.globalSettings") }}</h2>
-        </div>
-
-        <div class="card-content">
-          <p>
-            <input type="checkbox" v-model="settings.createUserDir" />
-            {{ t("settings.createUserDir") }}
-          </p>
-
-          <p>
-            <label class="small">{{ t("settings.userHomeBasePath") }}</label>
-            <input
-              class="input input--block"
-              type="text"
-              v-model="settings.userHomeBasePath"
-            />
-          </p>
-
-          <p>
-            <label for="minimumPasswordLength">{{
-              t("settings.minimumPasswordLength")
-            }}</label>
-            <vue-number-input
-              controls
-              v-model.number="settings.minimumPasswordLength"
-              id="minimumPasswordLength"
-              :min="minPasswordLength"
-              :max="maxPasswordLength"
-            />
-          </p>
-
-          <h3>{{ t("trash.title") }}</h3>
-          <p class="small">{{ t("trash.keepDaysHelp") }}</p>
-          <p>
-            <label for="trashDays">{{ t("trash.keepDays") }}</label>
-            <vue-number-input
-              controls
-              v-model.number="settings.trashDays"
-              id="trashDays"
-              :min="0"
-              :max="3650"
-            />
-          </p>
-          <p v-if="trashUsage" id="trashUsage">
-            {{ t("trash.usage", { count: trashUsage.count }) }} ·
-            {{ filesize(trashUsage.size) }}
-            <button
-              v-if="trashUsage.count > 0"
-              type="button"
-              class="button button--flat button--red"
-              @click="emptyAllTrash"
-            >
-              {{
-                confirmEmptyAll ? t("trash.confirmEmpty") : t("trash.emptyAll")
-              }}
-            </button>
-          </p>
-
-          <h3>{{ t("settings.rules") }}</h3>
-          <p class="small">{{ t("settings.globalRules") }}</p>
-          <rules v-model:rules="settings.rules" />
-
-          <h3>{{ t("settings.appearance") }}</h3>
-
-          <p>
-            <label for="theme">{{ t("settings.themes.title") }}</label>
-            <themes
-              class="input input--block"
-              v-model:theme="settings.branding.theme"
-              id="theme"
-            ></themes>
-          </p>
-
-          <p>
-            <input
-              type="checkbox"
-              v-model="settings.branding.disableUsedPercentage"
-              id="branding-used-disk"
-            />
-            {{ t("settings.disableUsedDiskPercentage") }}
-          </p>
-
-          <h3>{{ t("settings.tusUploads") }}</h3>
-
-          <p class="small">{{ t("settings.tusUploadsHelp") }}</p>
-
-          <div class="tusConditionalSettings">
-            <p>
-              <label for="tus-chunkSize">{{
-                t("settings.tusUploadsChunkSize")
-              }}</label>
-              <input
-                class="input input--block"
-                type="text"
-                v-model="chunkSizeText"
-                id="tus-chunkSize"
-              />
-            </p>
-
-            <p>
-              <label for="tus-retryCount">{{
-                t("settings.tusUploadsRetryCount")
-              }}</label>
-              <vue-number-input
-                controls
-                v-model.number="settings.tus.retryCount"
-                id="tus-retryCount"
-                :min="0"
-                :max="maxRetryCount"
-              />
-            </p>
-          </div>
-        </div>
-
-        <div class="card-action">
-          <input
-            class="button button--flat"
-            type="submit"
-            :value="t('buttons.update')"
-          />
-        </div>
-      </form>
+  <div v-else-if="!layoutStore.loading && settings !== null">
+    <div class="settings-card">
+      <h3>{{ t("settings.security") }}</h3>
+      <setting-row
+        :label="t('settings.minimumPasswordLength')"
+        :help="
+          t('settings.minimumPasswordLengthHelp', {
+            min: minPasswordLength,
+            max: maxPasswordLength,
+          })
+        "
+      >
+        <vue-number-input
+          controls
+          size="small"
+          v-model.number="settings.minimumPasswordLength"
+          :min="minPasswordLength"
+          :max="maxPasswordLength"
+        />
+      </setting-row>
     </div>
 
-    <div class="column">
-      <form class="card" @submit.prevent="save">
-        <div class="card-title">
-          <h2>{{ t("settings.userDefaults") }}</h2>
-        </div>
-
-        <div class="card-content">
-          <p class="small">{{ t("settings.defaultUserDescription") }}</p>
-
-          <user-form
-            :isNew="false"
-            :isDefault="true"
-            v-model:user="settings.defaults"
-          />
-        </div>
-
-        <div class="card-action">
-          <input
-            class="button button--flat"
-            type="submit"
-            :value="t('buttons.update')"
-          />
-        </div>
-      </form>
+    <div class="settings-card">
+      <h3>{{ t("trash.title") }}</h3>
+      <setting-row :label="t('trash.keepDays')" :help="t('trash.keepDaysHelp')">
+        <vue-number-input
+          controls
+          size="small"
+          v-model.number="settings.trashDays"
+          :min="0"
+          :max="3650"
+        />
+      </setting-row>
+      <setting-row
+        v-if="trashUsage"
+        :label="t('trash.allUsers')"
+        :help="
+          t('trash.usageShort', {
+            count: trashUsage.count,
+            size: filesize(trashUsage.size),
+          })
+        "
+        stack
+      >
+        <button
+          v-if="trashUsage.count > 0"
+          type="button"
+          class="button button--flat button--red"
+          @click="emptyAllTrash"
+        >
+          {{ t("trash.emptyAll") }}
+        </button>
+      </setting-row>
     </div>
+
+    <div class="settings-card">
+      <h3>{{ t("settings.appearance") }}</h3>
+      <setting-row :label="t('settings.themes.title')">
+        <themes v-model:theme="settings.branding.theme" />
+      </setting-row>
+      <setting-row :label="t('settings.showUsedDisk')">
+        <toggle-switch
+          :model-value="!settings.branding.disableUsedPercentage"
+          :label="t('settings.showUsedDisk')"
+          @update:model-value="
+            (show: boolean) =>
+              (settings!.branding.disableUsedPercentage = !show)
+          "
+        />
+      </setting-row>
+    </div>
+
+    <div class="settings-card">
+      <h3>{{ t("settings.newUsers") }}</h3>
+      <p class="setting-help">{{ t("settings.newUsersHelp") }}</p>
+      <h4>{{ t("settings.access.title") }}</h4>
+      <scope-choice
+        v-model:mode="access.mode"
+        v-model:folder="access.folder"
+        :own-path="
+          homeDir(settings.userHomeBasePath, t('settings.access.name'))
+        "
+        name="default-scope"
+      />
+      <setting-row
+        v-if="access.mode === 'own'"
+        :label="t('settings.homesFolder')"
+        label-for="homes"
+        stack
+      >
+        <input
+          id="homes"
+          class="input"
+          type="text"
+          v-model="settings.userHomeBasePath"
+        />
+      </setting-row>
+      <setting-row :label="t('settings.language')" label-for="default-locale">
+        <languages
+          id="default-locale"
+          class="input"
+          v-model:locale="settings.defaults.locale"
+        />
+      </setting-row>
+      <h4>{{ t("settings.permissions") }}</h4>
+      <permissions v-model:perm="settings.defaults.perm" :is-default="true" />
+    </div>
+
+    <div class="settings-card">
+      <details>
+        <summary>
+          <icon name="chevron_right" />{{ t("settings.advancedGlobal") }}
+        </summary>
+        <setting-row
+          :label="t('settings.chunkSize')"
+          :help="t('settings.chunkSizeHelp')"
+          label-for="tus-chunkSize"
+        >
+          <input
+            id="tus-chunkSize"
+            class="input"
+            type="text"
+            style="width: 8em"
+            v-model="chunkSizeText"
+          />
+        </setting-row>
+        <setting-row
+          :label="t('settings.retryCount')"
+          :help="t('settings.retryCountHelp', { max: maxRetryCount })"
+        >
+          <vue-number-input
+            controls
+            size="small"
+            v-model.number="settings.tus.retryCount"
+            :min="0"
+            :max="maxRetryCount"
+          />
+        </setting-row>
+        <h4>{{ t("settings.globalRulesTitle") }}</h4>
+        <p class="setting-help">{{ t("settings.globalRules") }}</p>
+        <rules v-model:rules="settings.rules" />
+      </details>
+    </div>
+
+    <save-bar :visible="dirty" @cancel="reset" @save="save" />
   </div>
 </template>
 
 <script setup lang="ts">
 import { settings as api, trash as trashApi } from "@/api";
-import { filesize } from "@/utils";
 import { StatusError } from "@/api/utils";
+import Icon from "@/components/Icon.vue";
+import Languages from "@/components/settings/Languages.vue";
+import Permissions from "@/components/settings/Permissions.vue";
 import Rules from "@/components/settings/Rules.vue";
+import SaveBar from "@/components/settings/SaveBar.vue";
+import ScopeChoice from "@/components/settings/ScopeChoice.vue";
+import SettingRow from "@/components/settings/SettingRow.vue";
 import Themes from "@/components/settings/Themes.vue";
-import UserForm from "@/components/settings/UserForm.vue";
+import ToggleSwitch from "@/components/settings/ToggleSwitch.vue";
 import { useLayoutStore } from "@/stores/layout";
+import { filesize } from "@/utils";
+import { homeDir, scopeMode, type ScopeMode } from "@/utils/scope";
 import { formatSize, parseSize } from "@/utils/size";
 import { getTheme, setTheme } from "@/utils/theme";
 import Errors from "@/views/Errors.vue";
-import { inject, onMounted, ref } from "vue";
+import { computed, inject, onMounted, ref } from "vue";
 import { useI18n } from "vue-i18n";
+
+// The general settings (Gezgin, K150-K153): security, the trash, the look, what new users get,
+// and folded under "Gelişmiş" the chunked uploads and the global rules; one save for the page.
 
 // The bounds the server holds the settings to (settings.Validate).
 const minPasswordLength = 8;
@@ -178,11 +180,14 @@ const maxChunkSize = 1024 ** 3;
 const maxRetryCount = 20;
 
 const error = ref<StatusError | null>(null);
-const originalSettings = ref<ISettings | null>(null);
+const original = ref<ISettings | null>(null);
 const settings = ref<ISettings | null>(null);
 const chunkSizeText = ref<string>("");
+const access = ref<{ mode: ScopeMode; folder: string }>({
+  mode: "all",
+  folder: "",
+});
 const trashUsage = ref<{ count: number; size: number } | null>(null);
-const confirmEmptyAll = ref<boolean>(false);
 
 const $showError = inject<IToastError>("$showError")!;
 const $showSuccess = inject<IToastSuccess>("$showSuccess")!;
@@ -190,6 +195,32 @@ const $showSuccess = inject<IToastSuccess>("$showSuccess")!;
 const { t } = useI18n();
 
 const layoutStore = useLayoutStore();
+
+// What new users get is "make the home folder" for their own folder, else the default scope.
+const accessOf = (s: ISettings) =>
+  s.createUserDir
+    ? { mode: "own" as ScopeMode, folder: "" }
+    : scopeMode(s.defaults.scope, null);
+
+const load = (s: ISettings) => {
+  original.value = s;
+  settings.value = JSON.parse(JSON.stringify(s));
+  chunkSizeText.value = formatSize(s.tus.chunkSize);
+  access.value = accessOf(s);
+};
+
+const reset = () => {
+  if (original.value) load(original.value);
+};
+
+const dirty = computed(
+  () =>
+    settings.value !== null &&
+    original.value !== null &&
+    (JSON.stringify(settings.value) !== JSON.stringify(original.value) ||
+      chunkSizeText.value !== formatSize(original.value.tus.chunkSize) ||
+      JSON.stringify(access.value) !== JSON.stringify(accessOf(original.value)))
+);
 
 // check returns what is wrong with the settings, as the server would say it, or null.
 const check = (s: ISettings): string | null => {
@@ -222,7 +253,7 @@ const check = (s: ISettings): string | null => {
 const interfaceSettings = (s: ISettings) => JSON.stringify([s.branding, s.tus]);
 
 const save = async () => {
-  if (settings.value === null || originalSettings.value === null) return;
+  if (settings.value === null || original.value === null) return;
 
   // The text shown rounds the size; left as shown, it keeps the size as it was.
   const chunkSize =
@@ -233,8 +264,17 @@ const save = async () => {
     $showError(t("settings.errors.chunkSizeUnreadable"));
     return;
   }
+  if (access.value.mode === "folder" && access.value.folder === "") {
+    $showError(t("settings.access.noFolder"));
+    return;
+  }
   const newSettings: ISettings = {
     ...settings.value,
+    createUserDir: access.value.mode === "own",
+    defaults: {
+      ...settings.value.defaults,
+      scope: access.value.mode === "folder" ? access.value.folder : ".",
+    },
     tus: { ...settings.value.tus, chunkSize },
   };
   const problem = check(newSettings);
@@ -251,16 +291,14 @@ const save = async () => {
   }
 
   $showSuccess(t("settings.settingsUpdated"));
-  if (
-    interfaceSettings(newSettings) !== interfaceSettings(originalSettings.value)
-  ) {
+  if (interfaceSettings(newSettings) !== interfaceSettings(original.value)) {
     if (newSettings.branding.theme !== getTheme()) {
       setTheme(newSettings.branding.theme);
     }
     window.setTimeout(() => window.location.reload(), 1000);
     return;
   }
-  originalSettings.value = JSON.parse(JSON.stringify(newSettings));
+  load(JSON.parse(JSON.stringify(newSettings)));
 };
 
 const loadTrashUsage = async () => {
@@ -271,36 +309,38 @@ const loadTrashUsage = async () => {
   }
 };
 
-// Every bin is emptied only on a second click.
-const emptyAllTrash = async () => {
-  if (!confirmEmptyAll.value) {
-    confirmEmptyAll.value = true;
-    return;
-  }
-  confirmEmptyAll.value = false;
-  try {
-    await trashApi.emptyAll();
-    $showSuccess(t("trash.emptied"));
-  } catch (e: any) {
-    $showError(e);
-  }
-  await loadTrashUsage();
+// Every user's trash is emptied for good, so it asks first.
+const emptyAllTrash = () => {
+  layoutStore.showHover({
+    prompt: "confirm",
+    props: {
+      message: t("trash.emptyAllConfirm", {
+        count: trashUsage.value?.count ?? 0,
+      }),
+      confirm: t("trash.emptyAll"),
+      danger: true,
+    },
+    confirm: async () => {
+      layoutStore.closeHovers();
+      try {
+        await trashApi.emptyAll();
+        $showSuccess(t("trash.emptied"));
+      } catch (e: any) {
+        $showError(e);
+      }
+      await loadTrashUsage();
+    },
+  });
 };
-
-// Define Hooks
 
 onMounted(async () => {
   try {
     layoutStore.loading = true;
-    const original: ISettings = await api.get();
-
-    originalSettings.value = original;
-    settings.value = JSON.parse(JSON.stringify(original));
-    chunkSizeText.value = formatSize(original.tus.chunkSize);
+    load(await api.get());
     await loadTrashUsage();
   } catch (err) {
     if (err instanceof Error) {
-      error.value = err;
+      error.value = err as StatusError;
     }
   } finally {
     layoutStore.loading = false;

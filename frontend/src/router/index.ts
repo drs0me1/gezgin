@@ -9,6 +9,7 @@ import User from "@/views/settings/User.vue";
 import Settings from "@/views/Settings.vue";
 import GlobalSettings from "@/views/settings/Global.vue";
 import ProfileSettings from "@/views/settings/Profile.vue";
+import ServerSettings from "@/views/settings/Server.vue";
 import Errors from "@/views/Errors.vue";
 import Trash from "@/views/Trash.vue";
 import Favorites from "@/views/Favorites.vue";
@@ -28,10 +29,11 @@ const titles = {
   Shares: "shares.title",
   Search: "search.title",
   Settings: "sidebar.settings",
-  ProfileSettings: "settings.profileSettings",
-  GlobalSettings: "settings.globalSettings",
-  Users: "settings.users",
+  ProfileSettings: "settings.tabs.account",
+  GlobalSettings: "settings.tabs.general",
+  Users: "settings.tabs.users",
   User: "settings.user",
+  ServerSettings: "settings.tabs.server",
   Forbidden: "errors.forbidden",
   NotFound: "errors.notFound",
   InternalServerError: "errors.internal",
@@ -170,6 +172,14 @@ const routes = [
             path: "users/:id",
             name: "User",
             component: User,
+            meta: {
+              requiresAdmin: true,
+            },
+          },
+          {
+            path: "server",
+            name: "ServerSettings",
+            component: ServerSettings,
             meta: {
               requiresAdmin: true,
             },

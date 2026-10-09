@@ -1,143 +1,172 @@
 <template>
-  <div class="row">
-    <div class="column">
-      <form class="card" @submit="updateSettings">
-        <div class="card-title">
-          <h2>{{ t("settings.profileSettings") }}</h2>
+  <div v-if="user">
+    <div class="settings-card account-card">
+      <span class="avatar" aria-hidden="true">{{ initial }}</span>
+      <div>
+        <div class="account-name">{{ user.username }}</div>
+        <div class="setting-help">
+          {{
+            user.perm.admin ? t("settings.administrator") : t("settings.user")
+          }}
         </div>
-
-        <div class="card-content">
-          <p>
-            <input type="checkbox" name="hideDotfiles" v-model="hideDotfiles" />
-            {{ t("settings.hideDotfiles") }}
-          </p>
-          <p>
-            <input type="checkbox" name="singleClick" v-model="singleClick" />
-            {{ t("settings.singleClick") }}
-          </p>
-          <p>
-            <input
-              type="checkbox"
-              name="redirectAfterCopyMove"
-              v-model="redirectAfterCopyMove"
-            />
-            {{ t("settings.redirectAfterCopyMove") }}
-          </p>
-          <p>
-            <input type="checkbox" name="dateFormat" v-model="dateFormat" />
-            {{ t("settings.setDateFormat") }}
-          </p>
-          <h3>{{ t("settings.language") }}</h3>
-          <languages
-            class="input input--block"
-            v-model:locale="locale"
-          ></languages>
-        </div>
-
-        <div class="card-action">
-          <input
-            class="button button--flat"
-            type="submit"
-            name="submitProfile"
-            :value="t('buttons.update')"
-          />
-        </div>
-      </form>
+      </div>
     </div>
 
-    <div class="column">
-      <form
-        class="card"
-        v-if="!authStore.user?.lockPassword"
-        @submit="updatePassword"
+    <div class="settings-card">
+      <h3>{{ t("settings.preferences") }}</h3>
+      <setting-row :label="t('settings.hideDotfiles')">
+        <toggle-switch
+          v-model="prefs.hideDotfiles"
+          :label="t('settings.hideDotfiles')"
+        />
+      </setting-row>
+      <setting-row
+        :label="t('settings.singleClick')"
+        :help="t('settings.singleClickHelp')"
       >
-        <div class="card-title">
-          <h2>{{ t("settings.changePassword") }}</h2>
-        </div>
+        <toggle-switch
+          v-model="prefs.singleClick"
+          :label="t('settings.singleClick')"
+        />
+      </setting-row>
+      <setting-row :label="t('settings.redirectAfterCopyMove')">
+        <toggle-switch
+          v-model="prefs.redirectAfterCopyMove"
+          :label="t('settings.redirectAfterCopyMove')"
+        />
+      </setting-row>
+      <setting-row
+        :label="t('settings.setDateFormat')"
+        :help="t('settings.dateFormatHelp')"
+      >
+        <toggle-switch
+          v-model="prefs.dateFormat"
+          :label="t('settings.setDateFormat')"
+        />
+      </setting-row>
+      <setting-row :label="t('settings.language')" label-for="locale">
+        <languages id="locale" class="input" v-model:locale="prefs.locale" />
+      </setting-row>
+    </div>
 
-        <div class="card-content">
+    <form class="settings-card" @submit.prevent="updatePassword">
+      <h3>{{ t("settings.password") }}</h3>
+      <template v-if="!user.lockPassword">
+        <p class="setting-help">{{ t("settings.passwordHelp") }}</p>
+        <div class="password-fields">
+          <input
+            class="input input--block"
+            type="password"
+            :placeholder="t('settings.currentPassword')"
+            :aria-label="t('settings.currentPassword')"
+            v-model="currentPassword"
+            name="current_password"
+            autocomplete="current-password"
+          />
           <input
             :class="passwordClass"
             type="password"
             :placeholder="t('settings.newPassword')"
+            :aria-label="t('settings.newPassword')"
             v-model="password"
             name="password"
+            autocomplete="new-password"
           />
           <input
             :class="passwordClass"
             type="password"
             :placeholder="t('settings.newPasswordConfirm')"
+            :aria-label="t('settings.newPasswordConfirm')"
             v-model="passwordConf"
             name="passwordConf"
-          />
-          <input
-            :class="passwordClass"
-            type="password"
-            :placeholder="t('settings.currentPassword')"
-            v-model="currentPassword"
-            name="current_password"
-            autocomplete="current-password"
+            autocomplete="new-password"
           />
         </div>
-
-        <div class="card-action">
-          <input
-            class="button button--flat"
-            type="submit"
-            name="submitPassword"
-            :value="t('buttons.update')"
-          />
-        </div>
-      </form>
-
-      <div class="card">
-        <div class="card-title">
-          <h2>{{ t("settings.sessions") }}</h2>
-        </div>
-
-        <div class="card-content">
-          <p>{{ t("settings.sessionsHelp") }}</p>
-        </div>
-
-        <div class="card-action">
-          <button
-            class="button button--flat button--red"
-            type="button"
-            name="closeSessions"
-            @click="closeSessions"
-          >
-            {{ t("settings.closeAllSessions") }}
+        <div class="card-buttons">
+          <button class="button" type="submit">
+            {{ t("settings.changePassword") }}
           </button>
         </div>
-      </div>
+      </template>
+      <p v-else class="setting-help">{{ t("settings.passwordLocked") }}</p>
+    </form>
+
+    <div class="settings-card">
+      <setting-row
+        :label="t('settings.sessions')"
+        :help="t('settings.sessionsHelp')"
+        stack
+      >
+        <button
+          class="button button--flat button--red"
+          type="button"
+          @click="closeSessions"
+        >
+          {{ t("settings.closeAllSessions") }}
+        </button>
+      </setting-row>
     </div>
+
+    <save-bar :visible="dirty" @cancel="reset" @save="savePreferences" />
   </div>
 </template>
 
 <script setup lang="ts">
-import { useAuthStore } from "@/stores/auth";
-import { useLayoutStore } from "@/stores/layout";
 import { users as api } from "@/api";
 import Languages from "@/components/settings/Languages.vue";
+import SaveBar from "@/components/settings/SaveBar.vue";
+import SettingRow from "@/components/settings/SettingRow.vue";
+import ToggleSwitch from "@/components/settings/ToggleSwitch.vue";
+import { locales } from "@/i18n";
+import { useAuthStore } from "@/stores/auth";
+import { useLayoutStore } from "@/stores/layout";
+import * as auth from "@/utils/auth";
 import { computed, inject, onMounted, ref } from "vue";
 import { useI18n } from "vue-i18n";
-import * as auth from "@/utils/auth";
 
+// The account's page (Gezgin, K150-K152): who is signed in, the preferences with one save, the
+// password, and the sessions.
 const layoutStore = useLayoutStore();
 const authStore = useAuthStore();
-const { t } = useI18n();
+const { t, locale } = useI18n();
 
 const $showSuccess = inject<IToastSuccess>("$showSuccess")!;
 const $showError = inject<IToastError>("$showError")!;
 
+const user = computed(() => authStore.user);
+const initial = computed(() =>
+  (user.value?.username ?? "?").charAt(0).toLocaleUpperCase(locale.value)
+);
+
 const password = ref<string>("");
 const passwordConf = ref<string>("");
 const currentPassword = ref<string>("");
-const hideDotfiles = ref<boolean>(false);
-const singleClick = ref<boolean>(false);
-const redirectAfterCopyMove = ref<boolean>(false);
-const dateFormat = ref<boolean>(false);
-const locale = ref<string>("");
+
+type Preferences = Pick<
+  IUser,
+  "hideDotfiles" | "singleClick" | "redirectAfterCopyMove" | "dateFormat"
+> & { locale: string };
+
+const read = (): Preferences => ({
+  hideDotfiles: user.value?.hideDotfiles ?? false,
+  singleClick: user.value?.singleClick ?? false,
+  redirectAfterCopyMove: user.value?.redirectAfterCopyMove ?? false,
+  dateFormat: user.value?.dateFormat ?? false,
+  // A language Gezgin no longer has reads as English (K142).
+  locale: locales.includes(user.value?.locale ?? "")
+    ? user.value!.locale
+    : "en",
+});
+
+const saved = ref<Preferences>(read());
+const prefs = ref<Preferences>(read());
+const dirty = computed(
+  () => JSON.stringify(prefs.value) !== JSON.stringify(saved.value)
+);
+
+const reset = () => {
+  prefs.value = { ...saved.value };
+};
 
 const passwordClass = computed(() => {
   const baseClass = "input input--block";
@@ -153,22 +182,13 @@ const passwordClass = computed(() => {
   return `${baseClass} input--red`;
 });
 
-onMounted(async () => {
-  layoutStore.loading = true;
-  if (authStore.user === null) return false;
-  locale.value = authStore.user.locale;
-  hideDotfiles.value = authStore.user.hideDotfiles;
-  singleClick.value = authStore.user.singleClick;
-  redirectAfterCopyMove.value = authStore.user.redirectAfterCopyMove;
-  dateFormat.value = authStore.user.dateFormat;
+onMounted(() => {
   layoutStore.loading = false;
-
-  return true;
+  saved.value = read();
+  prefs.value = read();
 });
 
-const updatePassword = async (event: Event) => {
-  event.preventDefault();
-
+const updatePassword = async () => {
   if (
     password.value !== passwordConf.value ||
     password.value === "" ||
@@ -191,34 +211,40 @@ const updatePassword = async (event: Event) => {
   } catch (e: any) {
     $showError(e);
   } finally {
-    password.value = passwordConf.value = "";
+    password.value = passwordConf.value = currentPassword.value = "";
   }
 };
-const closeSessions = async () => {
+
+// Closing every session ends this one too, so it asks first.
+const closeSessions = () => {
+  layoutStore.showHover({
+    prompt: "confirm",
+    props: {
+      message: t("settings.closeAllSessionsConfirm"),
+      confirm: t("settings.closeAllSessions"),
+      danger: true,
+    },
+    confirm: async () => {
+      layoutStore.closeHovers();
+      if (authStore.user === null) return;
+      try {
+        await api.closeSessions(authStore.user.id);
+        auth.logout("sessions");
+      } catch (e: any) {
+        $showError(e);
+      }
+    },
+  });
+};
+
+const savePreferences = async () => {
   if (authStore.user === null) return;
 
   try {
-    await api.closeSessions(authStore.user.id);
-    auth.logout("sessions");
-  } catch (e: any) {
-    $showError(e);
-  }
-};
-
-const updateSettings = async (event: Event) => {
-  event.preventDefault();
-
-  try {
-    if (authStore.user === null) throw new Error("User is not set!");
-
     const data = {
       ...authStore.user,
       id: authStore.user.id,
-      locale: locale.value,
-      hideDotfiles: hideDotfiles.value,
-      singleClick: singleClick.value,
-      redirectAfterCopyMove: redirectAfterCopyMove.value,
-      dateFormat: dateFormat.value,
+      ...prefs.value,
     };
 
     await api.update(data, [
@@ -229,11 +255,10 @@ const updateSettings = async (event: Event) => {
       "dateFormat",
     ]);
     authStore.updateUser(data);
+    saved.value = { ...prefs.value };
     $showSuccess(t("settings.settingsUpdated"));
-  } catch (err) {
-    if (err instanceof Error) {
-      $showError(err);
-    }
+  } catch (e: any) {
+    $showError(e);
   }
 };
 </script>

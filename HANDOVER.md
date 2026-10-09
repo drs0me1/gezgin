@@ -50,7 +50,7 @@ Commit messages and README's "Changes from File Browser" describe each change.
 
 ## 3. Decisions taken
 
-The next decision number is **K150**. "Recommended" means the operator accepted the recommendation
+The next decision number is **K156**. "Recommended" means the operator accepted the recommendation
 made in the report.
 
 **Stage B (start).** Multi-user with an admin; File Browser's forms stay even where Konsol has its
@@ -470,6 +470,30 @@ design; all eight as recommended):
 - K149: not added: a theme per user ("Sistem" follows each device), defaults for personal
   preferences, share rules (later if needed), changing the container's settings here.
 
+**The settings page's design** (operator, 2026-10-10, after the mock-up: "tasarım iyi
+uygulayabiliriz beğendim"):
+
+- K150: four tabs, "Hesabım" for everyone, "Genel", "Kullanıcılar" and "Sunucu" for admins (a
+  user sees no tabs), over one column of cards; `/settings/server` is new.
+- K151: each setting is a row, its name and a short help at the left, its control at the right;
+  switches in place of checkboxes, the theme as three buttons, positive wording ("Kenar
+  çubuğunda disk kullanımını göster").
+- K152: one save per page: when something changed, "Kaydedilmemiş değişiklik var" with
+  "Vazgeç" and "Kaydet" stays at the bottom of the window (Hesabım's preferences, all of Genel);
+  the password, closing every session and emptying every trash (both asking first) and clearing
+  the cache act on their own; a user's page saves with its buttons at the bottom.
+- K153: "Gelişmiş" folds Genel's chunked uploads and global rules, and a user's rules (open when
+  they have some); a rule is a row: "Engelle" or "İzin ver", "Yol" or "Düzenli ifade", the path,
+  remove.
+- K154: the users list gives each user's initial, name, badges ("Yönetici", "İlk girişte şifre
+  değiştirecek", "Şifre kilitli"), access ("Tüm dosyalar" or the folder) and six permission icons,
+  dim when off; a click opens the user. The user's page: "Kimlik" (name, password, the forced
+  change, on for a new user and when a password is typed for someone else, the lock, language),
+  "Erişim" (K148, with a folder picker), "İzinler" ("Yönetici" first, then six switches), the
+  rules, then "Oturumlarını kapat", "Kullanıcıyı sil", "Vazgeç", "Kaydet".
+- K155: on a phone the tabs scroll, rows stack, the list leaves out the permission icons and the
+  buttons at the bottom take the width.
+
 ## 4. Tasks
 
 ### 4.1 Close heading 7: archive creation follow-ups (commit `601ddbaa`)
@@ -831,18 +855,26 @@ design; all eight as recommended):
   "WebDAV · salt okunur", "Süresiz"; its menu "Adresi kopyala", "Paylaşım ayarları",
   "Bulunduğu klasörü aç", "Paylaşımı kaldır", "Paylaşım bilgisi", closed unused.
 
-- [ ] **Settings page** (operator, 2026-10-10). Reviewed on the Mac's test environment: the
-  three tabs, every field's use in the frontend and the server. Decided K142-K149 (section 3);
-  their server side and removals are done locally (not pushed, K141): Go tests for the forced
+- [x] **Settings page** (operator, 2026-10-10). Reviewed on the Mac's test environment: the
+  three tabs, every field's use in the frontend and the server. Decided K142-K149 and, after a
+  mock-up, the design K150-K155 (section 3). Server side `f7dbefbb`: Go tests for the forced
   change (`TestAdminAsksForANewPassword`, `TestLockedPasswordTakesTheAskedChange`), the server
-  page and cache (`http/server_test.go`, `diskcache`), the own folder (`TestOwnFolderScope`);
-  checked in the browser: the language list "Türkçe", "English"; no editor theme box; the
-  editor dark with the interface; `/api/server` answering; the cache emptied and filling again;
-  the delete asking for the password. The first load is lighter: 73 KB of languages (197) and
-  109 KB of app (236), gzipped, as Ace now comes with the editor only. Open: the new design,
-  shown as a mock-up (tabs Hesabım, Genel, Kullanıcılar, Sunucu; rows with switches; one save
-  bar per page; "Gelişmiş" folded; the users list with access, permission icons and states; the
-  phone stacking rows), with the interface of K145, K146, K147 and K148 in it.
+  page and cache (`http/server_test.go`, `diskcache`), the own folder (`TestOwnFolderScope`). The
+  first load is lighter: 73 KB of languages (197) and 109 KB of app (236), gzipped, as Ace now
+  comes with the editor only. The page: `views/Settings.vue`, `views/settings/*`,
+  `components/settings/*` (`SettingRow`, `ToggleSwitch`, `SaveBar`, `ScopeChoice`, `Permissions`,
+  `Rules`, `Themes`, `Languages`), the `folder-picker` prompt, `css/settings.css`; the old
+  `UserForm.vue`, `.dashboard` styles, rules styles and right-to-left styles are gone. Checked in
+  the browser on the Mac: the tabs; Genel's save bar (shown on a change, "Vazgeç" restoring),
+  "Kendi klasörü" showing where the folders are, the trash days and a rule saved and put back;
+  a new user `ayse` with her own folder (`/users/ayse` made on the Mac) and the forced change
+  (her token asked for it); her page reading "Kendi klasörü", the picker giving `/Belgeler`; the
+  lock saved ("Şifre kilitli" in the list); the server page (version, WebDAV 8092, 2 hours, the
+  cache emptied); Hesabım's preference saved and put back; at 375 pixels the list and the user's
+  page; `ayse` deleted. Found on the way: the tabs were a `nav`, which took the sidebar's styles,
+  and the number inputs have no font size of their own, so an em width was nothing.
+- [ ] **Push** (K141): the commits since `1a6dc1d1` (the Mac's test environment, the settings)
+  wait for the operator's "push et"; then the image, nrm and a live check of the settings.
 
 ### 4.4 New decisions to put to the operator
 

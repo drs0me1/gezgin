@@ -1,36 +1,42 @@
 <template>
-  <div class="dashboard">
+  <div>
     <header-bar showMenu showLogo showNav />
 
-    <div id="nav">
-      <div class="wrapper">
-        <ul>
-          <router-link to="/settings/profile"
-            ><li :class="{ active: $route.path === '/settings/profile' }">
-              {{ t("settings.profileSettings") }}
-            </li></router-link
-          >
-          <router-link to="/settings/global" v-if="user?.perm.admin"
-            ><li :class="{ active: $route.path === '/settings/global' }">
-              {{ t("settings.globalSettings") }}
-            </li></router-link
-          >
-          <router-link to="/settings/users" v-if="user?.perm.admin"
-            ><li
-              :class="{
-                active:
-                  $route.path === '/settings/users' || $route.name === 'User',
-              }"
-            >
-              {{ t("settings.userManagement") }}
-            </li></router-link
-          >
-        </ul>
+    <div class="settings">
+      <!-- Four tabs for an admin, none for a user, who has only their account (Gezgin, K150). -->
+      <div
+        v-if="user?.perm.admin"
+        class="settings-tabs"
+        role="navigation"
+        :aria-label="t('sidebar.settings')"
+      >
+        <router-link
+          to="/settings/profile"
+          :class="{ active: route.path === '/settings/profile' }"
+        >
+          <icon name="person" />{{ t("settings.tabs.account") }}
+        </router-link>
+        <router-link
+          to="/settings/global"
+          :class="{ active: route.path === '/settings/global' }"
+        >
+          <icon name="tune" />{{ t("settings.tabs.general") }}
+        </router-link>
+        <router-link
+          to="/settings/users"
+          :class="{ active: route.path.startsWith('/settings/users') }"
+        >
+          <icon name="group" />{{ t("settings.tabs.users") }}
+        </router-link>
+        <router-link
+          to="/settings/server"
+          :class="{ active: route.path === '/settings/server' }"
+        >
+          <icon name="dns" />{{ t("settings.tabs.server") }}
+        </router-link>
       </div>
-    </div>
 
-    <div v-if="loading">
-      <h2 class="message delayed">
+      <h2 v-if="loading" class="message delayed">
         <div class="spinner">
           <div class="bounce1"></div>
           <div class="bounce2"></div>
@@ -38,20 +44,23 @@
         </div>
         <span>{{ t("files.loading") }}</span>
       </h2>
-    </div>
 
-    <router-view></router-view>
+      <router-view></router-view>
+    </div>
   </div>
 </template>
 
 <script setup lang="ts">
+import HeaderBar from "@/components/header/HeaderBar.vue";
+import Icon from "@/components/Icon.vue";
 import { useAuthStore } from "@/stores/auth";
 import { useLayoutStore } from "@/stores/layout";
-import HeaderBar from "@/components/header/HeaderBar.vue";
 import { computed } from "vue";
 import { useI18n } from "vue-i18n";
+import { useRoute } from "vue-router";
 
 const { t } = useI18n();
+const route = useRoute();
 
 const authStore = useAuthStore();
 const layoutStore = useLayoutStore();

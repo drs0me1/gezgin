@@ -6,6 +6,7 @@ import * as pub from "./pub";
 import * as trash from "./trash";
 import * as archive from "./archive";
 import * as favorites from "./favorites";
+import * as server from "./server";
 import search from "./search";
 
 export {
@@ -18,4 +19,5 @@ export {
   trash,
   archive,
   favorites,
+  server,
 };

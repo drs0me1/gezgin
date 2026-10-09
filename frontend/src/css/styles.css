@@ -13,6 +13,7 @@
 @import "./upload-files.css";
 @import "./archive-jobs.css";
 @import "./dashboard.css";
+@import "./settings.css";
 @import "./login.css";
 @import "./mobile.css";
 @import "./mdPreview.css";
@@ -376,11 +377,6 @@ main .spinner .bounce2 {
   top: 0;
 }
 
-/*** RTL - flip and position arrow of path ***/
-html[dir="rtl"] .breadcrumbs .chevron {
-  transform: scaleX(-1) translateX(16em);
-}
-
 #editor-container .breadcrumbs span {
   font-size: 0.75rem;
 }
@@ -418,65 +414,4 @@ html[dir="rtl"] .breadcrumbs .chevron {
   100% {
     transform: rotate(360deg);
   }
-}
-
-/* * * * * * * * * * * * * * * *
- *         SETTINGS TUS        *
- * * * * * * * * * * * * * * * */
-
-.tusConditionalSettings input:disabled {
-  background-color: #ddd;
-  color: #999;
-  cursor: not-allowed;
-}
-
-/* * * * * * * * * * * * * * * *
- *         SETTINGS RULES      *
- * * * * * * * * * * * * * * * */
-
-.rules > div {
-  display: flex;
-  align-items: center;
-  margin: 0.5rem 0;
-}
-
-.rules input[type="checkbox"] {
-  margin-right: 0.2rem;
-}
-
-.rules input[type="text"] {
-  border: 1px solid#ddd;
-  padding: 0.2rem;
-}
-
-.rules label {
-  margin-right: 0.5rem;
-}
-
-.rules button {
-  margin-left: auto;
-}
-
-.rules button.delete {
-  padding: 0.2rem 0.5rem;
-  margin-left: 0.5rem;
-}
-
-/* * * * * * * * * * * * * * * *
- *         RTL overrides       *
- * * * * * * * * * * * * * * * */
-
-html[dir="rtl"] .card-content textarea {
-  direction: ltr;
-  text-align: left;
-}
-
-html[dir="rtl"] .card-content .small + input {
-  direction: ltr;
-  text-align: left;
-}
-
-html[dir="rtl"] .card.floating .card-content .file-list {
-  direction: ltr;
-  text-align: left;
 }

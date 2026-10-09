@@ -1,0 +1,531 @@
+/* The settings (Gezgin, K150-K155): tabs over one column of cards, each a list of rows with the
+   setting's name at the left and its control at the right; on a phone wide controls go under. */
+
+.settings {
+  max-width: 48em;
+  margin: 0 auto;
+  padding: 1em 0 2em;
+}
+
+.settings-tabs {
+  display: flex;
+  gap: 0.25em;
+  margin: 0 0 1.25em;
+  border-bottom: 1px solid var(--borderSecondary);
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+
+.settings-tabs a {
+  display: flex;
+  align-items: center;
+  gap: 0.4em;
+  padding: 0.75em 0.9em;
+  margin-bottom: -1px;
+  border-bottom: 2px solid transparent;
+  color: var(--textPrimary);
+  font-weight: 500;
+  text-decoration: none;
+  white-space: nowrap;
+}
+
+.settings-tabs a:hover {
+  color: var(--textSecondary);
+}
+
+.settings-tabs a.active {
+  color: var(--blue);
+  border-bottom-color: var(--blue);
+}
+
+.settings-tabs a i.material-icons {
+  font-size: 1.25em;
+}
+
+.settings-card {
+  margin: 0 0 1em;
+  padding: 0.9em 1.25em;
+  background: var(--surfacePrimary);
+  border: 1px solid var(--borderSecondary);
+  border-radius: 0.6em;
+  color: var(--textSecondary);
+}
+
+.settings-card > h3,
+.settings-card details > h4,
+.settings-card > h4 {
+  margin: 0 0 0.2em;
+  font-size: 1em;
+  font-weight: 500;
+  color: var(--textSecondary);
+}
+
+.settings-card details > h4,
+.settings-card > h4 {
+  margin-top: 1em;
+}
+
+.setting-help {
+  margin: 0.2em 0 0;
+  font-size: 0.85em;
+  line-height: 1.45;
+  color: var(--textPrimary);
+}
+
+.setting-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1em;
+  padding: 0.7em 0;
+}
+
+.setting-row + .setting-row,
+.setting-row + .perm-grid > .setting-row,
+.perm-grid > .setting-row {
+  border-top: 1px solid var(--divider);
+}
+
+.setting-label {
+  min-width: 0;
+}
+
+.setting-control {
+  flex: 0 0 auto;
+  display: flex;
+  align-items: center;
+  gap: 0.5em;
+}
+
+.setting-control .input {
+  width: 14em;
+  margin: 0;
+}
+
+.setting-control select.input {
+  width: 10em;
+}
+
+/* The number input has no font size of its own (so em is nothing) and a limit of 100%, which
+   would shrink it to nothing in a row's control. */
+.settings .setting-control .vue-number-input {
+  flex: none;
+  width: 9rem;
+  max-width: none;
+}
+
+.setting-value {
+  color: var(--textPrimary);
+  text-align: right;
+  overflow-wrap: anywhere;
+}
+
+/* A switch in place of a checkbox. */
+.switch {
+  position: relative;
+  display: inline-block;
+  flex: none;
+  width: 2.4em;
+  height: 1.4em;
+}
+
+.switch input {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  width: 100%;
+  height: 100%;
+  margin: 0;
+  opacity: 0;
+  cursor: pointer;
+}
+
+.switch span {
+  position: absolute;
+  inset: 0;
+  border-radius: 1em;
+  background: var(--borderSecondary);
+  transition: background 0.15s;
+}
+
+.switch span::before {
+  content: "";
+  position: absolute;
+  top: 0.15em;
+  left: 0.15em;
+  width: 1.1em;
+  height: 1.1em;
+  border-radius: 50%;
+  background: #fff;
+  transition: transform 0.15s;
+}
+
+.switch input:checked + span {
+  background: var(--blue);
+}
+
+.switch input:checked + span::before {
+  transform: translateX(1em);
+}
+
+.switch input:focus-visible + span {
+  outline: 2px solid var(--blue);
+  outline-offset: 2px;
+}
+
+.switch input:disabled {
+  cursor: default;
+}
+
+.switch input:disabled + span {
+  opacity: 0.5;
+}
+
+.segmented {
+  display: inline-flex;
+  border: 1px solid var(--borderSecondary);
+  border-radius: 0.4em;
+  overflow: hidden;
+}
+
+.segmented button {
+  padding: 0.4em 0.9em;
+  border: 0;
+  background: none;
+  color: var(--textPrimary);
+  font: inherit;
+  cursor: pointer;
+}
+
+.segmented button + button {
+  border-left: 1px solid var(--borderSecondary);
+}
+
+.segmented button.active {
+  background: rgba(33, 150, 243, 0.15);
+  color: var(--blue);
+}
+
+/* One save for a page: shown when something changed, it stays at the bottom of the window. */
+.save-bar {
+  position: sticky;
+  bottom: 1em;
+  z-index: 5;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75em;
+  margin: 0 0 1em;
+  padding: 0.5em 0.6em 0.5em 1.1em;
+  background: var(--surfacePrimary);
+  border: 1px solid var(--blue);
+  border-radius: 0.6em;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.25);
+  color: var(--textSecondary);
+}
+
+.save-bar > span:last-child,
+.settings-footer > div {
+  display: flex;
+  gap: 0.5em;
+  flex-wrap: wrap;
+}
+
+.settings .badge {
+  padding: 0.1em 0.6em;
+  border-radius: 1em;
+  background: var(--surfaceSecondary);
+  color: var(--textSecondary);
+  font-size: 0.75em;
+  font-weight: normal;
+  white-space: nowrap;
+}
+
+.settings .badge.admin {
+  background: rgba(33, 150, 243, 0.15);
+  color: var(--blue);
+}
+
+.settings .badge.warn {
+  background: rgba(253, 188, 75, 0.2);
+  color: #8a5a00;
+}
+
+:root.dark .settings .badge.warn {
+  color: var(--icon-yellow);
+}
+
+.avatar {
+  display: flex;
+  flex: none;
+  align-items: center;
+  justify-content: center;
+  width: 2.2em;
+  height: 2.2em;
+  border-radius: 50%;
+  background: rgba(33, 150, 243, 0.15);
+  color: var(--blue);
+  font-weight: 500;
+}
+
+.account-card {
+  display: flex;
+  align-items: center;
+  gap: 0.9em;
+}
+
+.account-card .avatar {
+  width: 2.6em;
+  height: 2.6em;
+  font-size: 1.1em;
+}
+
+.account-card .account-name {
+  font-weight: 500;
+}
+
+.password-fields {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.5em 0.75em;
+  margin: 0.75em 0;
+}
+
+.password-fields .input {
+  margin: 0;
+}
+
+.password-fields .input:first-child {
+  grid-column: 1 / -1;
+  max-width: calc(50% - 0.375em);
+}
+
+.card-buttons {
+  display: flex;
+  justify-content: flex-end;
+}
+
+.settings-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75em;
+  margin: 0 0 0.75em;
+}
+
+.settings .button {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35em;
+  text-decoration: none;
+}
+
+.settings .button i.material-icons {
+  font-size: 1.2em;
+}
+
+.user-list {
+  padding: 0.25em 0.75em;
+}
+
+.user-row {
+  display: flex;
+  align-items: center;
+  gap: 0.75em;
+  padding: 0.7em 0.4em;
+  color: inherit;
+  text-decoration: none;
+}
+
+.user-row + .user-row {
+  border-top: 1px solid var(--divider);
+}
+
+.user-row:hover {
+  background: var(--hover);
+}
+
+.user-main {
+  flex: 1;
+  min-width: 0;
+}
+
+.user-name {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5em;
+}
+
+.user-access {
+  display: block;
+  overflow: hidden;
+  font-size: 0.85em;
+  color: var(--textPrimary);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.perm-icons {
+  display: flex;
+  gap: 0.35em;
+  color: var(--textPrimary);
+}
+
+.perm-icons i.material-icons {
+  font-size: 1.15em;
+}
+
+.perm-icons i.off {
+  opacity: 0.25;
+}
+
+.user-row > i.material-icons:last-child {
+  color: var(--textPrimary);
+}
+
+.perm-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  column-gap: 1.5em;
+}
+
+.scope-choice .option {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.75em;
+  padding: 0.65em 0;
+  cursor: pointer;
+}
+
+.scope-choice .option + .option {
+  border-top: 1px solid var(--divider);
+}
+
+.scope-choice input[type="radio"] {
+  margin: 0.25em 0 0;
+  accent-color: var(--blue);
+}
+
+.scope-choice .option-text {
+  flex: 1;
+  min-width: 0;
+}
+
+.scope-choice .option-path {
+  display: block;
+  font-size: 0.85em;
+  color: var(--textPrimary);
+  overflow-wrap: anywhere;
+}
+
+.settings details > summary {
+  display: flex;
+  align-items: center;
+  gap: 0.3em;
+  padding: 0.2em 0;
+  color: var(--textPrimary);
+  cursor: pointer;
+  list-style: none;
+}
+
+.settings details > summary::-webkit-details-marker {
+  display: none;
+}
+
+.settings details > summary i.material-icons {
+  font-size: 1.2em;
+  transition: transform 0.15s;
+}
+
+.settings details[open] > summary {
+  margin-bottom: 0.4em;
+}
+
+.settings details[open] > summary i.material-icons {
+  transform: rotate(90deg);
+}
+
+.rule-row {
+  display: flex;
+  align-items: center;
+  gap: 0.5em;
+  padding: 0.35em 0;
+}
+
+.rule-row select.input {
+  width: auto;
+  margin: 0;
+}
+
+.rule-row input.input {
+  flex: 1;
+  min-width: 0;
+  margin: 0;
+}
+
+.rules-add {
+  margin-top: 0.5em;
+}
+
+.back-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3em;
+  margin: 0 0 0.75em;
+  color: var(--blue);
+  text-decoration: none;
+}
+
+.settings-footer {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: 0.5em;
+  margin: 0.5em 0 1em;
+}
+
+@media (max-width: 736px) {
+  .settings {
+    padding-top: 0.5em;
+  }
+
+  .settings-card {
+    padding: 0.8em 1em;
+  }
+
+  .setting-row.stack {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 0.5em;
+  }
+
+  .setting-row.stack .setting-control .input {
+    width: 100%;
+  }
+
+  .perm-grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .perm-icons {
+    display: none;
+  }
+
+  .password-fields {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .password-fields .input:first-child {
+    max-width: none;
+  }
+
+  .settings-footer {
+    flex-direction: column-reverse;
+  }
+
+  .settings-footer > div > * {
+    flex: 1;
+    justify-content: center;
+  }
+}
