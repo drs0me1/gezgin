@@ -50,7 +50,7 @@ Commit messages and README's "Changes from File Browser" describe each change.
 
 ## 3. Decisions taken
 
-The next decision number is **K136**. "Recommended" means the operator accepted the recommendation
+The next decision number is **K137**. "Recommended" means the operator accepted the recommendation
 made in the report.
 
 **Stage B (start).** Multi-user with an admin; File Browser's forms stay even where Konsol has its
@@ -398,6 +398,11 @@ so the API (400) and `config set` refuse the same; unset values take the default
   build pulls only from GitHub, signed in. When a base changes: update both the workflow and the
   `Dockerfile`, run the workflow, then push. The package is private, as GitHub makes new ones;
   the image's build reads it through the repository.
+- K136 (operator: the username and the link at the top, to be copied; the window to fit the
+  screen): the share's Info window opens with the link (WebDAV: the address) and a WebDAV
+  share's username, each in a read-only field with a copy button, the field keeping a long value
+  to itself; under a line its name, place, kind, end, password and owner as two columns of short
+  rows. At 360 by 640 pixels it fits without scrolling.
 
 ## 4. Tasks
 

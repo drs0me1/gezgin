@@ -504,7 +504,9 @@
     "count": "{count} paylaşım",
     "removeMany": "{count} paylaşımı kaldır",
     "removeManyConfirm": "{count} paylaşım kaldırılsın mı? Adresleri artık açılmaz.",
-    "removedMany": "{count} paylaşım kaldırıldı"
+    "removedMany": "{count} paylaşım kaldırıldı",
+    "copyUser": "Kullanıcı adını kopyala",
+    "userCopied": "Kullanıcı adı kopyalandı"
   },
   "nav": {
     "back": "Geri ({key})",

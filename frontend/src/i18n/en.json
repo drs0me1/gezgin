@@ -504,7 +504,9 @@
     "count": "{count} share | {count} shares",
     "removeMany": "Remove {count} shares",
     "removeManyConfirm": "Remove {count} shares? Their addresses will no longer open.",
-    "removedMany": "{count} shares removed"
+    "removedMany": "{count} shares removed",
+    "copyUser": "Copy the username",
+    "userCopied": "Username copied"
   },
   "nav": {
     "back": "Back ({key})",
