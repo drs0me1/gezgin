@@ -23,8 +23,10 @@ that run in Go inside Gezgin (K47-K58). The last step, creation (K54-K58), is pu
 and verified live on nrm. On 2026-10-09 a local session fixed its three name checks, reviewed the
 archive work, removed the EPUB reader, self-signup and proxy sign-in (K59-K61), limited transfers
 (K64-K65), and verified it all live on nrm (`45c22b38`); only the real-client trials of 4.1
-remain before heading 7 is closed. Heading 8 has been reviewed and reported (4.3); its proposals
-K66-K75 wait for the operator's decisions.
+remain before heading 7 is closed. Heading 8, "Yönetim ayarları ekranı", was then reviewed, its
+proposals K66-K75 accepted as recommended, implemented (`a71c0a2e`) and deployed on nrm; the
+checks that need no sign-in passed there, and the signed-in live checks wait for the operator
+(4.3).
 
 ## 2. Headings
 
@@ -37,7 +39,7 @@ K66-K75 wait for the operator's decisions.
 | 5 | Yükleme, indirme ve arama | K24-K31 | `36ad2a06` | Done, verified live |
 | 6 | Paylaşım (links and WebDAV) | K32-K44 | `c8da81f8`, `aaf43505`, `403d332e` | Done, verified live |
 | 7 | Komut çalıştırma, and archives in its place | K45-K58 | `116c3549`, `b0bb8b63`, `527111be`, `6d531015`, `601ddbaa` | Last step's follow-ups open (4.1) |
-| 8 | Yönetim ayarları ekranı | K66-K75 proposed | | Reviewed, waits for decisions (4.3) |
+| 8 | Yönetim ayarları ekranı | K66-K75 | `a71c0a2e` | Done, on nrm; signed-in live checks wait (4.3) |
 | 9 | Altyapı, marka ve CSP | | | To do (4.3) |
 | 10 | Konsol'dan alınacaklar | | | To do (4.3); archives already done under 7 |
 
@@ -45,7 +47,7 @@ Commit messages and README's "Changes from File Browser" describe each change.
 
 ## 3. Decisions taken
 
-The next decision number is **K66** (K66-K75 are proposed for heading 8, see 4.3). "Recommended" means the operator accepted the recommendation
+The next decision number is **K76**. "Recommended" means the operator accepted the recommendation
 made in the report.
 
 **Stage B (start).** Multi-user with an admin; File Browser's forms stay even where Konsol has its
@@ -187,6 +189,27 @@ four opening questions only multi-user was answered then: share links were later
 - Konsol's Podman page suggestions (a failed container's last log line, a warning on ports below
   1024 for the Files account) wait until Gezgin's headings are done (4.5).
 
+**8 — Yönetim ayarları ekranı** (all recommended, 2026-10-09). `Settings.Save` checks every value,
+so the API (400) and `config set` refuse the same; unset values take the defaults.
+- K66: the minimum password length is 8-32 and counts letters ("ğ" is one); a password over 72
+  bytes, which bcrypt cannot take, answers 400 (a share link's answered 500).
+- K67: the upload chunk size is 1 MiB-1 GiB (0 made the browser send empty chunks without end; a
+  stored 0 reads back as the default), retries 0-20; the form refuses text it cannot read.
+- K68: Gezgin's folders (`.gezgin-cop`, `-yukleme`, `-arsiv`, `settings.ReservedDirs`) are refused
+  as a user scope, the home base folder and the default scope.
+- K69: the defaults never grant admin (no box), share comes with download, the language, view mode
+  and theme must be known values (`settings.Locales` matches the translation files, by a test).
+- K70: a fixed brand: the instance name, colour, branding folder (custom CSS and images, served
+  without sign-in from any server path) and "disable external links" are removed; the name is
+  Gezgin; error toasts no longer offer "Sorun bildir". Theme and disk bar stay under "Görünüm".
+- K71: `hideLoginButton` is removed; share pages show no login link.
+- K72: the screen in Turkish, rule labels too; known server errors are translated wherever shown
+  (`frontend/src/utils/serverErrors.ts`).
+- K73: the "create user home directory" box stays once unticked and gives the scope back.
+- K74: removed the global `hideDotfiles`, `authHook`, the logout page (`--auth.logoutPage`),
+  `Auther.LoginPage`, `CreateUserHome`, `SaveProvisioned` and `GetByScope`.
+- K75: a saved change to the theme, the disk bar or uploads reloads the page.
+
 ## 4. Tasks
 
 ### 4.1 Close heading 7: archive creation follow-ups (commit `601ddbaa`)
@@ -247,44 +270,23 @@ four opening questions only multi-user was answered then: share links were later
 
 ### 4.3 Next headings
 
-- [ ] **8 — Yönetim ayarları ekranı.** The opening overview proposed: remove the registration
-  settings (decided: K60, in 4.6) and any leftovers of the
-  command settings (gone with K46); branding becomes a fixed Gezgin brand without custom CSS; keep
-  the default user settings, rules, upload settings, the minimum password length and the
-  permission modes.
-  Reviewed 2026-10-09 (`Global.vue`, `UserForm.vue`, `PUT /api/settings`, `config set`), checked on
-  a local build of `2d2438c8`, whose code is that of nrm's `45c22b38`. Verified: a chunk size of 0
-  is stored and the browser then sends empty PATCHes without end (30,756 in 3 s, the upload never
-  ends); the minimum password length takes 1 (WebDAV share passwords follow it) or 100 (then no
-  password can be set: bcrypt's 72-byte limit, an English error), and counts bytes, not letters;
-  users scoped inside `.gezgin-arsiv` or `.gezgin-yukleme` are created (201) and then refused
-  everything (403), the folders being emptied at every start; `userHomeBasePath` and the default
-  scope take them too (only the trash is refused); the defaults take the admin permission, share
-  without download, any language and view mode; `branding.files` takes any server path (`/etc`),
-  whose `img/` and `custom.css` are served without sign-in; any theme string; 14 English texts on
-  the screen and "Regex"/"Allow" in the rules; the "create user home directory" box vanishes once
-  unticked; changes show only after a reload. Dead: the global `Settings.HideDotfiles`,
-  `Server.AuthHook`, `LogoutPage` with `--auth.logoutPage`. Fine: rules are validated (a bad regex
-  gives 400 and nothing is saved), the trash days are bounded, fields not on the form keep their
-  values. Proposals, all recommended:
-  - K66: the minimum password length is 8-32, counted in letters; a password over 72 bytes gets a
-    Turkish 400.
-  - K67: chunk size 1 MiB-1 GiB, retries 0-20 (else 400); the form refuses text it cannot read
-    instead of using 1 MB.
-  - K68: Gezgin's folders (`.gezgin-cop`, `-yukleme`, `-arsiv`) are refused as a user scope, the
-    home base path and the default scope.
-  - K69: the defaults never grant admin (no box), share implies download, language and view mode
-    must be known values.
-  - K70: a fixed Gezgin brand: the instance name, branding folder (custom CSS and images), colour
-    and "disable external links" go; the theme (Sistem/Açık/Koyu) and the disk bar option stay
-    under "Görünüm". The brand itself is heading 9.
-  - K71: `hideLoginButton` goes; share pages never show "Giriş" (quick setup's default).
-  - K72: the screen's texts in Turkish; the upload section without "File Browser"; no upstream
-    documentation link.
-  - K73: the "create user home directory" box stays so it can be ticked again.
-  - K74: remove the dead fields above and 4.6's `CreateUserHome`, `SaveProvisioned`, `GetByScope`;
-    old databases keep working.
-  - K75: after a save that changes the interface (theme, disk bar, chunk size) the page reloads.
+- [x] **8 — Yönetim ayarları ekranı.** Reviewed 2026-10-09 on a local build (the code of nrm's
+  `45c22b38`): a chunk size of 0 made uploads send empty chunks without end (30,756 in 3 s); the
+  password length took 1 or 100; users scoped in `.gezgin-arsiv`/`-yukleme` were created and then
+  refused everything; the defaults took admin; `branding.files` served `img/` and `custom.css`
+  from any server path without sign-in; 14 English texts; dead fields. Decided K66-K75 (section
+  3), implemented in `a71c0a2e`: Go tests (`settings/validate_test.go`, `dir_test.go`,
+  `http/settings_test.go`, `users/password_test.go`) and frontend tests (`size`,
+  `serverErrors`); checked in the browser on a local build (Turkish screen, both chunk size
+  errors, the reload, the home folder box).
+- [ ] **Signed-in live checks of heading 8 on nrm.** `a71c0a2e` runs there and its checks without
+  sign-in pass (title Gezgin, no `custom.css`, the page's settings without the removed ones,
+  `/static/custom.css` 404). The test admin of section 6 could not be added: in auto mode, Claude
+  Code's permission check refuses stopping the container and writing to its database over SSH
+  ("Remote Shell Writes"). Either the operator allows it, or checks it in the browser: Settings →
+  Global: the screen is Turkish, "Görünüm" has the theme and disk bar, the defaults have no
+  "Yönetici" box; a chunk size of `0` or `on MB` is refused with a Turkish message; `20 MB` saves and reloads the page; a new user with scope
+  `/.gezgin-arsiv/x` is refused; then set the chunk size back to 10 MB.
 - [ ] **9 — Altyapı, marka ve CSP.** Proposed: a CSP for the index page; the inline startup
   script moved to a file; Gezgin's name, logo, icons and PWA manifest; remove
   "File Browser (untracked)", the "Sorun bildir" and other upstream links and the "project
@@ -293,7 +295,9 @@ four opening questions only multi-user was answered then: share links were later
   default, the local Material Icons and Roboto fonts; File Browser's own TLS and Unix socket stay
   off (Caddy is in front). Already done: Gezgin's own image on port 8080. Seen since, for this
   heading: listings type `.001`, `.r00`, `.tgz` and similar as plain files and small archives as
-  text; unknown `/api/*` paths answer 200 with `index.html` instead of 404.
+  text; unknown `/api/*` paths answer 200 with `index.html` instead of 404; the settings pages
+  show File Browser's English "being archived" banner. The sidebar shows "Gezgin" with the
+  version, still "(untracked)" in local builds.
 - [ ] **10 — Konsol'dan alınacaklar.** Folder sizes and item counts on folder tiles (Konsol
   DD-247/248) and favourite folders (DD-250). Archive extraction and creation are done (7).
 
@@ -330,8 +334,8 @@ four opening questions only multi-user was answered then: share links were later
   start and says how to switch, as K1 did for `noauth` and `hook`. Checked with a database made by
   the previous build: refused, then `config set --auth.method json` and it serves.
 - [x] K64, K65: the transfer limits (`http/transfers.go`, tests in `transfers_test.go`).
-- [ ] Later cleanup: `settings.CreateUserHome`, `users.Storage.SaveProvisioned` and `GetByScope`
-  served only signup and proxy sign-in and are unused now.
+- [x] Later cleanup: `settings.CreateUserHome`, `users.Storage.SaveProvisioned` and `GetByScope`
+  served only signup and proxy sign-in; removed with K74.
 
 ## 5. How to work
 
@@ -374,6 +378,7 @@ four opening questions only multi-user was answered then: share links were later
 - On nrm, as root, through Konsol's container API on its Unix socket:
 
   ```sh
+  # The Caddyfile names two panel.* hosts; the API answers (200, else 403) to the real one.
   api() { curl -sS --unix-socket /run/master-panel/api.sock -H "Host: panel.<domain>" -H "X-Konsol: 1" "$@"; }
   rev=$(api "http://panel.<domain>/api/konsol/konteynerler/ayrinti?ad=gezgin" |
     python3 -c 'import json,sys; print(json.load(sys.stdin)["revision"])')
@@ -385,7 +390,7 @@ four opening questions only multi-user was answered then: share links were later
   ```
 
 - Gezgin listens on the tailnet on port 8091, its WebDAV shares on 8092; the container's `/srv` is
-  the operator's media folder (`/srv/media` on the host). nrm runs the image of `45c22b38`.
+  the operator's media folder (`/srv/media` on the host). nrm runs the image of `a71c0a2e`.
 - Live checks without the operator's password: read the image id while the container runs
   (`podman inspect --type container gezgin --format '{{.Image}}'`; Konsol's stop removes the
   container), stop `gezgin` through Konsol's API, add a test admin with a random password kept in a
