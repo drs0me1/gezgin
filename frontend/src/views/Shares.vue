@@ -91,6 +91,24 @@
                     <p v-if="folderOf(link)" class="folder">
                       {{ folderOf(link) }}
                     </p>
+                    <p class="share-link">
+                      <a
+                        v-if="link.kind !== 'webdav'"
+                        :href="urlOf(link)"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        >{{ urlOf(link) }}</a
+                      >
+                      <span v-else>{{ urlOf(link) }}</span>
+                      <button
+                        class="copy"
+                        @click="copyLink(link)"
+                        :aria-label="copyLabel(link)"
+                        :title="copyLabel(link)"
+                      >
+                        <i class="material-icons">content_copy</i>
+                      </button>
+                    </p>
                     <p v-if="isAdmin" class="folder owner-inline">
                       {{ t("shares.owner") }}:
                       {{ link.owner ?? authStore.user?.username }}
@@ -126,19 +144,11 @@
               <td class="actions">
                 <button
                   class="action"
-                  @click="copyLink(link)"
-                  :aria-label="t('buttons.copyToClipboard')"
-                  :title="t('buttons.copyToClipboard')"
-                >
-                  <i class="material-icons">content_paste</i>
-                </button>
-                <button
-                  class="action"
                   @click="edit(link)"
                   :aria-label="t('shares.edit')"
                   :title="t('shares.edit')"
                 >
-                  <i class="material-icons">edit</i>
+                  <i class="material-icons">settings</i>
                 </button>
                 <button
                   class="action"
@@ -270,8 +280,14 @@ const load = async () => {
   }
 };
 
+// A link's address opens in the browser; a WebDAV share's is for a WebDAV client, so only shown.
+const urlOf = (link: SharedItem) => api.getShareURL(link);
+
+const copyLabel = (link: SharedItem) =>
+  link.kind === "webdav" ? t("shares.copyAddress") : t("shares.copyLink");
+
 const copyLink = (link: SharedItem) => {
-  const text = api.getShareURL(link);
+  const text = urlOf(link);
   copy({ text }).then(
     () => $showSuccess(t("success.linkCopied")),
     () =>
@@ -378,6 +394,44 @@ onMounted(load);
 
 #shares .name a:hover {
   text-decoration: underline;
+}
+
+#shares .share-link {
+  display: flex;
+  align-items: center;
+  gap: 0.3em;
+  margin: 0.2em 0 0;
+  font-size: 0.85em;
+}
+
+#shares .share-link a,
+#shares .share-link span {
+  color: var(--blue);
+  overflow-wrap: anywhere;
+}
+
+#shares .share-link a:hover {
+  text-decoration: underline;
+}
+
+#shares .share-link button.copy {
+  display: inline-flex;
+  flex-shrink: 0;
+  padding: 0.15em;
+  border: 0;
+  border-radius: 0.2em;
+  background: none;
+  color: var(--textPrimary);
+  cursor: pointer;
+}
+
+#shares .share-link button.copy:hover {
+  background: var(--hover);
+  color: var(--blue);
+}
+
+#shares .share-link button.copy i {
+  font-size: 1.25em;
 }
 
 #shares .name .lock {

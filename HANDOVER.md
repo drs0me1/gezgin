@@ -50,7 +50,7 @@ Commit messages and README's "Changes from File Browser" describe each change.
 
 ## 3. Decisions taken
 
-The next decision number is **K98**. "Recommended" means the operator accepted the recommendation
+The next decision number is **K99**. "Recommended" means the operator accepted the recommendation
 made in the report.
 
 **Stage B (start).** Multi-user with an admin; File Browser's forms stay even where Konsol has its
@@ -281,6 +281,11 @@ so the API (400) and `config set` refuse the same; unset values take the default
   rules, never removed; read-only or read-write, the latter only for an owner who may create,
   change, rename and delete (else 403).
 - K97 (operator): an admin sees and changes every user's shares, others only their own (403).
+- K98 (operator, after seeing the page): each share's address is shown under its item, a link's
+  opening in a new tab, with the copy button beside it (no longer in the row's buttons); copying
+  uses the universal copy icon (`content_copy`) there, in the share dialog and on the public share
+  page, in place of the clipboard (`content_paste`); the edit button is a gear (`settings`),
+  "Paylaşım ayarları", as is its window's title.
 
 ## 4. Tasks
 
@@ -474,6 +479,9 @@ so the API (400) and `config set` refuse the same; unset values take the default
   window opens with nothing changed (end and password kept, read-write off) and was closed
   without saving; `/settings/shares` leads to the page; the settings tabs no longer have
   "Paylaşım yönetimi"; no console error.
+  K98: checked locally at 1280 and 375 pixels (the addresses wrap, no overflow;
+  copying could not be tried there, as the built-in browser denies the clipboard to
+  `127.0.0.1`).
 
 ### 4.4 New decisions to put to the operator
 

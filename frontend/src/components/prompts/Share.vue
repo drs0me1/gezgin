@@ -40,7 +40,7 @@
                 :title="$t('buttons.copyToClipboard')"
                 @click="copyToClipboard(buildLink(link))"
               >
-                <i class="material-icons">content_paste</i>
+                <i class="material-icons">content_copy</i>
               </button>
             </td>
             <td class="small">

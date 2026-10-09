@@ -97,8 +97,8 @@ Work in progress. Until the first Gezgin release this tree is File Browser's las
   replaces Settings → "Paylaşım yönetimi". A fixed list gives each share's item with its icon (it
   opens the item in its place) and folder, a lock when it has a password, its kind ("Bağlantı", or
   "WebDAV" read-only or read-write with its username), its end (amber within a day) and, for an
-  admin, who made it; sorted by name or end. A share's address is copied, its settings changed or
-  the share removed there. A change keeps the address (`PATCH /api/share/<id>`): a new duration
+  admin, who made it; sorted by name or end. Under each item its address, with a copy button
+  (a link's opens in a new tab); the gear changes the share's settings and the bin removes it. A change keeps the address (`PATCH /api/share/<id>`): a new duration
   counted from now (the same units and 10-year limit) or none; a link's password set, replaced or
   removed, a new one ending the downloads begun with the old; a WebDAV share's password replaced
   (it stays required) and the share made read-only or read-write (for an owner who may create,

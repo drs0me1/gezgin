@@ -17,7 +17,7 @@
         :data-title="t('buttons.copyDownloadLinkToClipboard')"
         @click="copyToClipboard(linkSelected())"
       >
-        <i class="material-icons">content_paste</i>
+        <i class="material-icons">content_copy</i>
       </button>
       <action
         icon="check_circle"
