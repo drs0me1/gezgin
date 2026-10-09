@@ -50,7 +50,7 @@ Commit messages and README's "Changes from File Browser" describe each change.
 
 ## 3. Decisions taken
 
-The next decision number is **K99**. "Recommended" means the operator accepted the recommendation
+The next decision number is **K99** (K99-K103 are proposed, see 4.3). "Recommended" means the operator accepted the recommendation
 made in the report.
 
 **Stage B (start).** Multi-user with an admin; File Browser's forms stay even where Konsol has its
@@ -484,6 +484,21 @@ so the API (400) and `config set` refuse the same; unset values take the default
   `127.0.0.1`). Live on nrm (`b715caaa`, the operator's session): `movies` shows its WebDAV
   address under it; the copy button beside it said "Link kopyalandı!"; the row keeps the gear
   and the bin; no console error.
+
+- [ ] **Back, forward, up and home in the header** (operator, 2026-10-09: beside the search bar,
+  arrows that go back and forth as a file manager's do, and a home button; a design first).
+  Today only the browser's own buttons go back, the breadcrumb's house goes home, and nothing
+  goes up a folder. Proposed with a mock-up, waiting: K99, a group of four buttons at the
+  header's left, before the search bar in "Dosyalarım", also on "Sık kullanılanlar",
+  "Paylaşılanlar", "Çöp" and Settings, not in the preview, the editor or the public share page;
+  K100, back and forward move through Gezgin's own history in the tab (folders, opened files,
+  pages), dimmed at either end so they never leave Gezgin, the login page replaced in the
+  history; the browser's buttons, the mouse's side buttons and Alt+←/→ (⌘[ / ⌘] on a Mac) do
+  the same; K101, up opens the parent folder with the folder left selected, dimmed at the top
+  and off folders, Alt+↑ (⌘↑) as in Explorer and Finder; K102, home opens the top of
+  "Dosyalarım", dimmed there, the breadcrumb's house kept; K103, a phone shows back, up and home
+  (the header has 221 of 375 pixels free: three take 129, four 172); tooltips name the keys for
+  the platform, and the help window lists them.
 
 ### 4.4 New decisions to put to the operator
 
