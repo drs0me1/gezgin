@@ -50,7 +50,7 @@ Commit messages and README's "Changes from File Browser" describe each change.
 
 ## 3. Decisions taken
 
-The next decision number is **K110**. "Recommended" means the operator accepted the recommendation
+The next decision number is **K110** (K110-K113 are proposed, see 4.3). "Recommended" means the operator accepted the recommendation
 made in the report.
 
 **Stage B (start).** Multi-user with an admin; File Browser's forms stay even where Konsol has its
@@ -544,7 +544,29 @@ so the API (400) and `config set` refuse the same; unset values take the default
   header's right holding view, upload and multiple selection, eleven outline icons in it; in
   `movies` back, up and home lit; up opened the top with `movies` selected; a right click on the
   empty part gave "İndir" and "Bilgi" with nothing selected (closed unused); no console error.
-  Not yet seen with the eye there: the browser pane was hidden.
+  Seen with the eye there (screenshots, 860 by 640 and the pane's own phone width): the thin
+  icons, the dimmed arrows, the line before the search bar, the phone's back, up and home; a
+  right click on a folder gave its nine actions with the folder-and-arrow "Taşı" and the filled
+  star in the header for a favourite (the menu was closed unused). The header still showed File
+  Browser's floppy-disk logo: the server sent Gezgin's folder, but `/static/img/logo.svg` is
+  cached for a day under the same name, so a browser kept the old one; fixed in `59d2f8ad` (the
+  logo's, favicons' and manifest icons' addresses carry `?v=<version>`), live on nrm, the
+  folder logo shown.
+- [ ] **Search without its menu** (operator, 2026-10-09: a click on the search bar opens a
+  separate menu; type in the visible field and search instead). Today a click turns the bar
+  into a full-page layer with the type boxes (images, music, video, PDF) and the results as a
+  list of paths. Proposed with a mock-up, waiting: K110, a click only puts the cursor in the
+  bar; Enter searches, Esc or × empties it; K111, the results either (A) in a list that drops
+  from the bar, the page left in place, or (B, recommended) in the folder view, as Explorer
+  shows them: tiles or list with icons, sizes and the user's sorting, each a shortcut opening
+  its item in its place (as the favourites, K90), coming in as found with "Aranıyor…" and a
+  stop, a page of its own so that ← returns to the folder (the search already reads each
+  result's details; it would send name, size, time and type with the path); K112, the type
+  boxes become chips above the results ("Tümü", "Görseller", "Müzik", "Video", "PDF"); on a
+  phone the magnifier opens the bar in the header itself, not a page. Found in the screenshots,
+  K113: under about 700 pixels of height the sidebar scrolls and shows a white vertical and a
+  horizontal scrollbar in the dark theme, cutting "Sık kullanılanlar"; proposed: no sideways
+  scroll and a thin scrollbar in the theme's colours.
 
 ### 4.4 New decisions to put to the operator
 
