@@ -137,8 +137,9 @@ Work in progress. Until the first Gezgin release this tree is File Browser's las
   The image listens on 8080 by default and has no `HEALTHCHECK`, which an OCI image drops anyway.
 - Every text of the interface is in Turkish, with "klasör" and "şifre" throughout.
 - Gezgin's own logo, a pale blue folder, in place of File Browser's, with its favicons and app
-  icons; the `branding` folder goes. `filebrowser version` and `--version` print "Gezgin
-  <version>", and the command line help names Gezgin.
+  icons; the `branding` folder goes. The version is the short commit the image was built from
+  ("Gezgin 5074d927" in the sidebar, the log and `filebrowser version`), and the command line
+  help names Gezgin.
 - Command runner and hooks: removed (File Browser kept them off by default as unsafe). There is no
   terminal, `/api/command`, execute permission, per-user command list, `shell` or `commands`
   setting, command on file events or `cmds` command, and Gezgin starts no other program.

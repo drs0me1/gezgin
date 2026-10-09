@@ -27,8 +27,7 @@ remain before heading 7 is closed. Heading 8, "Yönetim ayarları ekranı", was 
 proposals K66-K75 accepted as recommended, implemented (`a71c0a2e`), deployed on nrm and verified
 live there. Heading 9, "Altyapı, marka ve CSP", was then reviewed, decided (K76-K83, the logo after
 two drafts), implemented (`79805244`, `5074d927`) and deployed on nrm; its checks without sign-in
-passed there. Open: the signed-in live checks, the version line of the image workflow, and
-GitHub's private vulnerability reporting (4.3). Next: heading 10.
+passed there. Open: the signed-in live checks and GitHub's private vulnerability reporting (4.3). Next: heading 10.
 
 ## 2. Headings
 
@@ -351,11 +350,10 @@ so the API (400) and `config set` refuse the same; unset values take the default
 - [ ] **Signed-in live checks of heading 9 on nrm**, through the operator's session (section 6):
   the sidebar, archive icons in a listing, no sunset card, a video plays, and no CSP violation in
   the console while browsing.
-- [ ] **The image workflow's version line.** `.github/workflows/gezgin-image.yml` should set
-  `version.Version=$short` instead of `gezgin-$short`, so that the sidebar reads "Gezgin
-  5074d927" rather than "Gezgin gezgin-5074d927". The push was refused: the `gh` token lacks the
-  `workflow` scope. Either the operator runs `gh auth refresh -h github.com -s workflow`, or edits
-  the line in GitHub's web editor, as with K62.
+- [x] **The image workflow's version line.** `.github/workflows/gezgin-image.yml` sets
+  `version.Version=$short`, so that the sidebar reads "Gezgin <commit>" rather than "Gezgin
+  gezgin-<commit>". The first push was refused for want of the `workflow` scope; the operator
+  added it (`gh auth refresh -s workflow`).
 - [ ] **GitHub's private vulnerability reporting**, which `SECURITY.md` points to, is off for the
   repository; turning it on is the operator's call (a repository setting).
 - [ ] **10 — Konsol'dan alınacaklar.** Folder sizes and item counts on folder tiles (Konsol
