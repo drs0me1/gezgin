@@ -414,7 +414,11 @@ so the API (400) and `config set` refuse the same; unset values take the default
   implemented; Go test `TestFavoritesAsAFolderView`; checked in the browser on a local build: the
   page shows folders with "N öğe · size", a PDF, a video and an image with its thumbnail, a
   selected item's tooltip and Info give "Konum: /csp", its MD5 matches the file, the star takes it
-  out, a double click opens the folder in place, and tiles cannot be dragged.
+  out, a double click opens the folder in place, and tiles cannot be dragged. Live on nrm
+  (`c233903f`, the operator's session): a favourite added there shows as a mosaic tile "20 öğe ·
+  1.6 GiB" with "Konum: Dosyalarım" as its tooltip, not draggable, and the star took it out again,
+  leaving the operator's own favourite (`movies`); no CSP violation. The first image build of
+  `c233903f` failed on a passing ghcr.io login error and passed when rerun.
 
 ### 4.4 New decisions to put to the operator
 
@@ -505,7 +509,7 @@ so the API (400) and `config set` refuse the same; unset values take the default
   ```
 
 - Gezgin listens on the tailnet on port 8091, its WebDAV shares on 8092; the container's `/srv` is
-  the operator's media folder (`/srv/media` on the host). nrm runs the image of `030cdb55`.
+  the operator's media folder (`/srv/media` on the host). nrm runs the image of `c233903f`.
 - Live checks through the operator's session: Claude opens `http://nrm:8091/login` in its
   built-in browser, the operator signs in there (Claude does not type a password on a host that
   is not local), and Claude runs the API checks with `fetch` from that page (its token is in
