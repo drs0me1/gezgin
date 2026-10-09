@@ -17,6 +17,7 @@ import (
 	"sort"
 	"strings"
 	"time"
+	"unicode"
 	"unicode/utf8"
 )
 
@@ -219,10 +220,6 @@ func (j *job) walk(p, name string, ancestors []fs.FileInfo) error {
 			}
 		}
 		if name != "" {
-			if strings.Count(name, "/")+1 > maxDepth {
-				j.skip()
-				return nil
-			}
 			if ok, err := j.add(p, name+"/", info); err != nil || !ok {
 				return err
 			}
@@ -254,7 +251,11 @@ func (j *job) walk(p, name string, ancestors []fs.FileInfo) error {
 	case info.Mode().IsRegular():
 		if name == "" {
 			// A file has to have a name.
-			name, _ = archiveName(path.Base(p))
+			var ok bool
+			if name, ok = archiveName(path.Base(p)); !ok {
+				j.skip()
+				return nil
+			}
 		}
 		_, err := j.add(p, name, info)
 		return err
@@ -276,10 +277,11 @@ func (j *job) skip() {
 	j.progress.Skipped++
 }
 
-// add plans an entry, unless its name is taken: two names can become one once made safe.
+// add plans an entry, unless it lies too deep or its name is taken: two names can become one
+// once made safe.
 func (j *job) add(p, name string, info fs.FileInfo) (bool, error) {
 	key := strings.TrimSuffix(name, "/")
-	if j.taken[key] {
+	if strings.Count(key, "/")+1 > maxDepth || j.taken[key] {
 		j.skip()
 		return false, nil
 	}
@@ -335,15 +337,13 @@ func overhead(format Format, name string) int64 {
 
 // archiveName makes a name from the source one an archive can hold, and Gezgin's unpack and
 // Windows take apart the same way: a backslash, which Windows reads as a separator, becomes
-// "_". A name that is not UTF-8, or holds a control character, cannot be held.
+// "_". A name that is not UTF-8, holds a control character or is one Gezgin keeps for itself
+// cannot be held: unpack refuses it.
 func archiveName(name string) (string, bool) {
-	if name == "" || name == "." || name == ".." || len(name) > 255 || !utf8.ValidString(name) {
+	if name == "" || name == "." || name == ".." || len(name) > 255 || !utf8.ValidString(name) ||
+		strings.HasPrefix(name, reservedPrefix) || strings.IndexFunc(name, unicode.IsControl) >= 0 ||
+		strings.Contains(name, "/") {
 		return "", false
-	}
-	for _, r := range name {
-		if r < 0x20 || r == 0x7f || r == '/' {
-			return "", false
-		}
 	}
 	return strings.ReplaceAll(name, `\`, "_"), true
 }

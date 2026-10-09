@@ -20,6 +20,7 @@ import (
 	"syscall"
 	"time"
 	_ "time/tzdata" // the zones browsers name, which the image does not have
+	"unicode"
 	"unicode/utf8"
 
 	"github.com/gorilla/mux"
@@ -724,13 +725,9 @@ func archiveName(name, ext string) (string, bool) {
 		name = strings.TrimSpace(name[:len(name)-len(ext)])
 	}
 	if name == "" || name == "." || name == ".." || len(name) > 200 || !utf8.ValidString(name) ||
-		strings.HasPrefix(name, ".gezgin-") || strings.ContainsAny(name, `/\`) {
+		strings.HasPrefix(name, ".gezgin-") || strings.ContainsAny(name, `/\`) ||
+		strings.IndexFunc(name, unicode.IsControl) >= 0 {
 		return "", false
-	}
-	for _, r := range name {
-		if r < 0x20 || r == 0x7f {
-			return "", false
-		}
 	}
 	return name, true
 }

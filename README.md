@@ -110,8 +110,9 @@ Work in progress. Until the first Gezgin release this tree is File Browser's las
   `<root>/.gezgin-arsiv/`; the archive, or every volume of a set, is put in place only when
   complete, with a number when the name or a volume of a set of that name is taken. What the
   rules refuse, special files, links that lead out of the scope or into Gezgin's folders, a link to
-  a folder it lies in and names an archive cannot hold are left out and counted; names Windows
-  would refuse are counted. A job stops on more than 10,000 files and folders, a file that changes
+  a folder it lies in, and what Gezgin's own extraction would refuse the archive for (a name that
+  is not UTF-8 or holds a control character, a chosen `.gezgin-` item, a file or folder more than
+  64 folders deep) are left out and counted; names Windows would refuse are counted. A job stops on more than 10,000 files and folders, a file that changes
   while it is packed, more than 999 volumes, or when less than 1 GiB would be left free.
 - Command runner and hooks: removed (File Browser kept them off by default as unsafe). There is no
   terminal, `/api/command`, execute permission, per-user command list, `shell` or `commands`

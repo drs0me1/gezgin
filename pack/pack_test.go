@@ -540,6 +540,49 @@ func TestWhatIsLeftOut(t *testing.T) {
 	same(t, zipContents(t, filepath.Join(dir, "d.zip")), "disari.txt=outside")
 }
 
+// TestUnpackTakesItBack leaves out what Gezgin's unpack would refuse the whole archive for: a C1
+// control character, a file deeper than unpack goes, and an item chosen with a name Gezgin keeps
+// for itself.
+func TestUnpackTakesItBack(t *testing.T) {
+	deep := strings.Repeat("d/", maxDepth-1)
+	for _, c := range []struct {
+		name  string
+		tree  []string
+		items []Item
+		want  []string
+	}{
+		{"C1 control", []string{"k/a.txt=a", "k/c1-\u0085.txt=c1"}, []Item{{Path: "k"}}, []string{"a.txt=a"}},
+		{"too deep", []string{"k/" + deep + "son.txt=last", "k/" + deep + "d/derin.txt=deep"}, []Item{{Path: "k"}},
+			[]string{deep + "son.txt=last"}},
+		{"chosen reserved", []string{"k/a.txt=a", "k/.gezgin-1a2b.tmp=half"},
+			[]Item{{Path: "k/.gezgin-1a2b.tmp", Name: ".gezgin-1a2b.tmp"}, {Path: "k/a.txt", Name: "a.txt"}},
+			[]string{"a.txt=a"}},
+	} {
+		t.Run(c.name, func(t *testing.T) {
+			dir, _, p, err := create(t, dirSource{root: tree(t, c.tree...)}, c.items, "k.zip", Options{Format: Zip})
+			if err != nil {
+				t.Fatal(err)
+			}
+			if p.Skipped != 1 {
+				t.Errorf("progress %+v; want 1 skipped", p)
+			}
+			var files []string
+			for name, content := range extract(t, filepath.Join(dir, "k.zip")) {
+				if !strings.HasSuffix(name, "/") {
+					files = append(files, name+"="+content)
+				}
+			}
+			same(t, files, c.want...)
+		})
+	}
+
+	// Chosen alone, Gezgin's file leaves nothing to pack.
+	src := dirSource{root: tree(t, "k/.gezgin-1a2b.tmp=half")}
+	if _, _, _, err := create(t, src, []Item{{Path: "k/.gezgin-1a2b.tmp"}}, "y.zip", Options{Format: Zip}); codeOf(err) != CodeEmpty {
+		t.Errorf("only Gezgin's file: err = %v", err)
+	}
+}
+
 func TestLimits(t *testing.T) {
 	root := tree(t, "k/a.txt=aaaa", "k/b.mkv="+strings.Repeat("b", 4000), "k/c/", "bos/")
 	src := dirSource{root: root}

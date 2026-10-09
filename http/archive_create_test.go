@@ -179,6 +179,7 @@ func TestArchiveCreateRequestsAreChecked(t *testing.T) {
 		`{"kind":"create",` + item + `,"name":"a/b","format":"zip"}`:                      http.StatusBadRequest,
 		`{"kind":"create",` + item + `,"name":"a\\b","format":"zip"}`:                     http.StatusBadRequest,
 		`{"kind":"create",` + item + `,"name":".gezgin-x","format":"zip"}`:                http.StatusBadRequest,
+		`{"kind":"create",` + item + `,"name":"a\u0085b","format":"zip"}`:                 http.StatusBadRequest,
 		`{"kind":"create",` + item + `,"name":"a","format":"zip","volume":1000}`:          http.StatusBadRequest,
 		`{"kind":"create","items":["/medya/a.txt","/b/b.txt"],"name":"a","format":"zip"}`: http.StatusBadRequest,
 		`{"kind":"create","items":["/"],"name":"a","format":"zip"}`:                       http.StatusBadRequest,
