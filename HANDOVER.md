@@ -609,7 +609,12 @@ so the API (400) and `config set` refuse the same; unset values take the default
   the query kept; at 375 pixels the magnifier opened the bar over the header and "tur" gave the
   folder with its marks; at 860 by 600 the sidebar had a thin dark scrollbar, no sideways one,
   and "Sık kullanılanlar" whole. Found on the way: coming from a page that is not a folder's,
-  `Files.vue` skipped the preselection; it no longer needs the previous listing for it.
+  `Files.vue` skipped the preselection; it no longer needs the previous listing for it. Live on
+  nrm (`091112f5`, the operator's session after they signed in again, looking only): the top of
+  "Dosyalarım" showed the star beside `Acronis…` and the star and the purple sign beside
+  `movies`; `/api/search/?query=movies` answered `movies` with `favorite` and one WebDAV share,
+  its time and `isDir`. The results page itself was not opened there: the operator was using
+  the pane.
 
 ### 4.4 New decisions to put to the operator
 
