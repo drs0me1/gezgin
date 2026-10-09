@@ -50,7 +50,7 @@ Commit messages and README's "Changes from File Browser" describe each change.
 
 ## 3. Decisions taken
 
-The next decision number is **K110** (K110-K113 are proposed, see 4.3). "Recommended" means the operator accepted the recommendation
+The next decision number is **K110** (K110-K116 are proposed, see 4.3). "Recommended" means the operator accepted the recommendation
 made in the report.
 
 **Stage B (start).** Multi-user with an admin; File Browser's forms stay even where Konsol has its
@@ -567,6 +567,16 @@ so the API (400) and `config set` refuse the same; unset values take the default
   K113: under about 700 pixels of height the sidebar scrolls and shows a white vertical and a
   horizontal scrollbar in the dark theme, cutting "Sık kullanılanlar"; proposed: no sideways
   scroll and a thin scrollbar in the theme's colours.
+- [ ] **Marks for shared and favourite items** (operator, 2026-10-09: mark the shared and the
+  favourite files and folders; the shared in the purple of sharing, the favourites with a star
+  beside the name). Proposed with a mock-up, waiting: K114, a small yellow star right after the
+  name of a favourite, in the folder view (tiles and list) and the search results, not on the
+  favourites page, where all are; K115, a small purple share sign after the name of an item with
+  a share in force (its tooltip: "Paylaşıldı", how many links and WebDAV shares), a user's own
+  shares and an admin's everyone's, as on the shares page (K97); the item's own icon keeps its
+  colour, as videos are already that purple (`--icon-violet`); K116, the server marks each
+  listed item (`favorite`, `shares`) as it lists, so the marks follow renames, moves, deletes
+  and expiries without another request.
 
 ### 4.4 New decisions to put to the operator
 
