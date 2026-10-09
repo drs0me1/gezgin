@@ -402,7 +402,9 @@ so the API (400) and `config set` refuse the same; unset values take the default
   screen): the share's Info window opens with the link (WebDAV: the address) and a WebDAV
   share's username, each in a read-only field with a copy button, the field keeping a long value
   to itself; under a line its name, place, kind, end, password and owner as two columns of short
-  rows. At 360 by 640 pixels it fits without scrolling.
+  rows. At 360 by 640 pixels it fits without scrolling. Live on nrm (`42301c19`, the operator's
+  session in a tab of its own, looking only): `movies`'s window opened with "Adres" and
+  "Kullanıcı adı" (`test`), each with its copy button, then the six rows; closed unused.
 
 ## 4. Tasks
 
