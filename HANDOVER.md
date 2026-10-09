@@ -209,9 +209,11 @@ four opening questions only multi-user was answered then: share links were later
   a C1 name left out of an archive that Gezgin then opens, 10,001 entries refused (422) and an
   eleventh download at the same time refused (429), free again once the others ended.
 - [x] On nrm, delete the test folder `/k54-deneme` permanently (it held a sparse 4.7 GB file).
-- [ ] Try real clients: Windows 11 Explorer (a ZIP with Turkish names; times in local time), macOS
-  Archive Utility, 7-Zip on Windows with a `.zip.001` set, an entry over 4 GiB on Windows, and a
-  downloaded (streamed) ZIP in a reader that reads front to back (see 4.2's first note).
+- [ ] Try real clients: Windows 11 Explorer (a ZIP with Turkish names; times in local time), 7-Zip
+  on Windows with a `.zip.001` set, an entry over 4 GiB on Windows, and a downloaded (streamed) ZIP
+  in a reader that reads front to back (see 4.2's first note). macOS is done (2026-10-09): ditto,
+  Archive Utility's engine, on macOS 27 opened a created and a streamed ZIP with Turkish names, an
+  empty folder, the exec bit and the files' times intact.
 - [ ] Report heading 7 as closed to the operator.
 
 ### 4.2 Reviews
@@ -267,8 +269,8 @@ four opening questions only multi-user was answered then: share links were later
 - [x] Self-signup: removed (K60). Implementation: 4.6.
 - [x] `proxy` sign-in: removed (K61). Implementation: 4.6.
 - [x] Downloads had no entry limit and planned every entry in memory first: K64 and K65.
-- [ ] CI runs on `main` (K62): the one-line change waits for a GitHub token with the `workflow`
-  scope; until then a push runs only the image build.
+- [x] CI runs on `main` (K62; changed in GitHub's web editor, `5fc96856`). Its first run on `main`
+  passed every job, the race tests on Linux included.
 - [x] The old `filebrowser` test container: removed from nrm (K63).
 - [x] Konsol's Podman page suggestions: later (4.5).
 
