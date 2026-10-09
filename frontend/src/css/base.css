@@ -143,13 +143,32 @@ main {
   width: calc(100% - 19em);
 }
 
-.breadcrumbs {
+.breadcrumbs,
+.page-bar {
   height: 3em;
   background: var(--background);
   border-bottom: 1px solid var(--divider);
   position: sticky;
   z-index: 1000;
   top: 4em;
+}
+
+/* The line under the header of the favourites, shares, trash and search pages (Gezgin, K137): a
+   count or a status on the left, the view and "Seç" on the right; like the folder's path row it
+   stays in place as the page scrolls and keeps its height in every view. */
+.page-bar {
+  display: flex;
+  align-items: center;
+  gap: 0.75em;
+  color: var(--textPrimary);
+}
+
+.page-bar .page-bar-text {
+  flex: 1 1 auto;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .breadcrumbs span,

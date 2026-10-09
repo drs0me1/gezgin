@@ -63,8 +63,9 @@
       <span>{{ t("trash.nothing") }}</span>
     </h2>
     <template v-else>
-      <div id="trash-bar">
-        <span class="small">
+      <!-- The page's line: the count and size, the view and "Seç" (Gezgin, K137). -->
+      <div class="page-bar">
+        <span class="page-bar-text">
           {{ t("trash.summary", { count: summary.count }) }} ·
           {{ filesize(summary.size) }}
         </span>
@@ -421,17 +422,5 @@ onBeforeUnmount(() => {
 <style scoped>
 #listing {
   min-height: calc(100vh - 11rem);
-}
-
-#trash-bar {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: 0.5em;
-  margin: 0 0 0.5em;
-}
-
-#trash-bar .small {
-  flex: 1;
 }
 </style>

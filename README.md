@@ -202,8 +202,8 @@ Work in progress. Until the first Gezgin release this tree is File Browser's las
   items "Tümünü geri yükle" and "Tümünü sil", each asking first in a window (red for what cannot
   be undone); the bar above the items keeps only the count and size. A phone has them in its ⋮
   menu.
-- View and selection: the view button and "Seç" sit at the right of the path row (of the top line
-  on the favourites, trash and search pages). The view button shows the view it goes to (tiles,
+- View and selection: the view button and "Seç" sit at the right of the path row, or of the same
+  fixed line on the favourites, shares, trash and search pages. The view button shows the view it goes to (tiles,
   large tiles, list); "Seç" puts a tick circle on every item, a click then ticking it without
   opening it, and turns into "Bitti", which, like Esc or another folder, ends it. The menus say
   "Favorilere ekle", "Kopyala" and "Taşı", rename shows a text box with a cursor and "Arşiv

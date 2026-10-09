@@ -56,11 +56,15 @@
       />
     </div>
 
-    <p class="search-status" role="status">
-      <span>
+    <!-- The page's line: the search's status, the view and "Seç" (Gezgin, K137). -->
+    <div class="page-bar search-status" role="status">
+      <span class="page-bar-text">
         {{ t("search.results", { query }) }} ·
         {{ t("search.in", { folder: folderName }) }} ·
         {{ t("search.count", { count: items.length }, items.length) }}
+        <template v-if="!ongoing && capped">
+          · {{ t("search.capped", { max: MAX_RESULTS }) }}
+        </template>
       </span>
       <template v-if="ongoing">
         <span class="searching">{{ t("search.searching") }}</span>
@@ -68,11 +72,8 @@
           {{ t("search.stop") }}
         </button>
       </template>
-      <span v-else-if="capped" class="capped">
-        {{ t("search.capped", { max: MAX_RESULTS }) }}
-      </span>
       <listing-tools />
-    </p>
+    </div>
 
     <errors v-if="error" :errorCode="error.status" />
     <h2 class="message" v-else-if="!ongoing && items.length === 0">
@@ -482,16 +483,6 @@ onBeforeUnmount(() => {
 </script>
 
 <style scoped>
-.search-status {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: 0.5em 1em;
-  margin: 0.5em 0.5em 1em;
-  color: var(--textPrimary);
-  font-size: 0.95em;
-}
-
 .search-status .searching {
   color: var(--blue);
 }

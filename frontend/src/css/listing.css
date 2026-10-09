@@ -365,19 +365,6 @@ html[dir="rtl"] #listing {
   color: var(--textSecondary);
 }
 
-.listing-bar {
-  display: flex;
-  align-items: center;
-  gap: 0.5em;
-  margin: 0 0 0.5em;
-}
-
-.listing-bar .small {
-  flex: 1;
-  color: var(--textPrimary);
-  font-size: 0.9em;
-}
-
 /* The shares page's lines (Gezgin, K130): the end amber within a day, red when past; the owner a
    column of the list, beside the kind on a tile. */
 #listing .item .modified.soon {

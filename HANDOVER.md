@@ -50,7 +50,7 @@ Commit messages and README's "Changes from File Browser" describe each change.
 
 ## 3. Decisions taken
 
-The next decision number is **K137**. "Recommended" means the operator accepted the recommendation
+The next decision number is **K138**. "Recommended" means the operator accepted the recommendation
 made in the report.
 
 **Stage B (start).** Multi-user with an admin; File Browser's forms stay even where Konsol has its
@@ -405,6 +405,12 @@ so the API (400) and `config set` refuse the same; unset values take the default
   rows. At 360 by 640 pixels it fits without scrolling. Live on nrm (`42301c19`, the operator's
   session in a tab of its own, looking only): `movies`'s window opened with "Adres" and
   "Kullanıcı adı" (`test`), each with its copy button, then the six rows; closed unused.
+- K137 (operator: on the shares page the line with the view button moved and changed size with
+  the view; to stay fixed on every page): the favourites, shares, trash and search pages put
+  their count or status, the view button and "Seç" in a `.page-bar` above the listing, under the
+  rules of the folder's path row: 3em high, a line under it, sticky under the header. Before,
+  the line was inside the listing, whose layout differs by view. Measured on a local build: on
+  all five pages, in the three views and scrolled, it stays at 64 pixels from the top, 48 high.
 
 ## 4. Tasks
 

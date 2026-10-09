@@ -44,12 +44,19 @@
       </h2>
     </div>
     <errors v-else-if="error" :errorCode="error.status" />
-    <h2 class="message" v-else-if="items.length === 0">
+    <!-- The page's line: the count, the view and "Seç", fixed as the folder's path is (K137). -->
+    <div v-if="!loading && !error" class="page-bar">
+      <span class="page-bar-text">
+        {{ t("shares.count", { count: items.length }, items.length) }}
+      </span>
+      <listing-tools v-if="items.length > 0" />
+    </div>
+    <h2 class="message" v-if="!loading && !error && items.length === 0">
       <i class="material-icons">share</i>
       <span>{{ t("shares.nothing") }}</span>
     </h2>
     <div
-      v-else
+      v-else-if="!loading && !error"
       id="listing"
       class="file-icons"
       data-clear-on-click="true"
@@ -61,13 +68,6 @@
       @click="handleEmptyAreaClick"
       @contextmenu="showContextMenu"
     >
-      <!-- A top line: the count, the view and "Seç" (Gezgin, K130). -->
-      <div class="listing-bar" data-clear-on-click="true">
-        <span class="small">
-          {{ t("shares.count", { count: items.length }, items.length) }}
-        </span>
-        <listing-tools />
-      </div>
       <div>
         <div class="item header">
           <div>

@@ -62,12 +62,19 @@
       </h2>
     </div>
     <errors v-else-if="error" :errorCode="error.status" />
-    <h2 class="message" v-else-if="items.length === 0">
+    <!-- The page's line: the count, the view and "Seç", fixed as the folder's path is (K137). -->
+    <div v-if="!loading && !error" class="page-bar">
+      <span class="page-bar-text">
+        {{ t("files.itemCount", { count: items.length }) }}
+      </span>
+      <listing-tools v-if="items.length > 0" />
+    </div>
+    <h2 class="message" v-if="!loading && !error && items.length === 0">
       <i class="material-icons">star_border</i>
       <span>{{ t("favorites.nothing") }}</span>
     </h2>
     <div
-      v-else
+      v-else-if="!loading && !error"
       id="listing"
       class="file-icons"
       data-clear-on-click="true"
@@ -75,13 +82,6 @@
       @click="handleEmptyAreaClick"
       @contextmenu="showContextMenu"
     >
-      <!-- A top line: the count, the view and "Seç" (Gezgin, K125, K129). -->
-      <div class="listing-bar" data-clear-on-click="true">
-        <span class="small">
-          {{ t("files.itemCount", { count: items.length }) }}
-        </span>
-        <listing-tools />
-      </div>
       <div>
         <div class="item header">
           <div>
