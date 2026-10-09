@@ -70,3 +70,22 @@ export function shareUpdate(link: Share, form: ShareForm): ShareUpdate {
   }
   return body;
 }
+
+// A WebDAV share's password made by "Oluştur" (Gezgin, K161): three groups of four, from letters
+// and digits that cannot be read one for another (no 0, O, 1, l, I), about 70 bits.
+const passwordAlphabet =
+  "abcdefghijkmnopqrstuvwxyzABCDEFGHJKLMNPQRSTUVWXYZ23456789";
+
+export function generatePassword(): string {
+  const groups: string[] = [];
+  const bytes = new Uint32Array(12);
+  crypto.getRandomValues(bytes);
+  for (let g = 0; g < 3; g++) {
+    let group = "";
+    for (let i = 0; i < 4; i++) {
+      group += passwordAlphabet[bytes[g * 4 + i] % passwordAlphabet.length];
+    }
+    groups.push(group);
+  }
+  return groups.join("-");
+}

@@ -11,8 +11,7 @@
     "src/components/prompts/Move.vue",
     "src/components/prompts/Delete.vue",
     "src/components/prompts/FileList.vue",
-    "src/components/prompts/Rename.vue",
-    "src/components/prompts/Share.vue"
+    "src/components/prompts/Rename.vue"
   ],
   "compilerOptions": {
     "composite": true,

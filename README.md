@@ -109,6 +109,13 @@ Work in progress. Until the first Gezgin release this tree is File Browser's las
   and a move takes the share links along. The owner's permissions and rules hold, Gezgin's own
   files are not shown, and a symbolic link does not lead out of the shared folder. The share
   dialog offers it for folders when the port is set; it lasts 7 days unless told otherwise.
+- Share dialog: it names the item and lists its shares by kind, access, password and end, each
+  with "Kopyala" and a menu for its settings, its information, the download link or WebDAV
+  username, and its removal, which asks first. A new share is made in the same window: a link or
+  WebDAV, the end as 1, 7 or 30 days, none, or a custom number of minutes, hours or days, a
+  link's optional password, a WebDAV share's username and password, which "Oluştur" makes, and
+  its access. Once made, its address (and a WebDAV share's username and password) is shown at
+  once, to be copied.
 - Shares page: "Paylaşılanlar", after "Favoriler" in the sidebar for users who may share,
   replaces Settings → "Paylaşım yönetimi". It is a folder view like the others (tiles or list,
   the view button and "Seç"), one tile per share: its item's icon, a lock when it has a password,

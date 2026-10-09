@@ -50,7 +50,7 @@ Commit messages and README's "Changes from File Browser" describe each change.
 
 ## 3. Decisions taken
 
-The next decision number is **K158**. "Recommended" means the operator accepted the recommendation
+The next decision number is **K166**. "Recommended" means the operator accepted the recommendation
 made in the report.
 
 **Stage B (start).** Multi-user with an admin; File Browser's forms stay even where Konsol has its
@@ -504,6 +504,42 @@ uygulayabiliriz beğendim"):
   listings' format and the interface's language. The setting changes the date line of the
   folder views (list column, the tiles' second line; in the trash the deletion time); the
   gallery has no date line, and the shares, the Info window and the share pages keep theirs.
+
+**The share dialog** (operator, 2026-10-10: to be designed again; a mock-up, then "tasarım
+mantıklı uygula", all as recommended). Before, it named nothing, listed the shares by their
+16-character id in a cramped table run into their end, had icons only (the download link grey
+without a word), removed a share without asking, took the end as a number and a unit down to
+seconds with "0 for none", and left the new address to be copied from the list.
+
+- K158: the dialog names the item: its icon, "<ad> paylaş", "Klasör" or "Dosya" and its place.
+- K159: the item's shares as rows: the kind ("Bağlantı", or "WebDAV" with its access), a lock for
+  a password, the end (amber within a day, red when over) and "Kopyala" (the link, or the WebDAV
+  address); a "⋮" menu with "Paylaşım ayarları" (`share-edit`), "Paylaşım bilgisi"
+  (`share-info`), "İndirme bağlantısını kopyala" (links without a password) or "Kullanıcı adını
+  kopyala" (WebDAV), and "Paylaşımı kaldır", which asks first (K131). The id is not shown. The
+  windows it opens lie over it and give it back when closed.
+- K160: a new share in the same window: "Bağlantı" or "WebDAV" (folders, when the port is on)
+  with a line on what each is for; the end as "1 gün", "7 gün" (the default), "30 gün",
+  "Süresiz" or "Özel" (minutes, hours or days; no seconds). With no share yet it opens at once;
+  removing the last one brings it back.
+- K161: a link's password behind "Şifre koy", shown or hidden; a WebDAV share's username from the
+  folder's name and its password, made when WebDAV is chosen and again with "Oluştur": three
+  groups of four letters and digits that cannot be read one for another (`generatePassword`).
+- K162: WebDAV access as "Salt okunur" or "Okuma-yazma" (only for a user who may create, change,
+  rename and delete), with the warning under the latter.
+- K163: once made, "Bağlantı hazır" (or "WebDAV paylaşımı hazır") with the address in a field to
+  be copied; for WebDAV also the username and the password, shown only there; then the end and
+  password state, and "Paylaşımlara dön" or "Tamam".
+- K164: the dialog is 30em wide at most; a phone gives it its width.
+- K165: no QR code for now (later if wanted).
+
+Checked on the Mac: `Belgeler` with a 7-day link; its menu (settings and information opened over
+the dialog and gave it back); a new WebDAV share, read-write and permanent, its address
+`http://127.0.0.1:8092/<id>/` answering PROPFIND 207 with the shown username and password (401
+with a wrong one); the share removed after the question; the last link removed, the form back; a
+1-day link with a password, "bir gün sonra bitiyor · şifreli", its public API 401 without the
+password and 200 with it; at 375 pixels the list (the 1-day end amber) and the WebDAV form; the
+test shares removed.
 
 ## 4. Tasks
 

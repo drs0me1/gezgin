@@ -1,6 +1,12 @@
 import { describe, expect, it } from "vitest";
 import type { SharedItem } from "@/api/share";
-import { shareEnd, shareUpdate, sortShares, type ShareForm } from "../shares";
+import {
+  generatePassword,
+  shareEnd,
+  shareUpdate,
+  sortShares,
+  type ShareForm,
+} from "../shares";
 
 const now = 1_800_000_000;
 const DAY = 24 * 60 * 60;
@@ -124,5 +130,19 @@ describe("shareUpdate", () => {
       writable: false,
     });
     expect(shareUpdate(link, { ...keep, writable: true })).toEqual({});
+  });
+});
+
+describe("generatePassword", () => {
+  it("makes three groups of four unambiguous characters, each time new", () => {
+    const seen = new Set<string>();
+    for (let i = 0; i < 50; i++) {
+      const password = generatePassword();
+      expect(password).toMatch(
+        /^[a-km-zA-HJ-NP-Z2-9]{4}-[a-km-zA-HJ-NP-Z2-9]{4}-[a-km-zA-HJ-NP-Z2-9]{4}$/
+      );
+      seen.add(password);
+    }
+    expect(seen.size).toBe(50);
   });
 });
