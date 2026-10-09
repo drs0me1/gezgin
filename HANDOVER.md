@@ -199,17 +199,29 @@ four opening questions only multi-user was answered then: share links were later
   These three are done together, with `pack`'s `TestUnpackTakesItBack`, which opens each case
   with `unpack`. A file chosen alone whose name cannot be held is now skipped too, instead of
   going in unnamed.
-- [ ] Code review of the archive work (4.2), then fix what it confirms.
+- [x] Code review of the archive work (4.2), then fix what it confirms.
 - [ ] Redeploy to nrm and repeat the live checks (section 7).
 - [ ] On nrm, delete the test folder `/k54-deneme` permanently (it holds a sparse 4.7 GB file).
 - [ ] Try real clients: Windows 11 Explorer (a ZIP with Turkish names; times in local time), macOS
-  Archive Utility, 7-Zip on Windows with a `.zip.001` set, an entry over 4 GiB on Windows.
+  Archive Utility, 7-Zip on Windows with a `.zip.001` set, an entry over 4 GiB on Windows, and a
+  downloaded (streamed) ZIP in a reader that reads front to back (see 4.2's first note).
 - [ ] Report heading 7 as closed to the operator.
 
 ### 4.2 Reviews
 
-- [ ] **Archive work, `git diff 6d531015 601ddbaa`.** A review was started in the cloud session
-  and stopped before it reported. Dimensions:
+- [x] **Archive work, `git diff 6d531015 601ddbaa`.** A review was started in the cloud session
+  and stopped before it reported; done 2026-10-09 in the local session, inline. No defect in the
+  ZIP fields, offsets, ZIP64 fields, end records, descriptors, patching across volumes and limits,
+  in packing safety (links, reserved paths, loops, special files, `os.SameFile` at copy time), in
+  the jobs, numbering, rollback and UI, or in unpack's volume sets, joined reader and K53 logic.
+  Fixed: a folder download that failed under way ended as a whole response with the error text
+  appended (now the connection breaks, so the browser shows a failed download), and one that
+  failed before anything was sent came as an attachment holding the error (now an error answer).
+  Noted, not changed: (1) a streamed ZIP's stored entries carry data descriptors, as Go's own
+  writer does; readers that skip the central directory (Java's `ZipInputStream`) refuse them;
+  (2) a crash while a set's volumes are moved into place can leave part of the set; (3) the
+  archive dialog shows a generic error for a name the server (400) or the rules (403) refuse.
+  Dimensions:
   - ZIP/tar/volume writers (`pack/zip.go`, `tar.go`, `output.go`): APPNOTE fields and offsets,
     ZIP64 extras (local: both sizes; central: only the fields that are 0xFFFFFFFF), end records,
     stream-mode data descriptors, patching across volumes, byte and volume limits;
