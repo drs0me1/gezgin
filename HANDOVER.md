@@ -13,7 +13,7 @@ operator.
 |---|---|---|
 | A | Konsol's Files module (myserver repository, before Gezgin): folder tiles with item count and size (DD-247), folder sizes in "Sistem (/)" (DD-248), a CodeMirror text editor (DD-249), favourite folders (DD-250), container logs unfiltered (DD-251); v2-229 to v2-234 | Done, myserver `main` (`6845d51`) |
 | B | Gezgin is started: File Browser v2.63.23 (archived upstream) forked into `drs0me1/gezgin`, named Gezgin, run as a Podman container, multi-user with an admin account, keeping its interface, login screen and forms. Konsol's Files module stays as it is; its features come over where they help. Each heading is reviewed with its endpoints and decided as we go | Done (`6f9fdfec`) |
-| C | Image and deployment: GHCR workflow (`1e5d96ee`); container `gezgin` on the test host nrm, made through Konsol's container API (tailnet port 8091 to 8080, volumes `gezgin-db` and `gezgin-config`, the media folder bound to `/srv`); later the WebDAV port 8092 | Done |
+| C | Image and deployment: GHCR workflow (`1e5d96ee`); container `gezgin` on the test host nrm, made through Konsol's container API (tailnet port 8091 to 8080, volumes `gezgin-db` and `gezgin-config`, the media folder bound to `/srv`); later the WebDAV port 8092; since K138-K141 a test environment on the operator's MacBook (`scripts/test-env.sh`) | Done |
 | D | Heading-by-heading review: report the endpoints and verified problems, propose numbered decisions (K1, K2, ...), the operator decides, then implement, test, push, update nrm and verify live | **Current stage.** Headings 1-7 done; heading 7 waits only for the real-client trials (4.1); headings 8-10 left |
 | E | Later work ("ileride"), outside the headings | Listed in section 4.5 |
 
@@ -50,7 +50,7 @@ Commit messages and README's "Changes from File Browser" describe each change.
 
 ## 3. Decisions taken
 
-The next decision number is **K138**. "Recommended" means the operator accepted the recommendation
+The next decision number is **K142**. "Recommended" means the operator accepted the recommendation
 made in the report.
 
 **Stage B (start).** Multi-user with an admin; File Browser's forms stay even where Konsol has its
@@ -396,8 +396,8 @@ so the API (400) and `config set` refuse the same; unset values take the default
   mirror of Docker's official images (`public.ecr.aws/docker/library`, the same digests), and
   the `Dockerfile` pins the copies by the official digests (`85fe1e81…`, `5cec3fc1…`). The
   build pulls only from GitHub, signed in. When a base changes: update both the workflow and the
-  `Dockerfile`, run the workflow, then push. The package is private, as GitHub makes new ones;
-  the image's build reads it through the repository. The build's own builder came from Docker
+  `Dockerfile`, run the workflow, then push. The package is public: anyone pulls it without
+  signing in, the Mac's test builds too (K139). The build's own builder came from Docker
   Hub as well (`docker/setup-buildx-action` pulls `moby/buildkit`; its timeout failed the image
   of `4eaecfe1`): the workflow now uses the runner's Docker daemon as the builder
   (`driver: docker`), which needs no pull and builds the one amd64 image the same.
@@ -419,6 +419,29 @@ so the API (400) and `config set` refuse the same; unset values take the default
   and folder pages; the operator's trash was empty and showed no line, now fixed as well
   (live on nrm, `d35364b7`: the empty trash shows "0 öğe · 0 B" at 64 and 48, without the view
   and "Seç"; the folder, favourites and shares pages the same, with them).
+- K138 (operator: the test packaging and running to be on the MacBook, pushed and pulled to the
+  server at the end; all four recommended): Podman on the Mac (Homebrew's `podman`, 6.1.3), the
+  tool that runs Gezgin on nrm, in its virtual machine `podman-machine-default` (Apple's
+  hypervisor, 4 CPUs, 4 GB, 40 GB, rootless), which runs only while we test; its system image
+  comes from quay.io, not Docker Hub. Not OrbStack (paid for commercial use), Docker Desktop
+  (heavy, a licence) or Apple's `container` (new, unlike the server).
+- K139: the test image is packaged as the image workflow does, the frontend, a Linux binary, the
+  same `Dockerfile` and bases, but for the Mac's processor (arm64), which is fast; nrm's amd64
+  image is still built by GitHub after a push. Its version is the commit, with `-yerel` while
+  changes are not committed (`1a6dc1d1-yerel`).
+- K140: the test container runs as nrm's: `gezgin`, `127.0.0.1:8091` to 8080, WebDAV shares on
+  `127.0.0.1:8092` (`FB_WEBDAV_PORT=8092`), the volumes `gezgin-db` and `gezgin-config`, and
+  `~/GezginTest/dosyalar` as `/srv`, with a few samples the first time; only the Mac reaches it.
+  The first start makes `admin` with a random password kept in `~/GezginTest/admin-sifre.txt`,
+  which only the Mac's user reads and Gezgin does not serve; Claude signs in with it for its
+  checks. One script does it all, `scripts/test-env.sh` (section 6).
+- K141: each change is packaged and run on the Mac and checked there, by Claude in its built-in
+  browser and by the operator at the same address; commits stay local until the operator says to
+  push ("push et"); then one push, GitHub builds the image, Konsol updates nrm and a last check
+  runs live. Fewer builds, mails and updates of nrm. Set up on 2026-10-10: the first image
+  (`1a6dc1d1-yerel`) packaged in 17 seconds and started; signed in as `admin`, the samples
+  listed, a folder and a file made through the API showed on the Mac as the Mac user's, and a
+  thumbnail was served.
 
 ## 4. Tasks
 
@@ -825,10 +848,12 @@ so the API (400) and `config set` refuse the same; unset values take the default
   was opened in, so Gezgin's memory stays under its own project, `gezgin`. The first local session
   ran in debian-server-installer's folder; its memory was moved with
   `claude-mem project merge debian-server-installer gezgin`.
-- Commit and push to `main` unless the operator says otherwise.
+- Commit to `main` locally as the work goes; push only when the operator says so ("push et",
+  K141).
 - Per heading: review (4.2), report in Turkish with numbered decisions and a recommendation,
-  implement once the operator decides, test, commit, push, wait for the image, update nrm, verify
-  live, report what was run.
+  implement once the operator decides, test, package and run it on the Mac
+  (`scripts/test-env.sh build start`) and check it there, commit; when the operator says to push:
+  push, wait for the image, update nrm, verify live, report what was run.
 - nrm is a disposable test host: data loss is acceptable, make no server-side backups, test with
   the main `gezgin` container. Its admin password is the operator's test password, not written
   here. The repository is public: no host addresses, credentials or personal paths in it.
@@ -849,7 +874,25 @@ so the API (400) and `config set` refuse the same; unset values take the default
 - The tests last ran on Linux. On macOS, APFS ignores letter case and refuses names that are not
   UTF-8; pack's tests allow for both, other packages' tests may not.
 - Gezgin has no Playwright setup (upstream removed it); browser checks were ad-hoc Playwright
-  scripts run against a local `go build` of Gezgin or, through a port forward, against nrm.
+  scripts run against a local `go build` of Gezgin or, through a port forward, against nrm. Since
+  K141 they run in Claude's built-in browser against the Mac's test environment, and on nrm
+  after a push.
+
+### Test environment on the Mac (K138-K141)
+
+- `scripts/test-env.sh build start` packages the working tree (the frontend, a Linux binary for
+  the Mac's processor, the image `localhost/gezgin:test` from the `Dockerfile`) and makes the
+  container `gezgin` anew from it, in about 20 seconds when the caches are warm:
+  `http://127.0.0.1:8091`, WebDAV shares on `http://127.0.0.1:8092`.
+- Podman's virtual machine starts when the script needs it. `stop` removes the container and
+  stops the machine; `logs` follows the log; `reset` drops the database, the settings and the
+  password file, which the next start makes anew; the files stay.
+- The files are in `~/GezginTest/dosyalar` (`GEZGIN_TEST_DIR` moves the folder), the admin's
+  password in `~/GezginTest/admin-sifre.txt`. What Gezgin writes there is the Mac user's
+  (`--userns=keep-id`).
+- The disk bar reads 256 times the Mac's disk ("115 TiB"): the shared folder's file system gives
+  its 4 KiB blocks as 1 MiB ones (`stat -f /srv` in the container). It is the virtual machine's,
+  not Gezgin's; nrm reads right.
 
 ### Image and deployment
 
