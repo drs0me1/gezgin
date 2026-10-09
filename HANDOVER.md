@@ -33,7 +33,7 @@ and verified live on nrm; its follow-ups in section 4.1 remain before heading 7 
 | 5 | Yükleme, indirme ve arama | K24-K31 | `36ad2a06` | Done, verified live |
 | 6 | Paylaşım (links and WebDAV) | K32-K44 | `c8da81f8`, `aaf43505`, `403d332e` | Done, verified live |
 | 7 | Komut çalıştırma, and archives in its place | K45-K58 | `116c3549`, `b0bb8b63`, `527111be`, `6d531015`, `601ddbaa` | Last step's follow-ups open (4.1) |
-| 8 | Yönetim ayarları ekranı | from K59 | | To do (4.3) |
+| 8 | Yönetim ayarları ekranı | from K66 | | To do (4.3) |
 | 9 | Altyapı, marka ve CSP | | | To do (4.3) |
 | 10 | Konsol'dan alınacaklar | | | To do (4.3); archives already done under 7 |
 
@@ -41,13 +41,13 @@ Commit messages and README's "Changes from File Browser" describe each change.
 
 ## 3. Decisions taken
 
-The next decision number is **K59**. "Recommended" means the operator accepted the recommendation
+The next decision number is **K66**. "Recommended" means the operator accepted the recommendation
 made in the report.
 
 **Stage B (start).** Multi-user with an admin; File Browser's forms stay even where Konsol has its
 own; the Files module of Konsol is not touched; decide heading by heading, not all at once. Of the
 four opening questions only multi-user was answered then: share links were later reviewed and kept
-(heading 6), proxy sign-in is K1, and the EPUB reader is still open (4.4).
+(heading 6), proxy sign-in is K1 (removed by K61), and the EPUB reader was removed by K59.
 
 **1 — Giriş ve oturum** (all recommended)
 - K1: only `json` and `proxy` sign-in remain; `noauth` and `hook` removed (a database using them
@@ -162,19 +162,43 @@ four opening questions only multi-user was answered then: share links were later
 - K58: download ZIPs compress what is not compressed already; a FIFO no longer hangs a download,
   Ctrl+S works again, Gezgin's temporary files stay out.
 
+**Open questions of 4.4, decided 2026-10-09** (all recommended)
+- K59: the EPUB reader is removed. It read only `.epub` (epub.js); e-books download like any file.
+- K60: self-signup is removed: the setting, the login screen's "create an account" link and
+  `/api/signup` (supersedes K5). A self-registered user would get the default scope, the whole
+  root, with every permission but admin.
+- K61: `proxy` sign-in is removed; only `json` remains (supersedes K1's "until sign-on with Konsol
+  is decided"). Gezgin cannot tell that the header came from a proxy: anyone reaching its port
+  could name any user, the admin too.
+- K62: CI (`.github/workflows/ci.yaml`) runs on pushes to `main` instead of `master`.
+- K63: the stage B `filebrowser` test container is removed from nrm with its volumes and image
+  (done through Konsol's container API; the media folder is untouched).
+- K64: transfers at the same time are limited to 10: downloads (`/api/raw`: a file, a folder as an
+  archive, a video being played) and uploads (tus chunks) per user, downloads per share link, GET
+  and PUT per WebDAV share. One more answers 429 with a Turkish message (a download's tab shows
+  it; tus retries by itself). Previews, thumbnails, subtitles and listings are not counted. The
+  operator asked for "about 10 at the same time" instead of a large number per download.
+- K65: a folder download packs at most 10,000 files and folders, as archive jobs do (K49); a
+  larger one answers 422 with a message before anything is sent.
+- Konsol's Podman page suggestions (a failed container's last log line, a warning on ports below
+  1024 for the Files account) wait until Gezgin's headings are done (4.5).
+
 ## 4. Tasks
 
 ### 4.1 Close heading 7: archive creation follow-ups (commit `601ddbaa`)
 
-- [ ] **C1 control characters.** `pack.archiveName` refuses only runes below 0x20 and 0x7f, while
+- [x] **C1 control characters.** `pack.archiveName` refuses only runes below 0x20 and 0x7f, while
   `unpack.clean` refuses every `unicode.IsControl` rune (also U+0080-U+009F). Such a name makes
   Gezgin's own "Arşivi aç" refuse the archive (`unsafe`). Use `unicode.IsControl` in
   `pack.archiveName` and `http.archiveName`; add tests.
-- [ ] **Depth of files.** `pack`'s `walk` checks `maxDepth` (64 parts) only for folders; a file in
+- [x] **Depth of files.** `pack`'s `walk` checks `maxDepth` (64 parts) only for folders; a file in
   a folder 64 deep gets 65 parts and `unpack` refuses the archive. Check every entry in `add()`.
-- [ ] **Chosen `.gezgin-` items.** Such names are skipped inside folders, but an item chosen
+- [x] **Chosen `.gezgin-` items.** Such names are skipped inside folders, but an item chosen
   directly (an upload's `.gezgin-*.tmp`, which listings show) is packed and `unpack` refuses it.
   Refuse the prefix in `pack.archiveName` (skipped and counted).
+  These three are done together, with `pack`'s `TestUnpackTakesItBack`, which opens each case
+  with `unpack`. A file chosen alone whose name cannot be held is now skipped too, instead of
+  going in unnamed.
 - [ ] Code review of the archive work (4.2), then fix what it confirms.
 - [ ] Redeploy to nrm and repeat the live checks (section 7).
 - [ ] On nrm, delete the test folder `/k54-deneme` permanently (it holds a sparse 4.7 GB file).
@@ -197,12 +221,12 @@ four opening questions only multi-user was answered then: share links were later
   - unpack (`unpack/names.go`, `formats.go`): K53's RAR part logic, volume sets, the joined reader,
     which errors become `missingPart`.
 - [ ] **Each new heading** starts with its review: read the endpoints and the code, check on nrm,
-  and report in Turkish with the verified problems and numbered decisions (K59 onwards).
+  and report in Turkish with the verified problems and numbered decisions (K66 onwards).
 
 ### 4.3 Next headings
 
 - [ ] **8 — Yönetim ayarları ekranı.** The opening overview proposed: remove the registration
-  settings (this conflicts with K5, which kept self-signup: decide again) and any leftovers of the
+  settings (decided: K60, in 4.6) and any leftovers of the
   command settings (gone with K46); branding becomes a fixed Gezgin brand without custom CSS; keep
   the default user settings, rules, upload settings, the minimum password length and the
   permission modes.
@@ -220,15 +244,14 @@ four opening questions only multi-user was answered then: share links were later
 
 ### 4.4 New decisions to put to the operator
 
-- [ ] The EPUB reader: kept or removed (an opening question, never answered; kept so far).
-- [ ] Self-signup: K5 kept it; heading 8's overview proposes removing the registration settings.
-- [ ] `proxy` sign-in: kept by K1 until sign-on with Konsol is decided.
-- [ ] Downloads have no entry limit and plan every entry in memory first (as File Browser did).
-- [ ] CI (`.github/workflows/ci.yaml`) runs on `master` and pull requests only, so a push to
-  `main` runs no tests, only the image build. Move its triggers to `main`?
-- [ ] The old `filebrowser` test container from stage B still runs on nrm (port 8090): remove it?
-- [ ] Konsol's Podman page could show a failed container's last log line and warn about ports
-  below 1024 for the Files account (suggested earlier; only if wanted).
+- [x] The EPUB reader: removed (K59). Implementation: 4.6.
+- [x] Self-signup: removed (K60). Implementation: 4.6.
+- [x] `proxy` sign-in: removed (K61). Implementation: 4.6.
+- [x] Downloads had no entry limit and planned every entry in memory first: K64 and K65.
+- [ ] CI runs on `main` (K62): the one-line change waits for a GitHub token with the `workflow`
+  scope; until then a push runs only the image build.
+- [x] The old `filebrowser` test container: removed from nrm (K63).
+- [x] Konsol's Podman page suggestions: later (4.5).
 
 ### 4.5 Later ("ileride")
 
@@ -241,6 +264,19 @@ four opening questions only multi-user was answered then: share links were later
   request as one address: revisit them then.
 - [ ] Only if needed: a webhook (without a shell) for upload notifications, fetching a URL to the
   server, checksums as a file action.
+- [ ] Konsol's Podman page (myserver repository): show a failed container's last log line, and
+  warn about ports below 1024 for a container that runs as the Files account.
+
+### 4.6 Changes decided in 4.4
+
+- [x] K59: remove the EPUB reader (`vue-reader`, `epubjs`, `epubReader.css`, Preview's branch).
+- [x] K60: remove self-signup (setting, login link, `/api/signup`, CLI flag, i18n texts, docs).
+- [x] K61: remove `proxy` sign-in (auther, CLI flags, docs); a database set to `proxy` refuses to
+  start and says how to switch, as K1 did for `noauth` and `hook`. Checked with a database made by
+  the previous build: refused, then `config set --auth.method json` and it serves.
+- [x] K64, K65: the transfer limits (`http/transfers.go`, tests in `transfers_test.go`).
+- [ ] Later cleanup: `settings.CreateUserHome`, `users.Storage.SaveProvisioned` and `GetByScope`
+  served only signup and proxy sign-in and are unused now.
 
 ## 5. How to work
 
@@ -260,7 +296,9 @@ four opening questions only multi-user was answered then: share links were later
 - `PACK_LARGE=1 go test -run TestLargeFile ./pack/`: a sparse 4.7 GB file, about two minutes.
 - pack's tests also check archives with `7z`, `unzip`, `python3` and `bsdtar` when they are on the
   PATH. On macOS, Homebrew's `p7zip` installs `7z`; the `sevenzip` formula installs `7zz`, which
-  the tests do not look for.
+  the tests do not look for. p7zip 17.05 fails `TestVolumes` ("Headers Error" on the
+  `.zip.001` set) while 7-Zip 26.04 tests it clean, so put `7zz` first on the PATH as `7z`
+  (`mkdir -p /tmp/bin7 && ln -sf /opt/homebrew/bin/7zz /tmp/bin7/7z`, then `PATH=/tmp/bin7:$PATH`).
 - Frontend, in `frontend/`: `pnpm install --frozen-lockfile`, `npm run lint`,
   `npx vue-tsc --noEmit -p tsconfig.app.json`, `npx vitest run`, `pnpm run build`.
 - The tests last ran on Linux. On macOS, APFS ignores letter case and refuses names that are not
