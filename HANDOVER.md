@@ -23,7 +23,8 @@ that run in Go inside Gezgin (K47-K58). The last step, creation (K54-K58), is pu
 and verified live on nrm. On 2026-10-09 a local session fixed its three name checks, reviewed the
 archive work, removed the EPUB reader, self-signup and proxy sign-in (K59-K61), limited transfers
 (K64-K65), and verified it all live on nrm (`45c22b38`); only the real-client trials of 4.1
-remain before heading 7 is closed.
+remain before heading 7 is closed. Heading 8 has been reviewed and reported (4.3); its proposals
+K66-K75 wait for the operator's decisions.
 
 ## 2. Headings
 
@@ -36,7 +37,7 @@ remain before heading 7 is closed.
 | 5 | Yükleme, indirme ve arama | K24-K31 | `36ad2a06` | Done, verified live |
 | 6 | Paylaşım (links and WebDAV) | K32-K44 | `c8da81f8`, `aaf43505`, `403d332e` | Done, verified live |
 | 7 | Komut çalıştırma, and archives in its place | K45-K58 | `116c3549`, `b0bb8b63`, `527111be`, `6d531015`, `601ddbaa` | Last step's follow-ups open (4.1) |
-| 8 | Yönetim ayarları ekranı | from K66 | | To do (4.3) |
+| 8 | Yönetim ayarları ekranı | K66-K75 proposed | | Reviewed, waits for decisions (4.3) |
 | 9 | Altyapı, marka ve CSP | | | To do (4.3) |
 | 10 | Konsol'dan alınacaklar | | | To do (4.3); archives already done under 7 |
 
@@ -44,7 +45,7 @@ Commit messages and README's "Changes from File Browser" describe each change.
 
 ## 3. Decisions taken
 
-The next decision number is **K66**. "Recommended" means the operator accepted the recommendation
+The next decision number is **K66** (K66-K75 are proposed for heading 8, see 4.3). "Recommended" means the operator accepted the recommendation
 made in the report.
 
 **Stage B (start).** Multi-user with an admin; File Browser's forms stay even where Konsol has its
@@ -251,6 +252,39 @@ four opening questions only multi-user was answered then: share links were later
   command settings (gone with K46); branding becomes a fixed Gezgin brand without custom CSS; keep
   the default user settings, rules, upload settings, the minimum password length and the
   permission modes.
+  Reviewed 2026-10-09 (`Global.vue`, `UserForm.vue`, `PUT /api/settings`, `config set`), checked on
+  a local build of `2d2438c8`, whose code is that of nrm's `45c22b38`. Verified: a chunk size of 0
+  is stored and the browser then sends empty PATCHes without end (30,756 in 3 s, the upload never
+  ends); the minimum password length takes 1 (WebDAV share passwords follow it) or 100 (then no
+  password can be set: bcrypt's 72-byte limit, an English error), and counts bytes, not letters;
+  users scoped inside `.gezgin-arsiv` or `.gezgin-yukleme` are created (201) and then refused
+  everything (403), the folders being emptied at every start; `userHomeBasePath` and the default
+  scope take them too (only the trash is refused); the defaults take the admin permission, share
+  without download, any language and view mode; `branding.files` takes any server path (`/etc`),
+  whose `img/` and `custom.css` are served without sign-in; any theme string; 14 English texts on
+  the screen and "Regex"/"Allow" in the rules; the "create user home directory" box vanishes once
+  unticked; changes show only after a reload. Dead: the global `Settings.HideDotfiles`,
+  `Server.AuthHook`, `LogoutPage` with `--auth.logoutPage`. Fine: rules are validated (a bad regex
+  gives 400 and nothing is saved), the trash days are bounded, fields not on the form keep their
+  values. Proposals, all recommended:
+  - K66: the minimum password length is 8-32, counted in letters; a password over 72 bytes gets a
+    Turkish 400.
+  - K67: chunk size 1 MiB-1 GiB, retries 0-20 (else 400); the form refuses text it cannot read
+    instead of using 1 MB.
+  - K68: Gezgin's folders (`.gezgin-cop`, `-yukleme`, `-arsiv`) are refused as a user scope, the
+    home base path and the default scope.
+  - K69: the defaults never grant admin (no box), share implies download, language and view mode
+    must be known values.
+  - K70: a fixed Gezgin brand: the instance name, branding folder (custom CSS and images), colour
+    and "disable external links" go; the theme (Sistem/Açık/Koyu) and the disk bar option stay
+    under "Görünüm". The brand itself is heading 9.
+  - K71: `hideLoginButton` goes; share pages never show "Giriş" (quick setup's default).
+  - K72: the screen's texts in Turkish; the upload section without "File Browser"; no upstream
+    documentation link.
+  - K73: the "create user home directory" box stays so it can be ticked again.
+  - K74: remove the dead fields above and 4.6's `CreateUserHome`, `SaveProvisioned`, `GetByScope`;
+    old databases keep working.
+  - K75: after a save that changes the interface (theme, disk bar, chunk size) the page reloads.
 - [ ] **9 — Altyapı, marka ve CSP.** Proposed: a CSP for the index page; the inline startup
   script moved to a file; Gezgin's name, logo, icons and PWA manifest; remove
   "File Browser (untracked)", the "Sorun bildir" and other upstream links and the "project
