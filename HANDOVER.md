@@ -492,7 +492,7 @@ so the API (400) and `config set` refuse the same; unset values take the default
   ```
 
 - Gezgin listens on the tailnet on port 8091, its WebDAV shares on 8092; the container's `/srv` is
-  the operator's media folder (`/srv/media` on the host). nrm runs the image of `c11a6b80`.
+  the operator's media folder (`/srv/media` on the host). nrm runs the image of `030cdb55`.
 - Live checks through the operator's session: Claude opens `http://nrm:8091/login` in its
   built-in browser, the operator signs in there (Claude does not type a password on a host that
   is not local), and Claude runs the API checks with `fetch` from that page (its token is in
