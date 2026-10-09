@@ -50,7 +50,7 @@ Commit messages and README's "Changes from File Browser" describe each change.
 
 ## 3. Decisions taken
 
-The next decision number is **K130**. "Recommended" means the operator accepted the recommendation
+The next decision number is **K130** (K130-K134 are proposed, see 4.3). "Recommended" means the operator accepted the recommendation
 made in the report.
 
 **Stage B (start).** Multi-user with an admin; File Browser's forms stay even where Konsol has its
@@ -709,6 +709,20 @@ so the API (400) and `config set` refuse the same; unset values take the default
   "Dosyalarım", "Çöp"; the path row's view button and "Seç"; a right click on `movies` gave
   "Paylaş", "Favorilerden çıkar", "Yeniden adlandır", "Kopyala", "Taşı", "Arşiv oluştur", "Sil",
   "İndir" (no count), "Bilgi", closed unused.
+- [ ] **The shares page as a folder view, its actions in the right-click menu** (operator,
+  2026-10-09: like the other pages, tiles or list switchable, the list's features in the
+  right-click menu; a design first). Proposed with a mock-up, waiting: K130, one tile per share
+  (an item shared twice shows twice), its item's icon, the name with a lock when it has a
+  password, under it the kind ("Bağlantı", "WebDAV · salt okunur/okuma-yazma") and the end
+  (amber within a day, "Süresiz", "Süresi doldu"), "Paylaşan: ali" for an admin when not theirs;
+  the top line "N paylaşım" with the view button and "Seç"; the list view's columns Ad, Tür,
+  Bitiş and an admin's Paylaşan, sorted by name or end; a double click opens the item in its
+  place; K131, a share's right-click menu: "Bağlantıyı kopyala" (WebDAV: "Adresi kopyala"),
+  "Yeni sekmede aç" (links), "Paylaşım ayarları", "Bulunduğu klasörü aç", a line, "Paylaşımı
+  kaldır", "Bilgi"; with several selected "N paylaşımı kaldır", asking first; K132, the address
+  leaves the tile, staying in the menu and the Info window; K133, the Info window gives the
+  share: name, place, kind with access and WebDAV user, address, end, password or none, owner;
+  K134, on a phone a tap selects and the bottom bar has copy, settings, remove and Info.
 
 ### 4.4 New decisions to put to the operator
 
