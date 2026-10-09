@@ -279,14 +279,6 @@ func (e *env) tree(dir string) map[string]string {
 	return out
 }
 
-func codeOf(err error) Code {
-	var e *Error
-	if errors.As(err, &e) {
-		return e.Code
-	}
-	return ""
-}
-
 func want(t *testing.T, got map[string]string, entries ...string) {
 	t.Helper()
 	var keys []string
@@ -307,8 +299,9 @@ func want(t *testing.T, got map[string]string, entries ...string) {
 func TestNamesAndStems(t *testing.T) {
 	for name, stem := range map[string]string{
 		"film.zip": "film", "Film.ZIP": "Film", "set.part01.rar": "set", "set.part7.rar": "set",
-		"rg-42386.rar": "rg-42386", "rg-42386.r15": "rg-42386", "a.s01": "a", "kod.tar.gz": "kod",
-		"kod.tgz": "kod", "yedek.tar.zst": "yedek", "x.7z": "x", ".zip": "arsiv", ".gezgin-x.zip": "arsiv",
+		"rg-42386.rar": "rg-42386", "rg-42386.r15": "rg-42386", "kod.tar.gz": "kod", "kod.tgz": "kod",
+		"yedek.tar.zst": "yedek", "x.7z": "x", ".zip": "arsiv", ".gezgin-x.zip": "arsiv",
+		"set.part1of3.rar": "set", "set.Part02OF03.rar": "set",
 	} {
 		if !IsArchive(name) {
 			t.Errorf("IsArchive(%q) = false", name)
@@ -317,7 +310,9 @@ func TestNamesAndStems(t *testing.T) {
 			t.Errorf("Stem(%q) = %q; want %q", name, got, stem)
 		}
 	}
-	for _, name := range []string{"film.mkv", "notlar.txt", "x.gz", "rapor.pdf", "x.r1"} {
+	// Later parts of the largest RAR sets are found from their first part, not chosen; .z01 is a
+	// part of a split ZIP.
+	for _, name := range []string{"film.mkv", "notlar.txt", "x.gz", "rapor.pdf", "x.r1", "a.s01", "fw.s19", "oyun.z64", "x.z01"} {
 		if IsArchive(name) {
 			t.Errorf("IsArchive(%q) = true", name)
 		}
@@ -409,12 +404,67 @@ func TestRarSetWithAMissingPart(t *testing.T) {
 		})
 	}
 
-	// A part beyond where the set ends belongs to it by name: the set is taken as cut short.
+	// The part that would follow the last one is there: the set is taken as cut short. A part
+	// further on is some other file.
 	e := newEnv(t)
-	e.putSet("set", false, rarSet(t, 150, false, file{name: "big.bin", data: content}))
+	names := e.putSet("set", false, rarSet(t, 150, false, file{name: "big.bin", data: content}))
 	e.put("set.r40", []byte("not this set's"))
+	if got, _, err := e.extract(defaults(), "set.rar"); err != nil || got["big.bin"] != content {
+		t.Errorf("with set.r40: err = %v", err)
+	}
+	e.put(rarNames("set", len(names)+1, false)[len(names)], []byte("next"))
 	if _, _, err := e.extract(defaults(), "set.rar"); codeOf(err) != CodeMissingPart {
 		t.Errorf("err = %v; want missingPart", err)
+	}
+}
+
+func TestRarSetNamedPartNofM(t *testing.T) {
+	e := newEnv(t)
+	content := strings.Repeat("0123456789", 40)
+	volumes := rarSet(t, 150, true, file{name: "film.mkv", data: content})
+	for i, v := range volumes {
+		e.put(fmt.Sprintf("film.part%dof%d.rar", i+1, len(volumes)), v)
+	}
+	got, _, err := e.extract(defaults(), fmt.Sprintf("film.part2of%d.rar", len(volumes)))
+	if err != nil {
+		t.Fatal(err)
+	}
+	want(t, got, "film.mkv="+content)
+}
+
+func TestFilesNamedLikeRarPartsStayFiles(t *testing.T) {
+	// Firmware, a ROM, a part of a split ZIP, and parts whose set has no first part here: no
+	// archive opens, and nothing fails.
+	e := newEnv(t)
+	e.put("paket.zip", zipOf(t,
+		file{name: "fw.s19", data: "S0030000FC"},
+		file{name: "oyun.z64", data: "rom"},
+		file{name: "yedek.z01", data: "PK\x07\x08"},
+		file{name: "eski.r05", data: "Rar!\x1a\x07\x00"},
+		file{name: "kayip.part2.rar", data: "Rar!\x1a\x07\x00"},
+	))
+	got, p, err := e.extract(defaults(), "paket.zip")
+	if err != nil {
+		t.Fatal(err)
+	}
+	want(t, got, "fw.s19=S0030000FC", "oyun.z64=rom", "yedek.z01=PK\x07\x08", "eski.r05=Rar!\x1a\x07\x00",
+		"kayip.part2.rar=Rar!\x1a\x07\x00")
+	if p.Archives != 1 {
+		t.Errorf("%d archives opened", p.Archives)
+	}
+
+	// Beside a game's RAR, its ROM is no part of it.
+	e = newEnv(t)
+	e.put("oyun.rar", rarSet(t, 0, false, file{name: "oku.txt", data: "R"})[0])
+	e.put("oyun.z64", []byte("rom"))
+	if got, _, err := e.extract(defaults(), "oyun.rar"); err != nil || got["oku.txt"] != "R" {
+		t.Errorf("oyun.rar: %v, %v", got, err)
+	}
+	for _, name := range []string{"oyun.z64", "fw.s19"} {
+		e.put(name, []byte("x"))
+		if _, _, err := e.extract(defaults(), name); codeOf(err) != CodeNotArchive {
+			t.Errorf("%s: %v; want notArchive", name, err)
+		}
 	}
 }
 

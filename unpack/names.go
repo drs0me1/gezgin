@@ -43,10 +43,11 @@ var tarSuffixes = []struct {
 
 var (
 	// newPart is a part of a RAR set named in the new way: name.part1.rar, name.part2.rar, ...
-	newPart = regexp.MustCompile(`(?i)^(.*)(\.part)([0-9]+)(\.rar)$`)
+	// or name.part1of3.rar, ...
+	newPart = regexp.MustCompile(`(?i)^(.*)(\.part)([0-9]+)((?:of[0-9]+)?\.rar)$`)
 	// oldPart is a later part of a RAR set named in the old way: name.rar, name.r00, name.r01,
-	// ... name.r99, name.s00, ...
-	oldPart = regexp.MustCompile(`(?i)^(.*)\.([r-z])([0-9]{2})$`)
+	// ... name.r99, name.s00, ... A .z01 is a part of a split ZIP, not of a RAR set.
+	oldPart = regexp.MustCompile(`(?i)^(.*)\.([r-y])([0-9]{2})$`)
 )
 
 func detect(name string) kind {
@@ -67,9 +68,17 @@ func detect(name string) kind {
 	return kind{}
 }
 
-// IsArchive reports whether a file of this name is one Extract opens, or a part of a RAR set.
+// IsArchive reports whether a file of this name is one Extract opens: an archive, or a part of a
+// RAR set as one is chosen (name.rar, name.partN.rar, name.r00 to name.r99). Later parts of the
+// largest sets (name.s00, ...) are found from these; on their own, such names are more often
+// other files, as firmware.s19 is.
 func IsArchive(name string) bool {
-	return detect(name).format != formatNone
+	k := detect(name)
+	if k.format != formatRar {
+		return k.format != formatNone
+	}
+	m := oldPart.FindStringSubmatch(name)
+	return m == nil || strings.EqualFold(m[2], "r")
 }
 
 // Stem is the name of the folder an archive opens into: its name without the extension, and
@@ -123,33 +132,23 @@ func partNumber(name string) (key string, number int, ok bool) {
 	return "", 0, false
 }
 
-// setParts lists the names of the parts of the RAR set whose first part is first, in dir, in
-// order. A set of one part is that part.
-func setParts(fsys fs.FS, dir, first string) ([]string, error) {
-	key, number, ok := partNumber(first)
-	if !ok || number != 1 {
-		return []string{first}, nil
+// continues reports whether dir holds the part that would follow last in its RAR set: a set
+// read only up to last although that part is there ended before its end.
+func continues(fsys fs.FS, dir, last string) (bool, error) {
+	key, number, ok := partNumber(last)
+	if !ok {
+		return false, nil
 	}
 	entries, err := fs.ReadDir(fsys, dir)
 	if err != nil {
-		return nil, err
+		return false, err
 	}
-	type part struct {
-		name   string
-		number int
-	}
-	var parts []part
 	for _, entry := range entries {
-		if k, n, ok := partNumber(entry.Name()); ok && k == key && !entry.IsDir() {
-			parts = append(parts, part{entry.Name(), n})
+		if k, n, ok := partNumber(entry.Name()); ok && k == key && n == number+1 && !entry.IsDir() {
+			return true, nil
 		}
 	}
-	sort.Slice(parts, func(i, j int) bool { return parts[i].number < parts[j].number })
-	names := make([]string, len(parts))
-	for i, p := range parts {
-		names[i] = p.name
-	}
-	return names, nil
+	return false, nil
 }
 
 // firstPart returns the name of the first part of the RAR set that name is a part of, in dir.

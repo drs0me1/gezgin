@@ -8,6 +8,7 @@ import (
 	"errors"
 	"io"
 	"io/fs"
+	"path"
 	"strings"
 	"syscall"
 	"unicode/utf8"
@@ -73,13 +74,18 @@ func (j *job) rar(fsys *watchFS, u unit) error {
 		}
 	}
 
-	// A set ends where its last part says so; one that ends before a part next to it would
-	// have been read lacks a part.
-	parts, err := setParts(fsys.FS, u.dir, u.name)
-	if err != nil {
-		return err
+	// A set ends where its last part says so. rardecode also ends one whose part has no end
+	// record when the next is not there, naming that missing part among those it read; and a
+	// set that ends while its next part is there is cut short.
+	used := r.Volumes()
+	for _, name := range used {
+		if _, err := fs.Stat(fsys.FS, path.Join(u.dir, name)); err != nil {
+			return fail(CodeMissingPart, err)
+		}
 	}
-	if len(parts) != len(r.Volumes()) {
+	if more, err := continues(fsys.FS, u.dir, used[len(used)-1]); err != nil {
+		return err
+	} else if more {
 		return fail(CodeMissingPart, errors.New("the set ended before its last part"))
 	}
 	return nil

@@ -54,6 +54,15 @@ func fail(code Code, err error) error {
 	return &Error{Code: code, Err: err}
 }
 
+// codeOf is the code of the Error in err's chain, or "" when there is none.
+func codeOf(err error) Code {
+	var e *Error
+	if errors.As(err, &e) {
+		return e.Code
+	}
+	return ""
+}
+
 // reservedPrefix starts the names Gezgin keeps for itself, which no archive may bring in.
 const reservedPrefix = ".gezgin-"
 
@@ -161,10 +170,10 @@ func (j *job) chosen(src fs.FS, names []string) ([]unit, error) {
 	seen := map[string]bool{}
 	var units []unit
 	for _, name := range names {
-		k := detect(name)
-		if k.format == formatNone {
+		if !IsArchive(name) {
 			return nil, fail(CodeNotArchive, nil)
 		}
+		k := detect(name)
 		first := name
 		if k.format == formatRar {
 			var err error
@@ -200,7 +209,12 @@ func (j *job) inner() ([]unit, error) {
 		first := name
 		if k.format == formatRar {
 			var err error
-			if first, err = firstPart(dstFS, dir, name); err != nil {
+			first, err = firstPart(dstFS, dir, name)
+			if codeOf(err) == CodeMissingPart {
+				// A part whose set has no first part here, or a file only named like one.
+				continue
+			}
+			if err != nil {
 				return nil, err
 			}
 		}
