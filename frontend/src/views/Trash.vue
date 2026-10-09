@@ -58,20 +58,20 @@
       </h2>
     </div>
     <errors v-else-if="error" :errorCode="error.status" />
-    <h2 class="message" v-else-if="items.length === 0">
+    <!-- The page's line: the count and size, the view and "Seç", fixed as the folder's path is,
+         also when the trash is empty (Gezgin, K137). -->
+    <div v-if="!loading && !error" class="page-bar">
+      <span class="page-bar-text">
+        {{ t("trash.summary", { count: summary.count }) }} ·
+        {{ filesize(summary.size) }}
+      </span>
+      <listing-tools v-if="items.length > 0" />
+    </div>
+    <h2 class="message" v-if="!loading && !error && items.length === 0">
       <i class="material-icons">delete_outline</i>
       <span>{{ t("trash.nothing") }}</span>
     </h2>
-    <template v-else>
-      <!-- The page's line: the count and size, the view and "Seç" (Gezgin, K137). -->
-      <div class="page-bar">
-        <span class="page-bar-text">
-          {{ t("trash.summary", { count: summary.count }) }} ·
-          {{ filesize(summary.size) }}
-        </span>
-        <listing-tools />
-      </div>
-
+    <template v-else-if="!loading && !error">
       <div
         id="listing"
         class="file-icons"

@@ -410,7 +410,10 @@ so the API (400) and `config set` refuse the same; unset values take the default
   their count or status, the view button and "Seç" in a `.page-bar` above the listing, under the
   rules of the folder's path row: 3em high, a line under it, sticky under the header. Before,
   the line was inside the listing, whose layout differs by view. Measured on a local build: on
-  all five pages, in the three views and scrolled, it stays at 64 pixels from the top, 48 high.
+  all five pages, in the three views and scrolled, it stays at 64 pixels from the top, 48 high;
+  an empty page keeps it too ("0 öğe"), without the view and "Seç". Live on nrm (`429205c4`, the
+  operator's session in a tab of its own, looking only): 64 and 48 on the shares, favourites
+  and folder pages; the operator's trash was empty and showed no line, now fixed as well.
 
 ## 4. Tasks
 
