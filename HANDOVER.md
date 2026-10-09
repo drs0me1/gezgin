@@ -50,7 +50,7 @@ Commit messages and README's "Changes from File Browser" describe each change.
 
 ## 3. Decisions taken
 
-The next decision number is **K99** (K99-K105 are proposed, see 4.3). "Recommended" means the operator accepted the recommendation
+The next decision number is **K99** (K99-K108 are proposed, see 4.3). "Recommended" means the operator accepted the recommendation
 made in the report.
 
 **Stage B (start).** Multi-user with an admin; File Browser's forms stay even where Konsol has its
@@ -509,6 +509,21 @@ so the API (400) and `config set` refuse the same; unset values take the default
   the number of buttons changes with the selection. K105: "Dosyayı taşı" gets a folder with an
   arrow (`drive_file_move`) in place of the right arrow (`forward`), which beside the new
   forward arrow would read as "İleri"; also in the phone's selection bar.
+  The operator, on the second mock-up: no background colour on the buttons, the first mock-up's
+  icons were better, and "Bilgi" leaves the header, the right-click menu being enough. Third
+  proposal: K99 without any background (the buttons look like the header's others, the usual
+  hover only); K106, the thin outline icons of the first mock-up (Tabler Icons, MIT, only the
+  ones used, embedded as SVG, no new font) for everything drawn by the header's button
+  component: the header, the right-click menu and the phone's selection bar; the sidebar, the
+  file icons and the dialogs keep theirs; K107, "Bilgi" leaves the header of "Dosyalarım",
+  "Sık kullanılanlar" and "Çöp" and stays in the right-click menu, which then opens anywhere in
+  the listing (today only on the items' rows, not below them or in an empty folder), giving the
+  folder's information when nothing is selected; on a phone it stays in the ⋮ menu (an iPhone
+  has no right-click, and the selection bar is full); the file preview keeps it (no
+  right-click menu there); K108, found while measuring: the phone's selection bar is at most
+  320 pixels wide, uses 325 with one file selected and 368 with an archive ("Arşivi aç" cut,
+  "Sil" off the screen), so it spans the screen, reads "1 seçili" and wraps to a second row
+  when the buttons do not fit.
 
 ### 4.4 New decisions to put to the operator
 
