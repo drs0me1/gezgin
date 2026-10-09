@@ -24,6 +24,10 @@ a home server needs has been added.
 
 > **Status:** in active development. There are no releases yet; the container image follows `main`.
 
+<p align="center">
+  <img src="docs/screenshots/files.png" alt="A folder in Gezgin, as tiles, with favourite stars and share marks" width="100%">
+</p>
+
 ## Features
 
 | Feature | What it does |
@@ -42,6 +46,16 @@ a home server needs has been added.
 | **Safe writes** | Uploads and saves replace a file only once complete; a full disk is refused at the start. |
 | **Security** | A strict content security policy, limits on password guesses, sessions that end with a password change. |
 | **Two languages** | The whole interface in Turkish and in English; each user picks theirs, Turkish by default. |
+
+## Screenshots
+
+| Photos as a gallery | Sharing a folder |
+|---|---|
+| <img src="docs/screenshots/gallery.png" alt="Photos as large thumbnails"> | <img src="docs/screenshots/share.png" alt="The share dialog with a WebDAV share and a link"> |
+| **The users** | **On a phone** |
+| <img src="docs/screenshots/settings.png" alt="The users in the settings, with their roles, access and permissions"> | <p align="center"><img src="docs/screenshots/phone.png" alt="Photos on a phone" width="220"></p> |
+
+The screenshots show sample files on a test server.
 
 ## What changed from File Browser
 
