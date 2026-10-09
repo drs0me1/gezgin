@@ -93,8 +93,11 @@
     box-shadow:
       rgba(0, 0, 0, 0.06) 0px 1px 3px,
       rgba(0, 0, 0, 0.12) 0px 1px 2px;
-    width: 95%;
-    max-width: 20em;
+    /* The phone's selection bar spans the screen and wraps when its buttons do not fit
+       (Gezgin, K108); at 20em an archive's "Sil" fell off it. */
+    width: calc(100% - 2em);
+    flex-wrap: wrap;
+    justify-content: flex-end;
     z-index: 1;
   }
   #file-selection .action {
@@ -142,6 +145,15 @@
   header .search-button,
   header .menu-button {
     display: inherit;
+  }
+  /* A phone keeps back, up and home (Gezgin, K103). */
+  header .header-nav .forward {
+    display: none;
+  }
+  header .header-nav:has(+ #search) {
+    margin-right: 0;
+    padding-right: 0;
+    border-right: 0;
   }
   header img {
     display: none;

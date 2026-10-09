@@ -109,8 +109,19 @@ main .spinner .bounce2 {
   border-radius: 50%;
 }
 
+/* A button's outline icon (Gezgin, K106) takes the place of the font's glyph. */
+.material-icons .outline-icon {
+  display: block;
+  width: 1em;
+  height: 1em;
+}
+
 .action:hover {
   background-color: var(--hover);
+}
+
+.action[disabled]:hover {
+  background-color: transparent;
 }
 
 .action ul {
@@ -191,6 +202,10 @@ main .spinner .bounce2 {
   text-shadow: 1px 1px 1px #000000;
 }
 
+#previewer header > .action .outline-icon {
+  filter: drop-shadow(1px 1px 1px #000000);
+}
+
 #previewer header > title {
   white-space: nowrap;
   text-shadow: 1px 1px 1px #000000;
@@ -200,6 +215,10 @@ main .spinner .bounce2 {
   #previewer header #dropdown .action i {
     color: #fff;
     text-shadow: 1px 1px 1px #000000;
+  }
+
+  #previewer header #dropdown .action .outline-icon {
+    filter: drop-shadow(1px 1px 1px #000000);
   }
 }
 

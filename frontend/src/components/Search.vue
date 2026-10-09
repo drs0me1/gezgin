@@ -9,9 +9,9 @@
         :title="closeButtonTitle"
       >
         <i v-if="ongoing" class="material-icons">stop_circle</i>
-        <i v-else class="material-icons">arrow_back</i>
+        <icon v-else name="arrow_back" />
       </button>
-      <i v-else class="material-icons">search</i>
+      <icon v-else name="search" />
       <input
         type="text"
         @keyup.exact="keyup"
@@ -72,6 +72,7 @@
 </template>
 
 <script setup lang="ts">
+import Icon from "@/components/Icon.vue";
 import { useFileStore } from "@/stores/file";
 import { useLayoutStore } from "@/stores/layout";
 

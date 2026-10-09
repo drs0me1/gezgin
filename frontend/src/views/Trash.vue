@@ -1,35 +1,28 @@
 <template>
   <div>
-    <header-bar showMenu showLogo>
+    <header-bar showMenu showLogo showNav>
       <title />
 
       <template #actions>
-        <template v-if="!isMobile">
-          <action
-            v-if="canRestore && fileStore.selectedCount > 0"
-            icon="restore_from_trash"
-            :label="t('trash.restore')"
-            @action="restoreSelected"
-          />
-          <action
-            v-if="canDelete && fileStore.selectedCount > 0"
-            icon="delete_forever"
-            :label="t('trash.deletePermanently')"
-            @action="purgeSelected"
-          />
-        </template>
+        <!-- On a computer restore, delete for good and Info are in the right-click menu and the
+             bar above the items (Gezgin, K109); a phone, without right-click, keeps Info here. -->
         <action
           :icon="viewIcon"
           :label="t('buttons.switchView')"
           @action="switchView"
         />
-        <action icon="info" :label="t('buttons.info')" show="info" />
+        <action
+          v-if="isMobile"
+          icon="info"
+          :label="t('buttons.info')"
+          show="info"
+        />
       </template>
     </header-bar>
 
     <div v-if="isMobile && fileStore.selectedCount > 0" id="file-selection">
       <span>
-        {{ t("prompts.filesSelected", fileStore.selectedCount) }}
+        {{ t("prompts.selectedCount", { count: fileStore.selectedCount }) }}
       </span>
       <action
         v-if="canRestore"
@@ -97,6 +90,7 @@
         data-clear-on-click="true"
         :class="authStore.user?.viewMode ?? ''"
         @click="handleEmptyAreaClick"
+        @contextmenu="showContextMenu"
       >
         <div>
           <div class="item header">
@@ -122,11 +116,7 @@
           <h2 data-clear-on-click="true" v-if="group.items.length > 0">
             {{ t(group.title) }}
           </h2>
-          <div
-            v-if="group.items.length > 0"
-            data-clear-on-click="true"
-            @contextmenu="showContextMenu"
-          >
+          <div v-if="group.items.length > 0" data-clear-on-click="true">
             <item
               v-for="item in group.items"
               :key="item.id"
@@ -151,13 +141,13 @@
           @hide="isContextMenuVisible = false"
         >
           <action
-            v-if="canRestore"
+            v-if="canRestore && fileStore.selectedCount > 0"
             icon="restore_from_trash"
             :label="t('trash.restore')"
             @action="restoreSelected"
           />
           <action
-            v-if="canDelete"
+            v-if="canDelete && fileStore.selectedCount > 0"
             icon="delete_forever"
             :label="t('trash.deletePermanently')"
             @action="purgeSelected"
@@ -387,6 +377,9 @@ const switchView = async () => {
 
 const showContextMenu = (event: MouseEvent) => {
   event.preventDefault();
+  // Off the items, nothing stays selected, as in a file manager (Gezgin, K107).
+  const target = event.target as HTMLElement | null;
+  if (!target?.closest(".item:not(.header)")) fileStore.selected = [];
   isContextMenuVisible.value = true;
   contextMenuPos.value = {
     x: event.clientX + 8,

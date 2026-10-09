@@ -165,6 +165,18 @@ Work in progress. Until the first Gezgin release this tree is File Browser's las
   as a tooltip and in the Info window; there an item is shared, downloaded or taken out of the
   favourites, and changed in its own folder. A favourite follows its item through Gezgin's renames
   and moves, WebDAV's too, and goes with a delete or when the item leaves the user's reach.
+- Header: back, forward, up and home at its left, before the search bar, in "Dosyalarım", "Sık
+  kullanılanlar", "Paylaşılanlar", "Çöp" and Settings. Back and forward move through Gezgin's own
+  history in the tab and are dimmed at its ends, so they never leave Gezgin (signing in leaves
+  no login page behind); up opens the parent folder with the folder left selected (Alt+↑, ⌘↑ on
+  a Mac); home opens the top of "Dosyalarım". On a computer the header keeps, of an item's
+  actions, only the favourite star: the others, download and Info are in the right-click menu,
+  which opens anywhere in a folder and, off the items, is the folder's. A phone, without
+  right-click, keeps them in its selection bar and ⋮ menu, shows back, up and home, and its
+  selection bar spans the screen and wraps (an archive's "Sil" used to fall off it). The search
+  bar narrows, down to 10em, before the header overflows. The buttons are drawn with thin
+  outline icons (Tabler Icons, MIT), "Taşı" as a folder with an arrow, and the help window lists
+  the keys, in Turkish.
 - Gezgin's own logo, a pale blue folder, in place of File Browser's, with its favicons and app
   icons; the `branding` folder goes. The version is the short commit the image was built from
   ("Gezgin 5074d927" in the sidebar, the log and `filebrowser version`), and the command line

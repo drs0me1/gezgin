@@ -1,42 +1,40 @@
 <template>
   <div>
-    <header-bar showMenu showLogo>
+    <header-bar showMenu showLogo showNav>
       <title />
 
       <template #actions>
-        <template v-if="!isMobile">
-          <action
-            v-if="headerButtons.share"
-            icon="share"
-            :label="t('buttons.share')"
-            show="share"
-          />
-          <action
-            v-if="headerButtons.favorite"
-            icon="star"
-            :label="t('buttons.unfavorite')"
-            @action="unfavorite"
-          />
-        </template>
-
+        <!-- On a computer the right-click menu holds an item's actions; of them the header keeps
+             only the star (Gezgin, K109). A phone has no right-click: it keeps its bar and ⋮. -->
+        <action
+          v-if="!isMobile && headerButtons.favorite"
+          icon="star"
+          :label="t('buttons.unfavorite')"
+          @action="unfavorite"
+        />
         <action
           :icon="viewIcon"
           :label="t('buttons.switchView')"
           @action="switchView"
         />
         <action
-          v-if="headerButtons.download"
+          v-if="isMobile && headerButtons.download"
           icon="file_download"
           :label="t('buttons.download')"
           @action="download"
         />
-        <action icon="info" :label="t('buttons.info')" show="info" />
+        <action
+          v-if="isMobile"
+          icon="info"
+          :label="t('buttons.info')"
+          show="info"
+        />
       </template>
     </header-bar>
 
     <div v-if="isMobile && fileStore.selectedCount > 0" id="file-selection">
       <span>
-        {{ t("prompts.filesSelected", fileStore.selectedCount) }}
+        {{ t("prompts.selectedCount", { count: fileStore.selectedCount }) }}
       </span>
       <action
         v-if="headerButtons.share"
@@ -80,6 +78,7 @@
       data-clear-on-click="true"
       :class="authStore.user?.viewMode ?? ''"
       @click="handleEmptyAreaClick"
+      @contextmenu="showContextMenu"
     >
       <div>
         <div class="item header">
@@ -128,11 +127,7 @@
         <h2 data-clear-on-click="true" v-if="group.items.length > 0">
           {{ t(group.title) }}
         </h2>
-        <div
-          v-if="group.items.length > 0"
-          data-clear-on-click="true"
-          @contextmenu="showContextMenu"
-        >
+        <div v-if="group.items.length > 0" data-clear-on-click="true">
           <item
             v-for="item in group.items"
             :key="item.path"
@@ -364,6 +359,9 @@ const switchView = async () => {
 
 const showContextMenu = (event: MouseEvent) => {
   event.preventDefault();
+  // Off the items, nothing stays selected, as in a file manager (Gezgin, K107).
+  const target = event.target as HTMLElement | null;
+  if (!target?.closest(".item:not(.header)")) fileStore.selected = [];
   isContextMenuVisible.value = true;
   contextMenuPos.value = {
     x: event.clientX + 8,

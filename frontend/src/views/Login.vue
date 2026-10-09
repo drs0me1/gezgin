@@ -140,7 +140,7 @@ const submit = async (event: Event) => {
       password.value = "";
       return;
     }
-    router.push({ path: redirect() });
+    router.replace({ path: redirect() });
   } catch (e) {
     fail(e);
   }
@@ -166,7 +166,7 @@ const submitChange = async (event: Event) => {
     );
     // The change ended the session it was made in; the new password opens the next one.
     await auth.login(user.username, newPassword.value);
-    router.push({ path: redirect() });
+    router.replace({ path: redirect() });
   } catch (e) {
     fail(e);
   } finally {

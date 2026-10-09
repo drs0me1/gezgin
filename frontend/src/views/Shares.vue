@@ -1,6 +1,6 @@
 <template>
   <div>
-    <header-bar showMenu showLogo>
+    <header-bar showMenu showLogo showNav>
       <title />
     </header-bar>
 

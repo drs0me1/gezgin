@@ -120,7 +120,15 @@
     "esc": "seçimi temizle veya kapatın",
     "f1": "bu bilgi",
     "f2": "dosyayı yeniden adlandır",
-    "help": "Yardım"
+    "help": "Yardım",
+    "back": "geri ya da ileri git",
+    "up": "üst klasörü aç",
+    "rightClick": "seçilenlerin ya da klasörün işlemleri",
+    "keys": {
+      "click": "Tık",
+      "doubleClick": "Çift tık",
+      "rightClick": "Sağ tık"
+    }
   },
   "login": {
     "password": "Şifre",
@@ -224,7 +232,8 @@
     "currentPasswordMessage": "Bu işlemi onaylamak için şifrenizi girin.",
     "mergeFolders": "Aynı adlı bir klasörde yenisini seçmek iki klasörü birleştirir: hedef klasördeki diğer dosyalar kalır.",
     "numberItems": "Öğe sayısı",
-    "atLeast": "en az {size}"
+    "atLeast": "en az {size}",
+    "selectedCount": "{count} seçili"
   },
   "search": {
     "images": "Görseller",
@@ -472,5 +481,10 @@
     "timeInvalid": "Süre 1 ya da daha büyük bir tam sayı olmalı.",
     "passwordEmpty": "Yeni şifreyi yazın.",
     "tooLong": "Bir paylaşım en fazla 10 yıl sürebilir."
+  },
+  "nav": {
+    "back": "Geri ({key})",
+    "forward": "İleri ({key})",
+    "up": "Üst klasör ({key})"
   }
 }

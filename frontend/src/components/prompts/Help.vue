@@ -12,9 +12,25 @@
         <li><strong>ESC</strong> - {{ $t("help.esc") }}</li>
         <li><strong>CTRL + S</strong> - {{ $t("help.ctrl.s") }}</li>
         <li><strong>CTRL + SHIFT + F</strong> - {{ $t("help.ctrl.f") }}</li>
-        <li><strong>CTRL + Click</strong> - {{ $t("help.ctrl.click") }}</li>
-        <li><strong>Click</strong> - {{ $t("help.click") }}</li>
-        <li><strong>Double click</strong> - {{ $t("help.doubleClick") }}</li>
+        <li>
+          <strong>CTRL + {{ $t("help.keys.click") }}</strong> -
+          {{ $t("help.ctrl.click") }}
+        </li>
+        <li>
+          <strong>ALT + ← / →</strong> (Mac: ⌘ [ / ⌘ ]) - {{ $t("help.back") }}
+        </li>
+        <li><strong>ALT + ↑</strong> (Mac: ⌘ ↑) - {{ $t("help.up") }}</li>
+        <li>
+          <strong>{{ $t("help.keys.rightClick") }}</strong> -
+          {{ $t("help.rightClick") }}
+        </li>
+        <li>
+          <strong>{{ $t("help.keys.click") }}</strong> - {{ $t("help.click") }}
+        </li>
+        <li>
+          <strong>{{ $t("help.keys.doubleClick") }}</strong> -
+          {{ $t("help.doubleClick") }}
+        </li>
       </ul>
     </div>
 

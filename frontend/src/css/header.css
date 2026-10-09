@@ -69,6 +69,27 @@ header .menu-button {
   height: 100%;
   width: 100%;
   max-width: 25em;
+  /* It gives way to the buttons, down to 10em (Gezgin, K104). */
+  flex: 0 1 25em;
+  min-width: 10em;
+}
+
+/* Back, forward, up and home (Gezgin, K99): plain buttons, a line between them and the search. */
+header .header-nav {
+  display: flex;
+  align-items: center;
+  margin-right: 0.5em;
+}
+
+header .header-nav:has(+ #search) {
+  margin-right: 0.75em;
+  padding-right: 0.5em;
+  border-right: 1px solid var(--borderSecondary);
+}
+
+header .header-nav .action[disabled] {
+  opacity: 0.3;
+  cursor: default;
 }
 
 #search.active {

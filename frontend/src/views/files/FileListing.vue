@@ -1,6 +1,6 @@
 <template>
   <div>
-    <header-bar showMenu showLogo>
+    <header-bar showMenu showLogo showNav>
       <search />
       <title />
       <action
@@ -11,70 +11,21 @@
       />
 
       <template #actions>
-        <template v-if="!isMobile">
-          <action
-            v-if="headerButtons.share"
-            icon="share"
-            :label="t('buttons.share')"
-            show="share"
-          />
-          <action
-            v-if="headerButtons.favorite"
-            :icon="isFavorite ? 'star' : 'star_border'"
-            :label="
-              isFavorite ? t('buttons.unfavorite') : t('buttons.favorite')
-            "
-            @action="toggleFavorite"
-          />
-          <action
-            v-if="headerButtons.rename"
-            icon="mode_edit"
-            :label="t('buttons.rename')"
-            show="rename"
-          />
-          <action
-            v-if="headerButtons.copy"
-            id="copy-button"
-            icon="content_copy"
-            :label="t('buttons.copyFile')"
-            show="copy"
-          />
-          <action
-            v-if="headerButtons.move"
-            id="move-button"
-            icon="forward"
-            :label="t('buttons.moveFile')"
-            show="move"
-          />
-          <action
-            v-if="headerButtons.extract"
-            icon="unarchive"
-            :label="t('buttons.extract')"
-            show="extract"
-          />
-          <action
-            v-if="headerButtons.archive"
-            icon="archive"
-            :label="t('buttons.archive')"
-            show="archive"
-          />
-          <action
-            v-if="headerButtons.delete"
-            id="delete-button"
-            icon="delete"
-            :label="t('buttons.delete')"
-            show="delete"
-          />
-        </template>
-
+        <!-- On a computer the right-click menu holds an item's actions; of them the header keeps
+             only the star (Gezgin, K109). A phone has no right-click: it keeps its bar and ⋮. -->
+        <action
+          v-if="!isMobile && headerButtons.favorite"
+          :icon="isFavorite ? 'star' : 'star_border'"
+          :label="isFavorite ? t('buttons.unfavorite') : t('buttons.favorite')"
+          @action="toggleFavorite"
+        />
         <action
           :icon="viewIcon"
           :label="t('buttons.switchView')"
           @action="switchView"
         />
         <action
-          v-if="headerButtons.download"
-          id="download-button"
+          v-if="isMobile && headerButtons.download"
           icon="file_download"
           :label="t('buttons.download')"
           @action="download"
@@ -93,7 +44,12 @@
           :label="t('buttons.upload')"
           @action="uploadFunc"
         />
-        <action icon="info" :label="t('buttons.info')" show="info" />
+        <action
+          v-if="isMobile"
+          icon="info"
+          :label="t('buttons.info')"
+          show="info"
+        />
         <action
           icon="check_circle"
           :label="t('buttons.selectMultiple')"
@@ -110,7 +66,7 @@
       }"
     >
       <span v-if="fileStore.selectedCount > 0">
-        {{ t("prompts.filesSelected", fileStore.selectedCount) }}
+        {{ t("prompts.selectedCount", { count: fileStore.selectedCount }) }}
       </span>
       <action
         v-if="headerButtons.share"
@@ -138,7 +94,7 @@
       />
       <action
         v-if="headerButtons.move"
-        icon="forward"
+        icon="drive_file_move"
         :label="t('buttons.moveFile')"
         show="move"
       />
@@ -171,6 +127,7 @@
         v-if="
           (fileStore.req?.numDirs ?? 0) + (fileStore.req?.numFiles ?? 0) == 0
         "
+        @contextmenu="showContextMenu"
       >
         <h2 class="message">
           <i class="material-icons">sentiment_dissatisfied</i>
@@ -200,6 +157,7 @@
         data-clear-on-click="true"
         :class="authStore.user?.viewMode ?? ''"
         @click="handleEmptyAreaClick"
+        @contextmenu="showContextMenu"
       >
         <div>
           <div class="item header">
@@ -248,11 +206,7 @@
         <h2 data-clear-on-click="true" v-if="fileStore.req?.numDirs ?? false">
           {{ t("files.folders") }}
         </h2>
-        <div
-          v-if="fileStore.req?.numDirs ?? false"
-          data-clear-on-click="true"
-          @contextmenu="showContextMenu"
-        >
+        <div v-if="fileStore.req?.numDirs ?? false" data-clear-on-click="true">
           <item
             v-for="item in dirs"
             :key="base64(item.name)"
@@ -273,11 +227,7 @@
         <h2 data-clear-on-click="true" v-if="fileStore.req?.numFiles ?? false">
           {{ t("files.files") }}
         </h2>
-        <div
-          v-if="fileStore.req?.numFiles ?? false"
-          data-clear-on-click="true"
-          @contextmenu="showContextMenu"
-        >
+        <div v-if="fileStore.req?.numFiles ?? false" data-clear-on-click="true">
           <item
             v-for="item in files"
             :key="base64(item.name)"
@@ -294,73 +244,6 @@
           >
           </item>
         </div>
-        <context-menu
-          :show="isContextMenuVisible"
-          :pos="contextMenuPos"
-          @hide="hideContextMenu"
-        >
-          <action
-            v-if="headerButtons.share"
-            icon="share"
-            :label="t('buttons.share')"
-            show="share"
-          />
-          <action
-            v-if="headerButtons.favorite"
-            :icon="isFavorite ? 'star' : 'star_border'"
-            :label="
-              isFavorite ? t('buttons.unfavorite') : t('buttons.favorite')
-            "
-            @action="toggleFavorite"
-          />
-          <action
-            v-if="headerButtons.rename"
-            icon="mode_edit"
-            :label="t('buttons.rename')"
-            show="rename"
-          />
-          <action
-            v-if="headerButtons.copy"
-            id="copy-button"
-            icon="content_copy"
-            :label="t('buttons.copyFile')"
-            show="copy"
-          />
-          <action
-            v-if="headerButtons.move"
-            id="move-button"
-            icon="forward"
-            :label="t('buttons.moveFile')"
-            show="move"
-          />
-          <action
-            v-if="headerButtons.extract"
-            icon="unarchive"
-            :label="t('buttons.extract')"
-            show="extract"
-          />
-          <action
-            v-if="headerButtons.archive"
-            icon="archive"
-            :label="t('buttons.archive')"
-            show="archive"
-          />
-          <action
-            v-if="headerButtons.delete"
-            id="delete-button"
-            icon="delete"
-            :label="t('buttons.delete')"
-            show="delete"
-          />
-          <action
-            v-if="headerButtons.download"
-            icon="file_download"
-            :label="t('buttons.download')"
-            @action="download"
-            :counter="fileStore.selectedCount"
-          />
-          <action icon="info" :label="t('buttons.info')" show="info" />
-        </context-menu>
 
         <input
           style="display: none"
@@ -392,6 +275,71 @@
           </div>
         </div>
       </div>
+      <context-menu
+        :show="isContextMenuVisible"
+        :pos="contextMenuPos"
+        @hide="hideContextMenu"
+      >
+        <action
+          v-if="headerButtons.share"
+          icon="share"
+          :label="t('buttons.share')"
+          show="share"
+        />
+        <action
+          v-if="headerButtons.favorite"
+          :icon="isFavorite ? 'star' : 'star_border'"
+          :label="isFavorite ? t('buttons.unfavorite') : t('buttons.favorite')"
+          @action="toggleFavorite"
+        />
+        <action
+          v-if="headerButtons.rename"
+          icon="mode_edit"
+          :label="t('buttons.rename')"
+          show="rename"
+        />
+        <action
+          v-if="headerButtons.copy"
+          id="copy-button"
+          icon="content_copy"
+          :label="t('buttons.copyFile')"
+          show="copy"
+        />
+        <action
+          v-if="headerButtons.move"
+          id="move-button"
+          icon="drive_file_move"
+          :label="t('buttons.moveFile')"
+          show="move"
+        />
+        <action
+          v-if="headerButtons.extract"
+          icon="unarchive"
+          :label="t('buttons.extract')"
+          show="extract"
+        />
+        <action
+          v-if="headerButtons.archive"
+          icon="archive"
+          :label="t('buttons.archive')"
+          show="archive"
+        />
+        <action
+          v-if="headerButtons.delete"
+          id="delete-button"
+          icon="delete"
+          :label="t('buttons.delete')"
+          show="delete"
+        />
+        <action
+          v-if="headerButtons.download"
+          icon="file_download"
+          :label="t('buttons.download')"
+          @action="download"
+          :counter="fileStore.selectedCount"
+        />
+        <action icon="info" :label="t('buttons.info')" show="info" />
+      </context-menu>
     </template>
   </div>
 </template>
@@ -716,7 +664,7 @@ const keyEvent = (event: KeyboardEvent) => {
       break;
     case "s":
       event.preventDefault();
-      document.getElementById("download-button")?.click();
+      if (authStore.user?.perm.download) download();
       break;
   }
 };
@@ -1206,6 +1154,9 @@ const revealPreviousItem = () => {
 
 const showContextMenu = (event: MouseEvent) => {
   event.preventDefault();
+  // Off the items, the menu is the folder's, as in a file manager (Gezgin, K107).
+  const target = event.target as HTMLElement | null;
+  if (!target?.closest(".item:not(.header)")) fileStore.selected = [];
   isContextMenuVisible.value = true;
   contextMenuPos.value = {
     x: event.clientX + 8,

@@ -1,12 +1,19 @@
 <template>
-  <button @click="action" :aria-label="label" :title="label" class="action">
-    <i class="material-icons">{{ icon }}</i>
+  <button
+    @click="action"
+    :aria-label="label"
+    :title="label"
+    :disabled="disabled"
+    class="action"
+  >
+    <icon :name="icon" />
     <span>{{ label }}</span>
     <span v-if="counter && counter > 0" class="counter">{{ counter }}</span>
   </button>
 </template>
 
 <script setup lang="ts">
+import Icon from "@/components/Icon.vue";
 import { useLayoutStore } from "@/stores/layout";
 
 const props = defineProps<{
@@ -14,6 +21,7 @@ const props = defineProps<{
   label?: string;
   counter?: number;
   show?: string;
+  disabled?: boolean;
 }>();
 
 const emit = defineEmits<{

@@ -50,7 +50,7 @@ Commit messages and README's "Changes from File Browser" describe each change.
 
 ## 3. Decisions taken
 
-The next decision number is **K99** (K99-K108 are proposed, see 4.3). "Recommended" means the operator accepted the recommendation
+The next decision number is **K110**. "Recommended" means the operator accepted the recommendation
 made in the report.
 
 **Stage B (start).** Multi-user with an admin; File Browser's forms stay even where Konsol has its
@@ -287,6 +287,42 @@ so the API (400) and `config set` refuse the same; unset values take the default
   page, in place of the clipboard (`content_paste`); the edit button is a gear (`settings`),
   "Paylaşım ayarları", as is its window's title.
 
+- K99 (operator, from three mock-ups): back, forward, up and home as plain buttons (no
+  background) at the header's left, before the search bar, in "Dosyalarım", "Sık kullanılanlar",
+  "Paylaşılanlar", "Çöp" and Settings; not in the preview, the editor or the public share page
+  (`HeaderBar`'s `showNav`, `header/Navigation.vue`).
+- K100 (recommended): back and forward follow Gezgin's own history in the tab (the router's
+  `history.state.back` and `forward`), dimmed at its ends so that they never leave Gezgin;
+  signing in replaces the login page in the history; the browser's buttons, the mouse's side
+  buttons and Alt+←/→ (⌘[ / ⌘] on a Mac) do the same.
+- K101 (recommended): up opens the parent folder, which shows the folder left selected
+  (`Files.vue` already selects the child it came from); dimmed at the top and off folders;
+  Alt+↑ (⌘↑ on a Mac), not while typing or with a window open.
+- K102 (recommended): home opens the top of "Dosyalarım", dimmed there; the breadcrumb's house
+  stays.
+- K103 (recommended): a phone shows back, up and home; forward is hidden.
+- K104 (recommended, simplified by K109): the search bar narrows, down to 10em, before the
+  header overflows; with K109 the header has at most four buttons on the right, so no ⋮ menu is
+  needed on a computer.
+- K105 (recommended): "Dosyayı taşı" is a folder with an arrow (`drive_file_move`), not the
+  right arrow (`forward`) that would read as "İleri".
+- K106 (operator: the first mock-up's icons): the buttons of the headers, the right-click menus
+  and the phone's selection bars (`Action.vue`, through `Icon.vue`) and the search bar are drawn
+  with thin outline icons, Tabler Icons 3.48.0 (MIT, its notice in `utils/icons.ts`), embedded
+  as SVG paths keyed by the Material name, a favourite's star filled; a name not in the table
+  keeps the Material font. The sidebar, the file icons and the dialogs keep theirs.
+- K107 (operator: Info is enough in the right-click menu): Info leaves the header of
+  "Dosyalarım", "Sık kullanılanlar" and "Çöp" on a computer; the right-click menu opens
+  anywhere in the listing and in an empty folder, and off the items clears the selection, so
+  that it is the folder's (Info, download); a phone keeps Info in its ⋮ menu (an iPhone has no
+  right-click); the file preview keeps it (no right-click menu there).
+- K108 (recommended): the phone's selection bar spans the screen, reads "1 seçili" and wraps;
+  at 20em it took 325 pixels of 320 for a file and 368 for an archive, "Sil" off the screen.
+- K109 (operator): on a computer the header drops what the right-click menu offers; of an
+  item's actions only the favourite star stays (with the view, upload and multiple selection,
+  which the menu does not have). Download goes too, Ctrl+S still downloads; in "Çöp" restore
+  and delete for good stay in the menu and the bar above the items. A phone keeps its bar and ⋮.
+
 ## 4. Tasks
 
 ### 4.1 Close heading 7: archive creation follow-ups (commit `601ddbaa`)
@@ -486,44 +522,25 @@ so the API (400) and `config set` refuse the same; unset values take the default
   and the bin; no console error.
 
 - [ ] **Back, forward, up and home in the header** (operator, 2026-10-09: beside the search bar,
-  arrows that go back and forth as a file manager's do, and a home button; a design first).
-  Today only the browser's own buttons go back, the breadcrumb's house goes home, and nothing
-  goes up a folder. Proposed with a mock-up, waiting: K99, a group of four buttons at the
-  header's left, before the search bar in "Dosyalarım", also on "Sık kullanılanlar",
-  "Paylaşılanlar", "Çöp" and Settings, not in the preview, the editor or the public share page;
-  K100, back and forward move through Gezgin's own history in the tab (folders, opened files,
-  pages), dimmed at either end so they never leave Gezgin, the login page replaced in the
-  history; the browser's buttons, the mouse's side buttons and Alt+←/→ (⌘[ / ⌘] on a Mac) do
-  the same; K101, up opens the parent folder with the folder left selected, dimmed at the top
-  and off folders, Alt+↑ (⌘↑) as in Explorer and Finder; K102, home opens the top of
-  "Dosyalarım", dimmed there, the breadcrumb's house kept; K103, a phone shows back, up and home
-  (the header has 221 of 375 pixels free: three take 129, four 172); tooltips name the keys for
-  the platform, and the help window lists them. The buttons on the right stay as they are: view,
-  download, upload, info and multiple selection, and, with a selection, share, favourite,
-  rename, copy, move, extract, archive and delete before them (up to 13, 43 pixels each). Found
-  while measuring: between 737 and about 1030 pixels, with one item selected, the header needs
-  1029 pixels, and "Sil" is cut in half while view, download, upload, info and multiple
-  selection fall off the right edge, out of reach. Hence K104: when the header does not fit,
-  the search bar first narrows (to 10em), then becomes its magnifier (opening full width, as on
-  a phone), and last the buttons go into the ⋮ menu with their names; measured by the page, as
-  the number of buttons changes with the selection. K105: "Dosyayı taşı" gets a folder with an
-  arrow (`drive_file_move`) in place of the right arrow (`forward`), which beside the new
-  forward arrow would read as "İleri"; also in the phone's selection bar.
-  The operator, on the second mock-up: no background colour on the buttons, the first mock-up's
-  icons were better, and "Bilgi" leaves the header, the right-click menu being enough. Third
-  proposal: K99 without any background (the buttons look like the header's others, the usual
-  hover only); K106, the thin outline icons of the first mock-up (Tabler Icons, MIT, only the
-  ones used, embedded as SVG, no new font) for everything drawn by the header's button
-  component: the header, the right-click menu and the phone's selection bar; the sidebar, the
-  file icons and the dialogs keep theirs; K107, "Bilgi" leaves the header of "Dosyalarım",
-  "Sık kullanılanlar" and "Çöp" and stays in the right-click menu, which then opens anywhere in
-  the listing (today only on the items' rows, not below them or in an empty folder), giving the
-  folder's information when nothing is selected; on a phone it stays in the ⋮ menu (an iPhone
-  has no right-click, and the selection bar is full); the file preview keeps it (no
-  right-click menu there); K108, found while measuring: the phone's selection bar is at most
-  320 pixels wide, uses 325 with one file selected and 368 with an archive ("Arşivi aç" cut,
-  "Sil" off the screen), so it spans the screen, reads "1 seçili" and wraps to a second row
-  when the buttons do not fit.
+  arrows that go back and forth as a file manager's do, and a home button; a design first):
+  K99-K109 (section 3), after three mock-ups: the second showed every button of the header and,
+  measured, two bugs of today (between 737 and 1030 pixels a selection pushed "Sil", download,
+  upload, Info and multiple selection off the header; an archive's "Sil" fell off the phone's
+  selection bar); the operator asked for no background colour, the first mock-up's thin icons,
+  Info only in the right-click menu, and then for the header to drop everything the menu offers
+  but the star. Frontend tests `utils/__tests__/navigation.test.ts` and `icons.test.ts`. Checked
+  in the browser on a local build: at the top of "Dosyalarım" all four dimmed; in `albüm` back,
+  up and home lit; up opened the top with `albüm` selected, back and forward walked the history
+  and dimmed at its ends; ⌘↑ in `albüm/2024` opened `albüm` with `2024` selected; the header
+  showed view, upload and multiple selection, and the star with an item selected; a right click
+  on an item gave its nine actions, on the empty part or an empty folder only "İndir" and
+  "Bilgi" with nothing selected, and "Bilgi" the folder's; Ctrl+S opened the download window;
+  "Çöp", "Sık kullanılanlar", "Paylaşılanlar" and Settings had back and home lit, up dimmed; at
+  800 pixels the header fits (the search 315 pixels with an archive selected); at 375 the phone
+  shows back, up and home, its ⋮ view, download, upload, Info and multiple selection, and its
+  selection bar "1 seçili" in one row for a file and two for an archive, nothing cut; the
+  preview keeps its buttons, drawn thin with a shadow, and no arrows. Waiting: the image and
+  the live check on nrm.
 
 ### 4.4 New decisions to put to the operator
 

@@ -120,7 +120,15 @@
     "esc": "clear selection and/or close the prompt",
     "f1": "this information",
     "f2": "rename file",
-    "help": "Help"
+    "help": "Help",
+    "back": "go back or forward",
+    "up": "open the parent folder",
+    "rightClick": "the actions of the selection or of the folder",
+    "keys": {
+      "click": "Click",
+      "doubleClick": "Double click",
+      "rightClick": "Right click"
+    }
   },
   "login": {
     "password": "Password",
@@ -224,7 +232,8 @@
     "currentPasswordMessage": "Enter your password to validate this action.",
     "mergeFolders": "When a folder has the same name, keeping the new one merges them: the other files in the destination folder stay.",
     "numberItems": "Number of items",
-    "atLeast": "at least {size}"
+    "atLeast": "at least {size}",
+    "selectedCount": "{count} selected"
   },
   "search": {
     "images": "Images",
@@ -472,5 +481,10 @@
     "timeInvalid": "The duration must be a whole number, 1 or more.",
     "passwordEmpty": "Type the new password.",
     "tooLong": "A share lasts at most 10 years."
+  },
+  "nav": {
+    "back": "Back ({key})",
+    "forward": "Forward ({key})",
+    "up": "Parent folder ({key})"
   }
 }

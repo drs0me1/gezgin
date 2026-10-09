@@ -8,6 +8,7 @@
       :label="t('buttons.toggleSidebar')"
       @action="layoutStore.showHover('sidebar')"
     />
+    <Navigation v-if="showNav" />
 
     <slot />
 
@@ -40,12 +41,15 @@ import { useLayoutStore } from "@/stores/layout";
 import { logoURL } from "@/utils/constants";
 
 import Action from "@/components/header/Action.vue";
+import Navigation from "@/components/header/Navigation.vue";
 import { computed, useSlots } from "vue";
 import { useI18n } from "vue-i18n";
 
 defineProps<{
   showLogo?: boolean;
   showMenu?: boolean;
+  // Back, forward, up and home (Gezgin, K99).
+  showNav?: boolean;
 }>();
 
 const layoutStore = useLayoutStore();
