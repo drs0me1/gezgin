@@ -457,7 +457,7 @@ so the API (400) and `config set` refuse the same; unset values take the default
   MiB" with its old place as tooltip; "Yeni klasör" there shows the message and opens nothing; no
   console error.
 
-- [ ] **A "Paylaşılanlar" page** (operator, 2026-10-09: after "Sık kullanılanlar" in the sidebar,
+- [x] **A "Paylaşılanlar" page** (operator, 2026-10-09: after "Sık kullanılanlar" in the sidebar,
   the shares as a table, a fixed list view, shares editable; a design first): K94-K97 (section
   3). Before, the shares were only in Settings → "Paylaşım yönetimi" and a share could not be
   changed: changing one meant a new share and a new address. Go tests `TestShareEditLink`,
@@ -468,8 +468,12 @@ so the API (400) and `config set` refuse the same; unset values take the default
   one let in); a WebDAV share made read-write for 30 days; 3700 days refused with "Bir paylaşım en
   fazla 10 yıl sürebilir."; a password removed and the link made permanent (it opened without
   one); a share removed after a question naming it; `/settings/shares` led to the page; "Yeni
-  klasör" gave its message; no overflow at 841 and 375 pixels. Waiting: the image and the live
-  check on nrm.
+  klasör" gave its message; no overflow at 841 and 375 pixels. Live on nrm (`9f88bee9`, the
+  operator's session, looking only): the page lists the operator's one share, `movies`, with its
+  lock, "WebDAV · salt okunur", "Kullanıcı: test", "Süresiz" and "Paylaşan: admin"; its edit
+  window opens with nothing changed (end and password kept, read-write off) and was closed
+  without saving; `/settings/shares` leads to the page; the settings tabs no longer have
+  "Paylaşım yönetimi"; no console error.
 
 ### 4.4 New decisions to put to the operator
 
