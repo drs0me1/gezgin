@@ -31,6 +31,7 @@ import (
 	"github.com/filebrowser/filebrowser/v2/storage"
 	"github.com/filebrowser/filebrowser/v2/trash"
 	"github.com/filebrowser/filebrowser/v2/users"
+	"github.com/filebrowser/filebrowser/v2/version"
 )
 
 var (
@@ -195,10 +196,7 @@ user created with the credentials from options "username" and "password".`,
 			return fmt.Errorf("auth method %q: %w; switch to json with 'config set --auth.method json'", set.AuthMethod, err)
 		}
 
-		log.Println("NOTICE: File Browser is being wound down.")
-		log.Println("NOTICE: The project is archived on 2026-09-01, after which there will be no")
-		log.Println("NOTICE: further releases and no security fixes. Known unfixed issues are at")
-		log.Println("NOTICE: https://github.com/filebrowser/filebrowser/security/advisories")
+		log.Printf("Gezgin %s", version.Version)
 
 		root, err := filepath.Abs(server.Root)
 		if err != nil {

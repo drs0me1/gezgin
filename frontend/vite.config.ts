@@ -4,7 +4,6 @@ import zlib from "node:zlib";
 import { defineConfig, type Plugin } from "vite";
 import vue from "@vitejs/plugin-vue";
 import VueI18nPlugin from "@intlify/unplugin-vue-i18n/vite";
-import legacy from "@vitejs/plugin-legacy";
 import { compression } from "vite-plugin-compression2";
 
 // aceAssets ships the editor's modes, themes, workers and snippets with Gezgin instead of loading
@@ -47,10 +46,6 @@ const plugins = [
   vue(),
   VueI18nPlugin({
     include: [path.resolve(__dirname, "./src/i18n/**/*.json")],
-  }),
-  legacy({
-    // defaults already drop IE support
-    targets: ["defaults"],
   }),
   compression({ include: /\.js$/, deleteOriginalAssets: false }),
 ];
@@ -104,14 +99,13 @@ export default defineConfig(({ command }) => {
         },
       },
       experimental: {
+        // The page names its files under the static URL; the scripts find the others relative
+        // to themselves, with no inline helper (Gezgin: the CSP allows no inline script).
         renderBuiltUrl(filename, { hostType }) {
-          if (hostType === "js") {
-            return { runtime: `window.__prependStaticUrl("${filename}")` };
-          } else if (hostType === "html") {
+          if (hostType === "html") {
             return `[{[ .StaticURL ]}]/${filename}`;
-          } else {
-            return { relative: true };
           }
+          return { relative: true };
         },
       },
     };

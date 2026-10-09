@@ -1,8 +1,10 @@
 package fbhttp
 
 import (
+	"encoding/json"
 	"io/fs"
 	"net/http"
+	"path"
 
 	"github.com/gorilla/mux"
 	"github.com/spf13/afero"
@@ -31,12 +33,6 @@ func NewHandler(
 	server.CaseInsensitiveFs = files.CaseInsensitive(afero.NewOsFs(), server.Root)
 
 	r := mux.NewRouter()
-	r.Use(func(next http.Handler) http.Handler {
-		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-			w.Header().Set("Content-Security-Policy", `default-src 'self'; style-src 'unsafe-inline';`)
-			next.ServeHTTP(w, r)
-		})
-	})
 	index, static := getStaticHandlers(store, server, assetsFs)
 
 	monkey := func(fn handleFunc, prefix string) http.Handler {
@@ -44,10 +40,15 @@ func NewHandler(
 	}
 
 	r.HandleFunc("/health", healthHandler)
+	r.HandleFunc("/manifest.webmanifest", manifestHandler(server))
 	r.PathPrefix("/static").Handler(static)
 	r.NotFoundHandler = index
 
 	api := r.PathPrefix("/api").Subrouter()
+	// An unknown API path is not the page (Gezgin).
+	api.NotFoundHandler = http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
+		http.Error(w, "404 Not Found", http.StatusNotFound)
+	})
 
 	tokenExpirationTime := server.GetTokenExpirationTime(DefaultTokenExpirationTime)
 	api.Handle("/login", monkey(loginHandler(tokenExpirationTime, newLoginLimiter()), ""))
@@ -105,5 +106,51 @@ func NewHandler(
 	public.PathPrefix("/dl").Handler(monkey(publicDlHandler(shareLimiter), "/api/public/dl/")).Methods("GET")
 	public.PathPrefix("/share").Handler(monkey(publicShareHandler(shareLimiter), "/api/public/share/")).Methods("GET")
 
-	return stripPrefix(server.BaseURL, r), nil
+	return stripPrefix(server.BaseURL, withSecurityHeaders(r)), nil
+}
+
+// pageCSP is the policy of Gezgin's pages, and of every answer that does not set its own (Gezgin):
+// scripts come only from Gezgin's files, and no other site may frame Gezgin. Ace and the video
+// player run workers from blob: URLs, some stylesheets carry their icon fonts as data: URLs, and
+// the PDF preview is an <object>.
+const pageCSP = "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; " +
+	"img-src 'self' data: blob:; font-src 'self' data:; media-src 'self' blob:; worker-src 'self' blob:; object-src 'self'; " +
+	"frame-ancestors 'none'; base-uri 'self'; form-action 'self'"
+
+// rawCSP is the policy of a user's file served as it is: it runs no script, and only Gezgin may
+// frame it, for the PDF preview.
+const rawCSP = "default-src 'self'; style-src 'unsafe-inline'; script-src 'none'; frame-ancestors 'self'"
+
+// withSecurityHeaders sets the headers of every answer. It wraps the whole router, so that the
+// page, which the router serves as its not-found handler, has them too; a middleware does not
+// reach that handler.
+func withSecurityHeaders(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		h := w.Header()
+		h.Set("Content-Security-Policy", pageCSP)
+		h.Set("Referrer-Policy", "same-origin")
+		h.Set("X-Content-Type-Options", "nosniff")
+		next.ServeHTTP(w, r)
+	})
+}
+
+// manifestHandler serves the web app manifest, which the page used to build in an inline script.
+func manifestHandler(server *settings.Server) http.HandlerFunc {
+	static := path.Join(server.BaseURL, "/static")
+	manifest, _ := json.Marshal(map[string]any{
+		"name":       "Gezgin",
+		"short_name": "Gezgin",
+		"icons": []map[string]string{
+			{"src": static + "/img/icons/android-chrome-192x192.png", "sizes": "192x192", "type": "image/png"},
+			{"src": static + "/img/icons/android-chrome-512x512.png", "sizes": "512x512", "type": "image/png"},
+		},
+		"start_url":        server.BaseURL + "/",
+		"display":          "standalone",
+		"background_color": "#ffffff",
+		"theme_color":      "#455a64",
+	})
+	return func(w http.ResponseWriter, _ *http.Request) {
+		w.Header().Set("Content-Type", "application/manifest+json")
+		_, _ = w.Write(manifest)
+	}
 }

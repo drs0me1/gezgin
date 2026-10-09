@@ -39,6 +39,7 @@ type ResourceType =
   | "pdf"
   | "text"
   | "blob"
+  | "archive"
   | "textImmutable";
 
 type DownloadFormat =

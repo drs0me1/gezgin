@@ -9,6 +9,9 @@
   opacity: 0.33;
 }
 
+.file-icons [data-type="archive"] i::before {
+  content: "folder_zip";
+}
 .file-icons [data-type="audio"] i::before {
   content: "volume_up";
 }

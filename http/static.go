@@ -40,7 +40,9 @@ func handleWithStaticData(w http.ResponseWriter, _ *http.Request, d *data, fSys 
 		return http.StatusInternalServerError, err
 	}
 
-	data["Json"] = template.JS(strings.ReplaceAll(string(b), `'`, `\'`))
+	// The page reads them from a JSON data block, not a script (Gezgin: the CSP allows no inline
+	// script). json.Marshal escapes <, > and &, so the block cannot be closed early.
+	data["Json"] = template.JS(b)
 
 	fileContents, err := fs.ReadFile(fSys, file)
 	if err != nil {
@@ -64,8 +66,6 @@ func getStaticHandlers(store *storage.Storage, server *settings.Server, assetsFs
 			return http.StatusNotFound, nil
 		}
 
-		w.Header().Set("x-xss-protection", "1; mode=block")
-		w.Header().Set("X-Content-Type-Options", "nosniff")
 		return handleWithStaticData(w, r, d, assetsFs, "public/index.html", "text/html; charset=utf-8")
 	}, "", store, server)
 

@@ -171,7 +171,14 @@ import { useI18n } from "vue-i18n";
 // Prevents browser memory issues with large files
 const CSV_MAX_SIZE = 5 * 1024 * 1024;
 
-const mediaTypes: ResourceType[] = ["image", "video", "audio", "blob"];
+// An archive opens as a file (blob), so the preview steps through archives too.
+const mediaTypes: ResourceType[] = [
+  "image",
+  "video",
+  "audio",
+  "blob",
+  "archive",
+];
 
 const previousLink = ref<string>("");
 const nextLink = ref<string>("");

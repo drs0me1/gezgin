@@ -25,53 +25,15 @@
     />
     <meta name="apple-mobile-web-app-title" content="Gezgin" />
 
-    <!-- Add to home screen for Android and modern mobile browsers -->
     <link
       rel="manifest"
-      id="manifestPlaceholder"
-      crossorigin="use-credentials"
+      href="[{[ .BaseURL ]}]/manifest.webmanifest"
     />
     <meta name="theme-color" content="#2979ff" />
 
-    <!-- Inject Some Variables and generate the manifest json -->
-    <script>
-      // We can assign JSON directly
-      window.FileBrowser = [{[ .Json ]}];
-      // Global function to prepend static url
-      window.__prependStaticUrl = (url) => {
-        return `${window.FileBrowser.StaticURL}/${url.replace(/^\/+/, "")}`;
-      };
-      var dynamicManifest = {
-        name: "Gezgin",
-        short_name: "Gezgin",
-        icons: [
-          {
-            src:
-              window.location.origin +
-              window.__prependStaticUrl("/img/icons/android-chrome-192x192.png"),
-            sizes: "192x192",
-            type: "image/png",
-          },
-          {
-            src:
-              window.location.origin +
-              window.__prependStaticUrl("/img/icons/android-chrome-512x512.png"),
-            sizes: "512x512",
-            type: "image/png",
-          },
-        ],
-        start_url: window.location.origin + window.FileBrowser.BaseURL,
-        display: "standalone",
-        background_color: "#ffffff",
-        theme_color: "#455a64",
-      };
-
-      const stringManifest = JSON.stringify(dynamicManifest);
-      const blob = new Blob([stringManifest], { type: "application/json" });
-      const manifestURL = URL.createObjectURL(blob);
-      document
-        .querySelector("#manifestPlaceholder")
-        .setAttribute("href", manifestURL);
+    <!-- The server's settings, read by the app (a data block: the CSP allows no inline script) -->
+    <script id="gezgin-settings" type="application/json">
+      [{[ .Json ]}]
     </script>
 
     <style>

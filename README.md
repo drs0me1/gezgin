@@ -120,6 +120,22 @@ Work in progress. Until the first Gezgin release this tree is File Browser's las
   is not UTF-8 or holds a control character, a chosen `.gezgin-` item, a file or folder more than
   64 folders deep) are left out and counted; names Windows would refuse are counted. A job stops on more than 10,000 files and folders, a file that changes
   while it is packed, more than 999 volumes, or when less than 1 GiB would be left free.
+- Security headers: every answer carries a Content Security Policy, the page too, which had none
+  (the router serves it as its not-found handler, which the header middleware never reached):
+  scripts come only from Gezgin's own files, no other site may frame Gezgin, and
+  `Referrer-Policy: same-origin` is sent. A user's file served as it is runs no script and may be
+  framed by Gezgin alone, for the PDF preview. The page has no inline script: its settings come as
+  a JSON data block and the web app manifest from `/manifest.webmanifest`. The old-browser
+  (legacy) build is removed, 5 MB less: Gezgin needs a browser from about 2022 on. An unknown
+  `/api/` path answers 404 instead of the page.
+- Listings: archives and the parts of a set (`.r00`, `.zip.001`, `.part2.rar`, `.tgz`, ...) are
+  listed as archives, and a file whose extension names a type other than text is no longer listed
+  as text (both were, under 10 MB, as no header is read for a listing).
+- File Browser's leftovers are removed: the sunset card on the settings page, the start-up notices
+  (one line, "Gezgin <version>", instead), the contribution guide, code of conduct, issue and pull
+  request templates, Transifex and PR-title workflow, the install docs and the s6 image variant.
+  The image listens on 8080 by default and has no `HEALTHCHECK`, which an OCI image drops anyway.
+- Every text of the interface is in Turkish, with "klasör" and "şifre" throughout.
 - Command runner and hooks: removed (File Browser kept them off by default as unsafe). There is no
   terminal, `/api/command`, execute permission, per-user command list, `shell` or `commands`
   setting, command on file events or `cmds` command, and Gezgin starts no other program.

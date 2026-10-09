@@ -1,44 +1,29 @@
-<p align="center">
-  <img src="../branding/banner.png" width="550"/>
-</p>
+# Gezgin documentation
 
-> [!WARNING]
->
-> **File Browser is archived on 2026-09-01.** There will be no further releases and no security fixes. Existing releases and Docker images stay online. For the known unaddressed security issues and hardening guidance, read the [README](../README.md#security).
-
-File Browser provides a file managing interface within a specified directory and it can be used to upload, delete, preview and edit your files. It is a **create-your-own-cloud**-kind of software where you can just install it on your server, direct it to a path and access your files through a nice web interface.
-
-![Preview](static/example.gif)
+Gezgin is a file manager for the Konsol server panel, a modified fork of File Browser. What it
+changes from File Browser is listed in the [README](../README.md#changes-from-file-browser).
 
 ## Contents
 
-- [Installation](installation.md)
-- [Customization](customization.md)
 - [Authentication](authentication.md)
-- [Deployment](deployment.md)
+- [Customization](customization.md)
 - [Troubleshooting](troubleshooting.md)
 - [Command Line Usage](cli/filebrowser.md)
 
-Project-level documents live in the repository root: [README](../README.md), [Building File Browser](../CONTRIBUTING.md), [Security Policy](../SECURITY.md), [Code of Conduct](../CODE-OF-CONDUCT.md), [Changelog](../CHANGELOG.md) and [License](../LICENSE).
+## Running
 
-## Features
+Gezgin runs as a container, `ghcr.io/drs0me1/gezgin:main`, which a push to `main` builds. It
+listens on port 8080 (`FB_PORT`), serves the files of `/srv`, keeps its database and thumbnails in
+`/database` and its configuration in `/config`. WebDAV shares are served on a port of their own
+when `FB_WEBDAV_PORT` is set. On first start with an empty database, quick setup creates the admin
+and logs a generated password, to be changed at the first login.
 
-- **Easy Login System**
+## Building
 
-  ![Login screen](static/1.jpg)
+```sh
+cd frontend && pnpm install --frozen-lockfile && pnpm run build && cd ..
+go build -o filebrowser .
+```
 
-- **Sleek Interface**
-
-  ![File listing](static/2.jpg)
-
-- **User Management**
-
-  ![User management](static/3.jpg)
-
-- **File Editing**
-
-  ![File editor](static/4.jpg)
-
-- **Customization**
-
-  ![Customization settings](static/6.jpg)
+The program is still called `filebrowser` and the Go module path stays
+`github.com/filebrowser/filebrowser/v2`.

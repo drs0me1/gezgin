@@ -24,6 +24,7 @@ import (
 
 	fberrors "github.com/filebrowser/filebrowser/v2/errors"
 	"github.com/filebrowser/filebrowser/v2/rules"
+	"github.com/filebrowser/filebrowser/v2/unpack"
 	"github.com/spf13/afero"
 )
 
@@ -241,6 +242,11 @@ func (i *FileInfo) detectType(modify, saveContent, readHeader bool, calcImgRes b
 		if mimetype == "" {
 			mimetype = http.DetectContentType(buffer)
 		}
+	} else if unpack.IsArchive(i.Name) {
+		// A listing reads no header, so an archive, or a part of a set, small enough passed for
+		// text (Gezgin): it is named by the rule "Arşivi aç" follows.
+		i.Type = "archive"
+		return nil
 	}
 
 	switch {
@@ -264,6 +270,10 @@ func (i *FileInfo) detectType(modify, saveContent, readHeader bool, calcImgRes b
 		return nil
 	case strings.HasSuffix(mimetype, "pdf"):
 		i.Type = "pdf"
+		return nil
+	case !readHeader && mimetype != "" && !isTextType(mimetype):
+		// Without the header, an extension that names another type is not text (Gezgin).
+		i.Type = "blob"
 		return nil
 	case (strings.HasPrefix(mimetype, "text") || !isBinary(buffer)) && i.Size <= 10*1024*1024: // 10 MB
 		i.Type = "text"
@@ -293,6 +303,23 @@ func (i *FileInfo) detectType(modify, saveContent, readHeader bool, calcImgRes b
 	}
 
 	return nil
+}
+
+// textTypes are the parts of a MIME type that make it text, besides text/*.
+var textTypes = []string{"json", "xml", "javascript", "ecmascript", "yaml", "toml", "x-sh",
+	"shellscript", "x-csh", "sql", "subrip", "x-tex", "latex", "php", "perl", "python", "ruby"}
+
+// isTextType reports whether a file of the MIME type mimetype is text.
+func isTextType(mimetype string) bool {
+	if strings.HasPrefix(mimetype, "text/") {
+		return true
+	}
+	for _, t := range textTypes {
+		if strings.Contains(mimetype, t) {
+			return true
+		}
+	}
+	return false
 }
 
 func calculateImageResolution(fSys afero.Fs, filePath string) (*ImageResolution, error) {
