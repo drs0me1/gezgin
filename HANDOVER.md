@@ -50,7 +50,7 @@ Commit messages and README's "Changes from File Browser" describe each change.
 
 ## 3. Decisions taken
 
-The next decision number is **K123**. "Recommended" means the operator accepted the recommendation
+The next decision number is **K123** (K123-K128 are proposed, see 4.3). "Recommended" means the operator accepted the recommendation
 made in the report.
 
 **Stage B (start).** Multi-user with an admin; File Browser's forms stay even where Konsol has its
@@ -666,6 +666,19 @@ so the API (400) and `config set` refuse the same; unset values take the default
   read "2 öğe · 1.64 GiB" with no buttons; a right click on its empty part gave "Tümünü geri
   yükle", "Tümünü sil", "Bilgi" (closed unused, the trash untouched); the sidebar showed
   "5.4 GiB / 251 GiB kullanıldı" on the trash page.
+- [ ] **Words and icons of the menus, the view switch** (operator, 2026-10-09, with two
+  screenshots: the header with the view button and an empty spot at the right of the path row
+  circled, and a folder's right-click menu; a design first). Proposed with a mock-up, waiting:
+  K123, "Sık kullanılanlar" becomes "Favoriler" everywhere ("Favorilere ekle", "Favorilerden
+  çıkar", "{ad} favorilere eklendi", the mark's "Favori", "En fazla 20 favori olabilir.");
+  K124, "Dosyayı kopyala" and "Dosyayı taşı" become "Kopyala" and "Taşı"; K125, the view button
+  (its "next: gallery" icon read as pictures) leaves the header for the right end of the path
+  row, where the operator circled, as three icons (list, tiles, large tiles: `layout-list`,
+  `layout-grid`, `layout-cards`), the one in use in the accent colour; on the pages without a
+  path row at the right of their top line (the favourites get one with their count), the phone's
+  ⋮ losing it; K126, "Yeniden adlandır" gets a text box with a cursor (`forms`, as Windows 11),
+  or the I-beam (`cursor-text`); K127, "Arşiv oluştur" a zipped file (`file-zip`), or `zip`;
+  K128, no count badge on "İndir" in the right-click menu (it covered the icon).
 
 ### 4.4 New decisions to put to the operator
 
