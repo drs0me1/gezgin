@@ -20,7 +20,17 @@ export const useArchiveStore = defineStore("archive", {
   },
   actions: {
     async start(paths: string[], password: string) {
-      const job = await api.extract(paths, password);
+      this.add(await api.extract(paths, password));
+    },
+    async create(
+      paths: string[],
+      name: string,
+      format: string,
+      volume: number
+    ) {
+      this.add(await api.create(paths, name, format, volume));
+    },
+    add(job: ArchiveJob) {
       this.jobs = [job, ...this.jobs.filter((j) => j.id !== job.id)];
       this.shown.push(job.id);
       this.poll();

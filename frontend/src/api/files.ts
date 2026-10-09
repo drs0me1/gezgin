@@ -125,6 +125,8 @@ export function download(format: any, ...files: string[]) {
 
   if (format) {
     url += `algo=${format}&`;
+    // A ZIP's times in the zone Windows shows them in (Gezgin).
+    url += `zone=${encodeURIComponent(Intl.DateTimeFormat().resolvedOptions().timeZone)}&`;
   }
 
   window.open(url);

@@ -45,6 +45,12 @@
             show="extract"
           />
           <action
+            v-if="headerButtons.archive"
+            icon="archive"
+            :label="t('buttons.archive')"
+            show="archive"
+          />
+          <action
             v-if="headerButtons.delete"
             id="delete-button"
             icon="delete"
@@ -60,10 +66,17 @@
         />
         <action
           v-if="headerButtons.download"
+          id="download-button"
           icon="file_download"
           :label="t('buttons.download')"
           @action="download"
           :counter="fileStore.selectedCount"
+        />
+        <action
+          v-if="isMobile && headerButtons.archive"
+          icon="archive"
+          :label="t('buttons.archive')"
+          show="archive"
         />
         <action
           v-if="headerButtons.upload"
@@ -301,6 +314,12 @@
             show="extract"
           />
           <action
+            v-if="headerButtons.archive"
+            icon="archive"
+            :label="t('buttons.archive')"
+            show="archive"
+          />
+          <action
             v-if="headerButtons.delete"
             id="delete-button"
             icon="delete"
@@ -498,7 +517,12 @@ const headerButtons = computed(() => {
       authStore.user?.perm.download,
     move: fileStore.selectedCount > 0 && authStore.user?.perm.rename,
     copy: fileStore.selectedCount > 0 && authStore.user?.perm.create,
-    // Archives on the server (Gezgin): only archives, all of them.
+    // Archives on the server (Gezgin): an archive holds the files' content, as a download does.
+    archive:
+      fileStore.selectedCount > 0 &&
+      authStore.user?.perm.create &&
+      authStore.user?.perm.download,
+    // Only archives, all of them.
     extract:
       fileStore.selectedCount > 0 &&
       authStore.user?.perm.create &&

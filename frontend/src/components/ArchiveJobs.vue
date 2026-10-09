@@ -26,26 +26,45 @@
           :data-state="job.state"
         >
           <div class="archive-job__name">
-            <i class="material-icons">{{ icons[job.state] }}</i>
-            <span>{{ job.names[0] }}</span>
-            <span v-if="job.names.length > 1">
-              +{{ job.names.length - 1 }}
-            </span>
+            <i class="material-icons">{{ icon(job) }}</i>
+            <template v-if="job.kind === 'create'">
+              <span>{{ job.name }}</span>
+            </template>
+            <template v-else>
+              <span>{{ job.names[0] }}</span>
+              <span v-if="job.names.length > 1">
+                +{{ job.names.length - 1 }}
+              </span>
+            </template>
           </div>
           <div class="archive-job__status">
             <template v-if="job.state === 'running'">
-              <span>{{
-                t("archive.running", {
-                  size: filesize(job.bytes),
-                  count: job.entries,
-                })
-              }}</span>
+              <span>{{ progress(job) }}</span>
               <button
                 class="button button--flat button--red"
                 @click="cancel(job.id)"
               >
                 {{ t("buttons.cancel") }}
               </button>
+            </template>
+            <template v-else-if="job.state === 'done' && job.kind === 'create'">
+              <span>{{
+                (job.volumes ?? 1) > 1
+                  ? t("archive.createdParts", {
+                      name: base(job.result).replace(/\.001$/, ""),
+                      count: job.volumes,
+                    })
+                  : t("archive.created", { name: base(job.result) })
+              }}</span>
+              <router-link class="link" :to="folderLink(job.folder)">
+                {{ t("archive.open") }}
+              </router-link>
+              <span v-if="job.skipped" class="archive-job__note">
+                {{ t("archive.skipped", { count: job.skipped }) }}
+              </span>
+              <span v-if="job.windows" class="archive-job__note">
+                {{ t("archive.windows", { count: job.windows }) }}
+              </span>
             </template>
             <template v-else-if="job.state === 'done'">
               <span>{{ t("archive.done", { name: base(job.result) }) }}</span>
@@ -89,6 +108,29 @@ const icons: Record<ArchiveJob["state"], string> = {
   cancelled: "cancel",
 };
 
+const icon = (job: ArchiveJob) =>
+  job.state === "running" && job.kind === "create"
+    ? "archive"
+    : icons[job.state];
+
+const progress = (job: ArchiveJob) => {
+  if (job.kind !== "create") {
+    return t("archive.running", {
+      size: filesize(job.bytes),
+      count: job.entries,
+    });
+  }
+  if (!job.planned) {
+    return t("archive.planning", { count: job.files ?? 0 });
+  }
+  const total = job.total ?? 0;
+  return t("archive.creating", {
+    percent: `%${total > 0 ? Math.floor((job.bytes * 100) / total) : 100}`,
+    size: filesize(job.bytes),
+    total: filesize(total),
+  });
+};
+
 const running = computed(() =>
   archiveStore.visible.some((job) => job.state === "running")
 );
@@ -98,8 +140,11 @@ const base = (p?: string) => (p ?? "").split("/").pop() ?? "";
 const folderLink = (p?: string) => `/files${encodePath(p ?? "/")}/`;
 
 const reason = (job: ArchiveJob) => {
-  const key = `archive.errors.${job.error}`;
-  return te(key) ? t(key) : t("archive.errors.internal");
+  const keys = [`archive.errors.${job.error}`, "archive.errors.internal"];
+  if (job.kind === "create") {
+    keys.unshift(`archive.createErrors.${job.error}`);
+  }
+  return t(keys.find((key) => te(key)) ?? "archive.errors.internal");
 };
 
 const cancel = async (id: string) => {

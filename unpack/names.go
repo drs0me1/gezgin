@@ -3,6 +3,7 @@ package unpack
 import (
 	"bytes"
 	"errors"
+	"fmt"
 	"io"
 	"io/fs"
 	"regexp"
@@ -23,10 +24,12 @@ const (
 	formatTar
 )
 
-// kind is the format of an archive and, for a tar, its compression.
+// kind is the format of an archive and, for a tar, its compression; volumes tells that it is
+// split byte by byte in volumes, as 7-Zip splits: name.zip.001, name.zip.002, ...
 type kind struct {
 	format      format
 	compression archives.Compression
+	volumes     bool
 }
 
 // tarSuffixes are the names of the tar files Extract opens, and of what compresses them.
@@ -48,9 +51,23 @@ var (
 	// oldPart is a later part of a RAR set named in the old way: name.rar, name.r00, name.r01,
 	// ... name.r99, name.s00, ... A .z01 is a part of a split ZIP, not of a RAR set.
 	oldPart = regexp.MustCompile(`(?i)^(.*)\.([r-y])([0-9]{2})$`)
+	// volume is a volume of a ZIP, 7z or tar split byte by byte: name.zip.001, name.zip.002, ...
+	volume = regexp.MustCompile(`^(.+)\.([0-9]{3})$`)
 )
 
 func detect(name string) kind {
+	if m := volume.FindStringSubmatch(name); m != nil {
+		k := detectWhole(m[1])
+		if k.format == formatNone || k.format == formatRar {
+			return kind{}
+		}
+		k.volumes = true
+		return k
+	}
+	return detectWhole(name)
+}
+
+func detectWhole(name string) kind {
 	lower := strings.ToLower(name)
 	switch {
 	case strings.HasSuffix(lower, ".zip"):
@@ -68,10 +85,10 @@ func detect(name string) kind {
 	return kind{}
 }
 
-// IsArchive reports whether a file of this name is one Extract opens: an archive, or a part of a
-// RAR set as one is chosen (name.rar, name.partN.rar, name.r00 to name.r99). Later parts of the
-// largest sets (name.s00, ...) are found from these; on their own, such names are more often
-// other files, as firmware.s19 is.
+// IsArchive reports whether a file of this name is one Extract opens: an archive, a volume of a
+// split one (name.zip.001, ...), or a part of a RAR set as one is chosen (name.rar,
+// name.partN.rar, name.r00 to name.r99). Later parts of the largest sets (name.s00, ...) are
+// found from these; on their own, such names are more often other files, as firmware.s19 is.
 func IsArchive(name string) bool {
 	k := detect(name)
 	if k.format != formatRar {
@@ -82,8 +99,11 @@ func IsArchive(name string) bool {
 }
 
 // Stem is the name of the folder an archive opens into: its name without the extension, and
-// without the part number for a RAR set.
+// without the part or volume number for a set.
 func Stem(name string) string {
+	if m := volume.FindStringSubmatch(name); m != nil && detect(name).volumes {
+		return Stem(m[1])
+	}
 	stem := ""
 	if m := newPart.FindStringSubmatch(name); m != nil {
 		stem = m[1]
@@ -111,9 +131,13 @@ func Stem(name string) string {
 	return stem
 }
 
-// partNumber is the place of a part in its RAR set (the first is 1), and the set's key: what
-// all of its parts' names have in common.
+// partNumber is the place of a part in its set, a RAR set or a split archive's volumes (the
+// first is 1), and the set's key: what all of its parts' names have in common.
 func partNumber(name string) (key string, number int, ok bool) {
+	if m := volume.FindStringSubmatch(name); m != nil && detect(name).volumes {
+		n, _ := strconv.Atoi(m[2])
+		return strings.ToLower(m[1]) + "#volume", n, true
+	}
 	if m := newPart.FindStringSubmatch(name); m != nil {
 		n, err := strconv.Atoi(m[3])
 		if err != nil {
@@ -151,7 +175,34 @@ func continues(fsys fs.FS, dir, last string) (bool, error) {
 	return false, nil
 }
 
-// firstPart returns the name of the first part of the RAR set that name is a part of, in dir.
+// volumeParts lists the volumes of the split archive whose first volume is first, in dir, in
+// order: a gap in their numbers is a missing volume. A missing last volume shows only when the
+// archive is read.
+func volumeParts(fsys fs.FS, dir, first string) ([]string, error) {
+	key, _, _ := partNumber(first)
+	entries, err := fs.ReadDir(fsys, dir)
+	if err != nil {
+		return nil, err
+	}
+	numbered, last := map[int]string{}, 0
+	for _, entry := range entries {
+		if k, n, ok := partNumber(entry.Name()); ok && k == key && n > 0 && !entry.IsDir() {
+			numbered[n] = entry.Name()
+			last = max(last, n)
+		}
+	}
+	parts := make([]string, 0, last)
+	for n := 1; n <= last; n++ {
+		name, ok := numbered[n]
+		if !ok {
+			return nil, fail(CodeMissingPart, fmt.Errorf("volume %03d is missing", n))
+		}
+		parts = append(parts, name)
+	}
+	return parts, nil
+}
+
+// firstPart returns the name of the first part of the set that name is a part of, in dir.
 func firstPart(fsys fs.FS, dir, name string) (string, error) {
 	key, number, ok := partNumber(name)
 	if !ok || number == 1 {

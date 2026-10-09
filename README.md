@@ -60,7 +60,11 @@ Work in progress. Until the first Gezgin release this tree is File Browser's las
   exactly); `type:` matches extensions in any case; folders the rules refuse are not searched.
 - Downloads: without the download permission a file's content, preview, subtitles and checksum are
   refused with 403 (File Browser answered an empty 202); the download dialog offers zip, tar and
-  tar.gz (the server still makes the other formats).
+  tar.gz (the server still makes the other formats). A ZIP compresses what is not compressed
+  already and keeps photos, videos, music and archives as they are (File Browser compressed
+  nothing). Special files such as FIFOs (which could hang a download), Gezgin's own files, links
+  out of the scope or into Gezgin's folders and links to a folder they lie in are left out. Ctrl+S
+  opens the download dialog again.
 - Share links: a link follows the item it shares; a rename or move takes the links of every user
   along (a link whose owner cannot reach the new place ends), and a delete ends them all, so that
   whatever later takes the old place is never served through an old link. Deleting a user deletes
@@ -91,8 +95,24 @@ Work in progress. Until the first Gezgin release this tree is File Browser's las
   keeps, a link or special file, the same name twice, a missing RAR part, a damaged archive, a
   source that changes meanwhile, more than 10,000 files and folders, or when less than 1 GiB would
   be left free on the disk; the user's rules hold for what comes out. Decoding a RAR may take up to
-  1 GiB of memory; a 7z takes what its dictionary asks. Archives are not made on the server: a
-  download packs folders already.
+  1 GiB of memory; a 7z takes what its dictionary asks. A ZIP, 7z or tar split by 7-Zip or Gezgin
+  in volumes (`name.zip.001`, `name.zip.002`, ...) opens by any of them; a gap in their numbers,
+  or a missing last volume, stops the job.
+- Making archives: a user who may create and download packs files and folders of one folder into
+  a ZIP, tar or tar.gz beside them with "Arşiv oluştur" (in the header, the context menu, and the
+  "more" menu on phones), optionally in volumes of 25 MB, 100 MB, 1 GB, 4 GB (FAT32) or a size of
+  their own (`name.zip.001`, `name.zip.002`, ..., raw slices of the archive that 7-Zip and Gezgin
+  open and `copy /b` or `cat` join). One folder's contents go at the archive's root. A ZIP
+  compresses what is not compressed already; its times are written in the browser's time zone,
+  which Windows shows them in, and a file of 4 GiB or more gets ZIP64 sizes in its local header
+  too, so that 7-Zip reads it without a header error. RAR and 7z are not made (RAR's compression
+  is proprietary; Go has no 7z writer). The job runs like an extraction, one at a time, in
+  `<root>/.gezgin-arsiv/`; the archive, or every volume of a set, is put in place only when
+  complete, with a number when the name or a volume of a set of that name is taken. What the
+  rules refuse, special files, links that lead out of the scope or into Gezgin's folders, a link to
+  a folder it lies in and names an archive cannot hold are left out and counted; names Windows
+  would refuse are counted. A job stops on more than 10,000 files and folders, a file that changes
+  while it is packed, more than 999 volumes, or when less than 1 GiB would be left free.
 - Command runner and hooks: removed (File Browser kept them off by default as unsafe). There is no
   terminal, `/api/command`, execute permission, per-user command list, `shell` or `commands`
   setting, command on file events or `cmds` command, and Gezgin starts no other program.

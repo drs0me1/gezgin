@@ -53,6 +53,27 @@
   font-size: 0.9em;
 }
 
+.archive-name {
+  display: flex;
+  align-items: center;
+  gap: 0.4em;
+}
+
+.archive-name span {
+  white-space: nowrap;
+}
+
+.card#archive input,
+.card#archive select {
+  background: var(--surfacePrimary);
+  color: var(--textSecondary);
+}
+
+.archive-job__note {
+  flex-basis: 100%;
+  color: var(--textSecondary);
+}
+
 .extract-names {
   margin: 0.5em 0 1em;
   padding-left: 1.2em;

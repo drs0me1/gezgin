@@ -9,6 +9,7 @@ import (
 	"io"
 	"io/fs"
 	"path"
+	"sort"
 	"strings"
 	"syscall"
 	"unicode/utf8"
@@ -119,32 +120,111 @@ func (j *job) rarError(err error, encrypted bool) error {
 	return fail(CodeCorrupt, err)
 }
 
-// readerAt is an archive file that can be read anywhere, as ZIP and 7z need.
-type readerAt interface {
+// archiveFile is an archive's data, which ZIP and 7z read anywhere: its file, or the volumes of
+// a split archive joined.
+type archiveFile interface {
+	io.Reader
 	io.ReaderAt
 	io.Seeker
+	io.Closer
+}
+
+// openArchive opens the archive of u, with its size.
+func (j *job) openArchive(fsys *watchFS, u unit) (archiveFile, int64, error) {
+	names := []string{u.name}
+	if u.kind.volumes {
+		var err error
+		if names, err = volumeParts(fsys.FS, u.dir, u.name); err != nil {
+			return nil, 0, err
+		}
+	}
+	all := &joined{}
+	for _, name := range names {
+		f, err := fsys.Open(path.Join(u.dir, name))
+		if err != nil {
+			all.Close()
+			return nil, 0, err
+		}
+		all.files = append(all.files, f)
+		info, err := f.Stat()
+		r, ok := f.(archiveFile)
+		if err != nil || !ok {
+			all.Close()
+			return nil, 0, errors.Join(err, errors.New("the file cannot be read at random"))
+		}
+		if len(names) == 1 {
+			return r, info.Size(), nil
+		}
+		all.parts = append(all.parts, joinedPart{r: r, at: all.size, size: info.Size()})
+		all.size += info.Size()
+	}
+	return struct {
+		*io.SectionReader
+		io.Closer
+	}{io.NewSectionReader(all, 0, all.size), all}, all.size, nil
+}
+
+// joined reads files one after the other as one.
+type joined struct {
+	files []fs.File
+	parts []joinedPart
+	size  int64
+}
+
+type joinedPart struct {
+	r        io.ReaderAt
+	at, size int64
+}
+
+func (v *joined) ReadAt(p []byte, off int64) (int, error) {
+	read := 0
+	for len(p) > 0 {
+		i := sort.Search(len(v.parts), func(i int) bool { return v.parts[i].at+v.parts[i].size > off })
+		if off < 0 || i == len(v.parts) {
+			return read, io.EOF
+		}
+		part := v.parts[i]
+		chunk := p[:min(int64(len(p)), part.at+part.size-off)]
+		n, err := part.r.ReadAt(chunk, off-part.at)
+		read, p, off = read+n, p[n:], off+int64(n)
+		if n < len(chunk) {
+			if err == nil || errors.Is(err, io.EOF) {
+				err = io.ErrUnexpectedEOF // a volume got shorter
+			}
+			return read, err
+		}
+	}
+	return read, nil
+}
+
+func (v *joined) Close() error {
+	var err error
+	for _, f := range v.files {
+		err = errors.Join(err, f.Close())
+	}
+	return err
+}
+
+// cutShort tells, for a split archive, that what ends too soon lacks its last volume.
+func cutShort(u unit, err error) error {
+	if u.kind.volumes {
+		return fail(CodeMissingPart, err)
+	}
+	return fail(CodeCorrupt, err)
 }
 
 func (j *job) zip(fsys *watchFS, u unit) error {
-	f, err := fsys.Open(u.file())
+	file, size, err := j.openArchive(fsys, u)
 	if err != nil {
 		return err
 	}
-	defer f.Close()
-	file, ok := f.(readerAt)
-	if !ok {
-		return errors.New("the file cannot be read at random")
-	}
-	info, err := f.Stat()
-	if err != nil {
-		return err
-	}
+	defer file.Close()
 	// The directory is read whole before any entry: its count has to fit first.
-	if n, ok := zipCount(file, info.Size()); ok && n > uint64(j.opt.Limits.Entries-j.progress.Entries) {
+	if n, ok := zipCount(file, size); ok && n > uint64(j.opt.Limits.Entries-j.progress.Entries) {
 		return fail(CodeEntries, nil)
 	}
 
-	err = archives.Zip{}.Extract(j.ctx, f, func(_ context.Context, fi archives.FileInfo) error {
+	err = archives.Zip{}.Extract(j.ctx, file, func(_ context.Context, fi archives.FileInfo) error {
 		if hdr, ok := fi.Header.(zip.FileHeader); ok && hdr.Flags&0x1 != 0 {
 			return fail(CodeUnsupported, errors.New("an encrypted ZIP"))
 		}
@@ -161,6 +241,9 @@ func (j *job) zip(fsys *watchFS, u unit) error {
 		return e
 	}
 	switch {
+	case errors.Is(err, zip.ErrFormat) && u.kind.volumes:
+		// The first volume starts as a ZIP does; its directory, at the end, is not there.
+		return fail(CodeMissingPart, err)
 	case errors.Is(err, zip.ErrFormat):
 		return fail(CodeNotArchive, err)
 	case errors.Is(err, zip.ErrAlgorithm):
@@ -204,13 +287,18 @@ func zipCount(r io.ReaderAt, size int64) (uint64, bool) {
 }
 
 func (j *job) sevenZip(fsys *watchFS, u unit) error {
-	f, err := fsys.Open(u.file())
+	f, size, err := j.openArchive(fsys, u)
 	if err != nil {
 		return err
 	}
 	defer f.Close()
-	if _, ok := f.(readerAt); !ok {
-		return errors.New("the file cannot be read at random")
+	// The start header tells where the archive's header lies, at its end.
+	start := make([]byte, 32)
+	if _, err := f.ReadAt(start, 0); err == nil {
+		end := 32 + binary.LittleEndian.Uint64(start[12:]) + binary.LittleEndian.Uint64(start[20:])
+		if u.kind.volumes && end > uint64(size) {
+			return fail(CodeMissingPart, errors.New("the archive ends after its last volume"))
+		}
 	}
 
 	err = archives.SevenZip{Password: j.opt.Password}.Extract(j.ctx, f, func(_ context.Context, fi archives.FileInfo) error {
@@ -236,7 +324,7 @@ func (j *job) sevenZip(fsys *watchFS, u unit) error {
 }
 
 func (j *job) tar(fsys *watchFS, u unit) error {
-	f, err := fsys.Open(u.file())
+	f, _, err := j.openArchive(fsys, u)
 	if err != nil {
 		return err
 	}
@@ -265,6 +353,9 @@ func (j *job) tar(fsys *watchFS, u unit) error {
 	})
 	if ok, e := known(err); ok {
 		return e
+	}
+	if errors.Is(err, io.ErrUnexpectedEOF) {
+		return cutShort(u, err)
 	}
 	return fail(CodeCorrupt, err)
 }

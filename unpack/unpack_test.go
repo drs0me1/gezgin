@@ -714,3 +714,105 @@ func TestCancel(t *testing.T) {
 		t.Errorf("err = %v; want canceled", err)
 	}
 }
+
+// split cuts data in n volumes, named name.001, name.002, ...
+func split(data []byte, n int) map[string][]byte {
+	volumes := map[string][]byte{}
+	size := (len(data) + n - 1) / n
+	for i := 0; i < n; i++ {
+		end := min((i+1)*size, len(data))
+		volumes[fmt.Sprintf("%03d", i+1)] = data[i*size : end]
+	}
+	return volumes
+}
+
+func TestVolumeSets(t *testing.T) {
+	content := strings.Repeat("0123456789", 300)
+	sets := map[string][]byte{
+		"arsiv.zip": zipOf(t, file{name: "a.txt", data: content}, file{name: "alt/b.txt", data: "B"}),
+		"kod.tar.gz": tarGzOf(t, tarFile("a.txt", content), &tar.Header{Name: "alt/", Typeflag: tar.TypeDir},
+			tarFile("alt/b.txt", "B")),
+	}
+	for name, data := range sets {
+		t.Run(name, func(t *testing.T) {
+			e := newEnv(t)
+			volumes := split(data, 3)
+			for n, v := range volumes {
+				e.put(name+"."+n, v)
+			}
+			// Any volume names the set; the folder is named after the archive.
+			got, p, err := e.extract(defaults(), name+".002")
+			if err != nil {
+				t.Fatal(err)
+			}
+			want(t, got, "a.txt="+content, "alt/", "alt/b.txt=B")
+			if p.Archives != 1 {
+				t.Errorf("%d archives", p.Archives)
+			}
+
+			// A volume missing in the middle, or at the end.
+			for _, missing := range []string{"002", "003"} {
+				if err := os.Remove(filepath.Join(e.src, name+"."+missing)); err != nil {
+					t.Fatal(err)
+				}
+				if _, _, err := e.extract(defaults(), name+".001"); codeOf(err) != CodeMissingPart {
+					t.Errorf("without .%s: %v; want missingPart", missing, err)
+				}
+				e.put(name+"."+missing, volumes[missing])
+			}
+		})
+	}
+
+	// 7-Zip's own split 7z.
+	e := newEnv(t)
+	volumes := split(sevenZip(t, "duz"), 2)
+	e.put("belge.7z.001", volumes["001"])
+	e.put("belge.7z.002", volumes["002"])
+	got, _, err := e.extract(defaults(), "belge.7z.001")
+	if err != nil {
+		t.Fatal(err)
+	}
+	want(t, got, "belge.txt=7z icinden merhaba\n", "klasor/", "klasor/ic.txt=ic dosya\n")
+	if err := os.Remove(filepath.Join(e.src, "belge.7z.002")); err != nil {
+		t.Fatal(err)
+	}
+	if _, _, err := e.extract(defaults(), "belge.7z.001"); codeOf(err) != CodeMissingPart {
+		t.Errorf("7z without its last volume: %v; want missingPart", err)
+	}
+}
+
+func TestVolumeSetsInside(t *testing.T) {
+	// A split ZIP inside a ZIP opens once, by its first volume; a volume without its first stays.
+	e := newEnv(t)
+	inner := split(zipOf(t, file{name: "ic.txt", data: strings.Repeat("i", 400)}), 2)
+	e.put("paket.zip", zipOf(t,
+		file{name: "ic.zip.001", data: string(inner["001"])},
+		file{name: "ic.zip.002", data: string(inner["002"])},
+		file{name: "yalniz.zip.002", data: "orphan"},
+		file{name: "film.mkv.001", data: "not an archive"},
+	))
+	got, p, err := e.extract(defaults(), "paket.zip")
+	if err != nil {
+		t.Fatal(err)
+	}
+	want(t, got, "ic.zip.001="+string(inner["001"]), "ic.zip.002="+string(inner["002"]), "yalniz.zip.002=orphan",
+		"film.mkv.001=not an archive", "ic/", "ic/ic.txt="+strings.Repeat("i", 400))
+	if p.Archives != 2 {
+		t.Errorf("%d archives", p.Archives)
+	}
+}
+
+func TestVolumeNames(t *testing.T) {
+	for name, stem := range map[string]string{
+		"film.zip.001": "film", "Film.ZIP.002": "Film", "kod.tar.gz.003": "kod", "x.7z.010": "x", "y.tgz.001": "y",
+	} {
+		if !IsArchive(name) || Stem(name) != stem {
+			t.Errorf("%s: IsArchive %v, Stem %q", name, IsArchive(name), Stem(name))
+		}
+	}
+	for _, name := range []string{"film.mkv.001", "x.001", "x.rar.001", "x.zip.01", "x.zip.0001"} {
+		if IsArchive(name) {
+			t.Errorf("IsArchive(%q) = true", name)
+		}
+	}
+}

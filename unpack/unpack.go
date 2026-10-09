@@ -175,7 +175,7 @@ func (j *job) chosen(src fs.FS, names []string) ([]unit, error) {
 		}
 		k := detect(name)
 		first := name
-		if k.format == formatRar {
+		if k.format == formatRar || k.volumes {
 			var err error
 			if first, err = firstPart(src, ".", name); err != nil {
 				return nil, err
@@ -207,7 +207,7 @@ func (j *job) inner() ([]unit, error) {
 		dir, name := path.Dir(file), path.Base(file)
 		k := detect(name)
 		first := name
-		if k.format == formatRar {
+		if k.format == formatRar || k.volumes {
 			var err error
 			first, err = firstPart(dstFS, dir, name)
 			if codeOf(err) == CodeMissingPart {
