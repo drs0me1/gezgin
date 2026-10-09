@@ -25,8 +25,10 @@ archive work, removed the EPUB reader, self-signup and proxy sign-in (K59-K61), 
 (K64-K65), and verified it all live on nrm (`45c22b38`); only the real-client trials of 4.1
 remain before heading 7 is closed. Heading 8, "Yönetim ayarları ekranı", was then reviewed, its
 proposals K66-K75 accepted as recommended, implemented (`a71c0a2e`), deployed on nrm and verified
-live there. Heading 9, "Altyapı, marka ve CSP", has been reviewed; its proposals K76-K83 wait for
-the operator (4.3).
+live there. Heading 9, "Altyapı, marka ve CSP", was then reviewed, decided (K76-K83, the logo after
+two drafts), implemented (`79805244`, `5074d927`) and deployed on nrm; its checks without sign-in
+passed there. Open: the signed-in live checks, the version line of the image workflow, and
+GitHub's private vulnerability reporting (4.3). Next: heading 10.
 
 ## 2. Headings
 
@@ -40,14 +42,14 @@ the operator (4.3).
 | 6 | Paylaşım (links and WebDAV) | K32-K44 | `c8da81f8`, `aaf43505`, `403d332e` | Done, verified live |
 | 7 | Komut çalıştırma, and archives in its place | K45-K58 | `116c3549`, `b0bb8b63`, `527111be`, `6d531015`, `601ddbaa` | Last step's follow-ups open (4.1) |
 | 8 | Yönetim ayarları ekranı | K66-K75 | `a71c0a2e` | Done, verified live |
-| 9 | Altyapı, marka ve CSP | K76-K83 proposed | | Reviewed, waits for decisions (4.3) |
+| 9 | Altyapı, marka ve CSP | K76-K83 | `79805244`, `5074d927` | Done, on nrm; signed-in checks open (4.3) |
 | 10 | Konsol'dan alınacaklar | | | To do (4.3); archives already done under 7 |
 
 Commit messages and README's "Changes from File Browser" describe each change.
 
 ## 3. Decisions taken
 
-The next decision number is **K76** (K76-K83 are proposed for heading 9, see 4.3). "Recommended" means the operator accepted the recommendation
+The next decision number is **K84**. "Recommended" means the operator accepted the recommendation
 made in the report.
 
 **Stage B (start).** Multi-user with an admin; File Browser's forms stay even where Konsol has its
@@ -210,6 +212,24 @@ so the API (400) and `config set` refuse the same; unset values take the default
   `Auther.LoginPage`, `CreateUserHome`, `SaveProvisioned` and `GetByScope`.
 - K75: a saved change to the theme, the disk bar or uploads reloads the page.
 
+**9 — Altyapı, marka ve CSP** (2026-10-09; all recommended but K77's choice and K79's design)
+- K76: every answer carries the headers, the page too (it had none: the router's not-found
+  handler, which the middleware never reached; now `withSecurityHeaders` wraps the router):
+  `pageCSP` (scripts from Gezgin's files only, `frame-ancestors 'none'`, workers and media from
+  `blob:`, fonts from `data:`) and `Referrer-Policy: same-origin`; raw files `rawCSP`
+  (`script-src 'none'`, framed by Gezgin alone, for the PDF preview); no `X-XSS-Protection`.
+- K77: no inline script (settings as a JSON data block `#gezgin-settings`, the manifest at
+  `/manifest.webmanifest`, built files found through `import.meta.url`). The operator chose to
+  drop the legacy build entirely: browsers from about 2022 on.
+- K78: an unknown `/api/` path answers 404.
+- K79: Gezgin's logo is a plain pale blue folder (after a compass and an owl's eye were shown);
+  icons made from it, `branding/` removed, the help and `version` name Gezgin.
+- K80: File Browser's sunset card, start-up notices, upstream docs, templates and workflows go;
+  `SECURITY.md`, `docs/README.md` and `.claude/CLAUDE.md` are Gezgin's.
+- K81: the image listens on 8080; no `HEALTHCHECK`, `JSON.sh` or s6 variant.
+- K82: listings type archives and set parts as `archive`, and non-text extensions as `blob`.
+- K83: every interface text in Turkish; "klasör" and "şifre" throughout.
+
 ## 4. Tasks
 
 ### 4.1 Close heading 7: archive creation follow-ups (commit `601ddbaa`)
@@ -289,7 +309,7 @@ so the API (400) and `config set` refuse the same; unset values take the default
   with the theme and disk bar, no "Yönetici" box in the defaults; a chunk size of `0` gives
   "Parça boyutu 1 MiB ile 1 GiB arasında olmalı."; `20 MB` saves and reloads the page with the
   new size in force; set back to 10 MB.
-- [ ] **9 — Altyapı, marka ve CSP.** Proposed: a CSP for the index page; the inline startup
+- [x] **9 — Altyapı, marka ve CSP.** Proposed: a CSP for the index page; the inline startup
   script moved to a file; Gezgin's name, logo, icons and PWA manifest; remove
   "File Browser (untracked)", the "Sorun bildir" and other upstream links and the "project
   archived" log lines; review the Turkish texts. Keep: one Go program with the interface built in,
@@ -321,31 +341,23 @@ so the API (400) and `config set` refuse the same; unset values take the default
   sidebar's disk line among them) and 29 left in English; "dizin" and "klasör", "şifre" and
   "parola" both in use. Fine: one Go program, BoltDB, the CLI, `/health`, no request from the
   interface to another site but the sunset link, UID 1000 with no capabilities on nrm.
-  Proposals, recommended:
-  - K76: every answer carries the headers, the page too: `default-src 'self'; script-src 'self';
-    style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; media-src 'self' blob:;
-    worker-src 'self' blob:; object-src 'self'; frame-ancestors 'none'; base-uri 'self';
-    form-action 'self'` and `Referrer-Policy: same-origin`; raw files keep `script-src 'none'`
-    and may be framed by Gezgin only (the PDF preview); `X-XSS-Protection` goes.
-  - K77: our inline scripts leave the page (the settings as a JSON data block, the manifest
-    served at `/manifest.webmanifest`); the legacy build stays for old tablets and phones, its
-    four fixed scripts allowed by hash (alternative: drop it, 5.1 MB less, but browsers before
-    about 2022, e.g. iOS 15, would no longer open Gezgin).
-  - K78: unknown `/api/*` paths answer 404.
-  - K79: Gezgin's own logo (a simple SVG: a folder with a compass needle, shown to the operator
-    first), favicons and PWA icons made from it; File Browser's logo, icons, banner and unused
-    manifest go; alt texts "Gezgin"; the sidebar reads "Gezgin a71c0a2e".
-  - K80: File Browser's sunset traces go: the settings card, the four start-up lines (one line
-    "Gezgin <version>" instead), the docs' warning; `SECURITY.md` and `.claude/CLAUDE.md` are
-    rewritten for Gezgin (the latter pointing to this handover); `transifex.yml`, `lint-pr.yaml`
-    and the upstream-only docs go; `CHANGELOG.md` stays as File Browser's history.
-  - K81: the image listens on 8080 by default (`EXPOSE 8080`); its `HEALTHCHECK`, which nrm does
-    not use, goes with the `JSON.sh` download; `Dockerfile.s6` and `docker/s6` go.
-  - K82: listings type known archives and their parts (the "Arşivi aç" rule) as archives with an
-    archive icon, and a file whose extension names a non-text type as a file, not text; files
-    without an extension (README, Makefile) stay text.
-  - K83: the 33 texts in Turkish; one word each: "klasör" and "şifre"; the permission texts
-    reworded ("Dosya ve klasör oluşturabilir", ...).
+  Decided K76-K83 (section 3) and implemented in `79805244` and `5074d927`, with Go tests
+  (`http/security_headers_test.go`, `files/listing_type_test.go`); checked in the browser on a
+  local build: images, the PDF preview and Ace's worker under the CSP without a violation (data:
+  icon fonts needed `font-src data:`). On nrm (`79805244`), without sign-in: the CSP and
+  `Referrer-Policy` on every path, no inline script in the page, `/api/yok` 404, the manifest
+  named Gezgin, `/static/custom.css` 404, one start-up line "Gezgin gezgin-79805244"; with
+  `5074d927` the folder logo and the new icons are served.
+- [ ] **Signed-in live checks of heading 9 on nrm**, through the operator's session (section 6):
+  the sidebar, archive icons in a listing, no sunset card, a video plays, and no CSP violation in
+  the console while browsing.
+- [ ] **The image workflow's version line.** `.github/workflows/gezgin-image.yml` should set
+  `version.Version=$short` instead of `gezgin-$short`, so that the sidebar reads "Gezgin
+  5074d927" rather than "Gezgin gezgin-5074d927". The push was refused: the `gh` token lacks the
+  `workflow` scope. Either the operator runs `gh auth refresh -h github.com -s workflow`, or edits
+  the line in GitHub's web editor, as with K62.
+- [ ] **GitHub's private vulnerability reporting**, which `SECURITY.md` points to, is off for the
+  repository; turning it on is the operator's call (a repository setting).
 - [ ] **10 — Konsol'dan alınacaklar.** Folder sizes and item counts on folder tiles (Konsol
   DD-247/248) and favourite folders (DD-250). Archive extraction and creation are done (7).
 
@@ -438,7 +450,7 @@ so the API (400) and `config set` refuse the same; unset values take the default
   ```
 
 - Gezgin listens on the tailnet on port 8091, its WebDAV shares on 8092; the container's `/srv` is
-  the operator's media folder (`/srv/media` on the host). nrm runs the image of `a71c0a2e`.
+  the operator's media folder (`/srv/media` on the host). nrm runs the image of `5074d927`.
 - Live checks through the operator's session: Claude opens `http://nrm:8091/login` in its
   built-in browser, the operator signs in there (Claude does not type a password on a host that
   is not local), and Claude runs the API checks with `fetch` from that page (its token is in
