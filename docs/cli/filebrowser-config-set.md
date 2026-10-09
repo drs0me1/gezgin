@@ -16,9 +16,8 @@ filebrowser config set [flags]
 ```
       --aceEditorTheme string            ace editor's syntax highlighting theme for users
   -a, --address string                   address to listen on (default "127.0.0.1")
-      --auth.header string               HTTP header for auth.method=proxy
       --auth.logoutPage string           url of custom logout page
-      --auth.method string               authentication type (json or proxy) (default "json")
+      --auth.method string               authentication type (json) (default "json")
   -b, --baseURL string                   base url
       --branding.color string            set the theme color
       --branding.disableExternal         disable external links such as GitHub links
@@ -54,7 +53,6 @@ filebrowser config set [flags]
       --redirectAfterCopyMove            redirect to destination after copy/move
   -r, --root string                      root to prepend to relative paths (default ".")
       --scope string                     scope for users (default ".")
-  -s, --signup                           allow users to signup
       --singleClick                      use single clicks only
       --socket string                    socket to listen to (cannot be used with address, port, cert nor key flags)
       --sorting.asc                      sorting by ascending order

@@ -13,7 +13,6 @@ import (
 	"os"
 	"os/signal"
 	"path/filepath"
-	"strings"
 	"syscall"
 	"time"
 
@@ -187,13 +186,13 @@ user created with the credentials from options "username" and "password".`,
 		setupLog(server.Log)
 
 		// A database written by File Browser may still name an auth method Gezgin dropped (noauth,
-		// hook): refuse to serve rather than answer every request with an error.
+		// hook, proxy): refuse to serve rather than answer every request with an error.
 		set, err := st.Settings.Get()
 		if err != nil {
 			return err
 		}
 		if _, err = st.Auth.Get(set.AuthMethod); err != nil {
-			return fmt.Errorf("auth method %q: %w; choose json or proxy with 'config set --auth.method'", set.AuthMethod, err)
+			return fmt.Errorf("auth method %q: %w; switch to json with 'config set --auth.method json'", set.AuthMethod, err)
 		}
 
 		log.Println("NOTICE: File Browser is being wound down.")
@@ -450,18 +449,6 @@ func getServerSettings(v *viper.Viper, st *storage.Storage) (*settings.Server, e
 		log.Println("WARNING: you fully understand and trust the contents of every user scope.")
 	}
 
-	if set, err := st.Settings.Get(); err == nil && set.Signup {
-		scope := strings.TrimSpace(set.Defaults.Scope)
-		scopeIsRoot := scope == "" || scope == "." || scope == "/"
-
-		if !set.CreateUserDir && scopeIsRoot {
-			log.Println("WARNING: Signup is enabled without createUserDir and the default scope is")
-			log.Println("WARNING: the server root, so every self-registered user can read, modify and")
-			log.Println("WARNING: delete all files File Browser serves, including other users' files.")
-			log.Println("WARNING: Enable createUserDir, or set a default scope other than the root.")
-		}
-	}
-
 	return server, nil
 }
 
@@ -491,7 +478,6 @@ func quickSetup(v *viper.Viper, s *storage.Storage) error {
 
 	set := &settings.Settings{
 		Key:                   generateKey(),
-		Signup:                false,
 		HideLoginButton:       true,
 		CreateUserDir:         false,
 		MinimumPasswordLength: settings.DefaultMinimumPasswordLength,

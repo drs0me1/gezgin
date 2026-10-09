@@ -9,11 +9,6 @@
 
         <div class="card-content">
           <p>
-            <input type="checkbox" v-model="settings.signup" />
-            {{ t("settings.allowSignup") }}
-          </p>
-
-          <p>
             <input type="checkbox" v-model="settings.createUserDir" />
             {{ t("settings.createUserDir") }}
           </p>

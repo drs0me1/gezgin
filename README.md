@@ -21,8 +21,8 @@ Work in progress. Until the first Gezgin release this tree is File Browser's las
 
 ## Changes from File Browser
 
-- Sign-in: only the `json` (username and password) and `proxy` methods remain; `noauth`, `hook`
-  and reCAPTCHA are removed.
+- Sign-in: only the `json` method (username and password) remains; `noauth`, `hook`, `proxy` and
+  reCAPTCHA are removed. There is no self-registration: an admin creates every account.
 - Password logins are limited per address and username (HTTP 429 with `Retry-After`).
 - Sessions end when the password changes, with "Close all sessions" and when the user is deleted.
 - The admin whose password quick setup generated chooses a new one at the first login.
@@ -43,6 +43,7 @@ Work in progress. Until the first Gezgin release this tree is File Browser's las
   another disk. Items expire after 30 days by default (global settings, 0 = never); an admin sees
   how much every trash holds and can empty them all. Shares of a trashed item end and do not come
   back with a restore.
+- Viewer: the EPUB reader is removed; an `.epub` has no preview, like other files without one.
 - Editor: Ace's modes, themes and workers ship with Gezgin (no CDN). Texts in UTF-8 and in the
   Turkish code page (Windows-1254) open decoded and save back in their encoding; a text no
   supported encoding reads back unchanged opens read-only. A save names the version the file was

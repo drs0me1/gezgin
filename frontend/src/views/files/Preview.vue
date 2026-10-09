@@ -6,7 +6,7 @@
     @mousemove="toggleNavigation"
     @touchstart="toggleNavigation"
   >
-    <header-bar v-if="isPdf || isEpub || isCsv || showNav">
+    <header-bar v-if="isPdf || isCsv || showNav">
       <action icon="close" :label="$t('buttons.close')" @action="close()" />
       <title>{{ name }}</title>
       <action
@@ -74,36 +74,7 @@
     </div>
     <template v-else>
       <div class="preview">
-        <div v-if="isEpub" class="epub-reader">
-          <vue-reader
-            :location="location"
-            :url="previewUrl"
-            :get-rendition="getRendition"
-            :epubInitOptions="{
-              requestCredentials: true,
-            }"
-            :epubOptions="{
-              allowPopups: true,
-            }"
-            @update:location="locationChange"
-          />
-          <div class="size">
-            <button
-              @click="changeSize(Math.max(100, size - 10))"
-              class="reader-button"
-            >
-              <i class="material-icons">remove</i>
-            </button>
-            <button
-              @click="changeSize(Math.min(150, size + 10))"
-              class="reader-button"
-            >
-              <i class="material-icons">add</i>
-            </button>
-            <span>{{ size }}%</span>
-          </div>
-        </div>
-        <CsvViewer v-else-if="isCsv" :content="csvContent" :error="csvError" />
+        <CsvViewer v-if="isCsv" :content="csvContent" :error="csvError" />
         <ExtendedImage
           v-else-if="fileStore.req?.type == 'image'"
           :src="previewUrl"
@@ -179,13 +150,11 @@
 </template>
 
 <script setup lang="ts">
-import { useStorage } from "@vueuse/core";
 import { useAuthStore } from "@/stores/auth";
 import { useFileStore } from "@/stores/file";
 import { useLayoutStore } from "@/stores/layout";
 
 import { files as api } from "@/api";
-import { createURL } from "@/api/utils";
 import { resizePreview } from "@/utils/constants";
 import url from "@/utils/url";
 import { throttle } from "lodash-es";
@@ -194,60 +163,13 @@ import Action from "@/components/header/Action.vue";
 import ExtendedImage from "@/components/files/ExtendedImage.vue";
 import VideoPlayer from "@/components/files/VideoPlayer.vue";
 import CsvViewer from "@/components/files/CsvViewer.vue";
-import { VueReader } from "vue-reader";
 import { computed, inject, onBeforeUnmount, onMounted, ref, watch } from "vue";
 import { useRoute, useRouter } from "vue-router";
-import type { Rendition } from "epubjs";
-import { getTheme } from "@/utils/theme";
 import { useI18n } from "vue-i18n";
 
 // CSV file size limit for preview (5MB)
 // Prevents browser memory issues with large files
 const CSV_MAX_SIZE = 5 * 1024 * 1024;
-
-const location = useStorage("book-progress", 0, undefined, {
-  serializer: {
-    read: (v) => JSON.parse(v),
-    write: (v) => JSON.stringify(v),
-  },
-});
-const size = useStorage("book-size", 120, undefined, {
-  serializer: {
-    read: (v) => JSON.parse(v),
-    write: (v) => JSON.stringify(v),
-  },
-});
-
-const locationChange = (epubcifi: number) => {
-  location.value = epubcifi;
-};
-let rendition: Rendition | null = null;
-const changeSize = (val: number) => {
-  size.value = val;
-  rendition?.themes.fontSize(`${val}%`);
-};
-
-const getRendition = (_rendition: Rendition) => {
-  rendition = _rendition;
-  switch (getTheme()) {
-    case "dark": {
-      rendition.themes.override("color", "rgba(255, 255, 255, 0.6)");
-      break;
-    }
-    case "light": {
-      rendition.themes.override("color", "rgb(111, 111, 111)");
-      break;
-    }
-  }
-  rendition.themes.registerRules("h2Transparent", {
-    "h1,h2,h3,h4": {
-      "background-color": "transparent !important",
-    },
-  });
-  rendition?.themes.fontSize(`${size.value}%`);
-  rendition.themes.select("h2Transparent");
-  rendition.themes.override("background-color", "transparent", true);
-};
 
 const mediaTypes: ResourceType[] = ["image", "video", "audio", "blob"];
 
@@ -299,17 +221,10 @@ const previewUrl = computed(() => {
     return api.getPreviewURL(fileStore.req, "big");
   }
 
-  if (isEpub.value) {
-    return createURL("api/raw" + fileStore.req.path, {});
-  }
-
   return api.getDownloadURL(fileStore.req, true);
 });
 
 const isPdf = computed(() => fileStore.req?.extension.toLowerCase() == ".pdf");
-const isEpub = computed(
-  () => fileStore.req?.extension.toLowerCase() == ".epub"
-);
 const isCsv = computed(
   () =>
     fileStore.req?.extension.toLowerCase() == ".csv" &&

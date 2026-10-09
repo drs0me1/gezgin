@@ -1,18 +1,20 @@
 # Authentication
 
-There are two authentication methods. Each one of them has its own capabilities and specification. Adding another authentication method is described in [Building File Browser](../CONTRIBUTING.md#authentication-provider).
+Gezgin has one authentication method: a username and a password, which File Browser called JSON
+authentication.
 
-## JSON Auth (default)
+## JSON Auth
 
-We call it JSON Authentication but it is just the default authentication method and the one that is provided by default if you don't make any changes. It is set by default, but if you've made changes before you can revert to using JSON auth:
+Gezgin removed File Browser's reCAPTCHA option and its `hook`, `noauth` and `proxy` methods. A
+database that still names one of those methods is refused at start-up; switch it to JSON
+authentication with:
 
 ```sh
 filebrowser config set --auth.method=json
 ```
 
-Gezgin removed File Browser's reCAPTCHA option and its `hook` and `noauth` methods. A database that
-still names one of those methods is refused at start-up; choose another one with
-`filebrowser config set --auth.method=json` (or `proxy`).
+`proxy` trusted a header naming the user, which Gezgin cannot tell from one a client wrote itself:
+anyone reaching Gezgin's port directly could have signed in as any user.
 
 ### Login attempt limit
 
@@ -43,17 +45,3 @@ A deleted user's tokens are refused as well. Logging out only forgets the token 
 When quick setup generates the admin's password, the password is written to the log and the admin
 must choose a new one at the first login: until then every request except renewing the token and the
 user's own password change is refused, and the new password may not be the generated one.
-
-## Proxy Header
-
-If you have a reverse proxy you want to use to login your users, you do it via our `proxy` authentication method. To configure this method, your proxy must send an HTTP header containing the username of the logged in user:
-
-```sh
-filebrowser config set --auth.method=proxy --auth.header=X-My-Header
-```
-
-Where `X-My-Header` is the HTTP header provided by your proxy with the username.
-
-> [!WARNING]
-> 
-> File Browser will blindly trust the provided header. If the proxy can be bypassed, an attacker could simply attach the header and get admin access. Please ensure that File Browser is not accessible from untrusted networks, and that the proxy is correctly configured to strip/overwrite the header from client requests.

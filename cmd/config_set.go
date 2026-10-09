@@ -33,7 +33,7 @@ you want to change. Other options will remain unchanged.`,
 			return err
 		}
 
-		// A method Gezgin dropped (noauth, hook) can only be replaced, with --auth.method.
+		// A method Gezgin dropped (noauth, hook, proxy) can only be replaced, with --auth.method.
 		auther, err := st.Auth.Get(set.AuthMethod)
 		if err != nil && (!errors.Is(err, fberrors.ErrInvalidAuthMethod) || !flags.Changed("auth.method")) {
 			return err

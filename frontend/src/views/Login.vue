@@ -62,22 +62,10 @@
         :placeholder="t('login.password')"
       />
       <input
-        class="input input--block"
-        v-if="createMode"
-        type="password"
-        v-model="passwordConfirm"
-        :placeholder="t('login.passwordConfirm')"
-      />
-
-      <input
         class="button button--block"
         type="submit"
-        :value="createMode ? t('login.signup') : t('login.submit')"
+        :value="t('login.submit')"
       />
-
-      <p @click="toggleMode" v-if="signup">
-        {{ createMode ? t("login.loginInstead") : t("login.createAnAccount") }}
-      </p>
     </form>
   </div>
 </template>
@@ -87,17 +75,15 @@ import { LoginLimitError, StatusError } from "@/api/utils";
 import { users as usersApi } from "@/api";
 import { useAuthStore } from "@/stores/auth";
 import * as auth from "@/utils/auth";
-import { name, logoURL, signup } from "@/utils/constants";
+import { name, logoURL } from "@/utils/constants";
 import { computed, inject, ref } from "vue";
 import { useI18n } from "vue-i18n";
 import { useRoute, useRouter } from "vue-router";
 
 // Define refs
-const createMode = ref<boolean>(false);
 const error = ref<string>("");
 const username = ref<string>("");
 const password = ref<string>("");
-const passwordConfirm = ref<string>("");
 // The forced password change: the password typed at the login, when the change follows it.
 const knownPassword = ref<string>("");
 const currentPassword = ref<string>("");
@@ -110,9 +96,6 @@ const router = useRouter();
 const { t } = useI18n({});
 
 const changeMode = computed(() => authStore.user?.mustChangePassword === true);
-
-// Define functions
-const toggleMode = () => (createMode.value = !createMode.value);
 
 const $showError = inject<IToastError>("$showError")!;
 
@@ -157,18 +140,7 @@ const submit = async (event: Event) => {
   event.stopPropagation();
   error.value = "";
 
-  if (createMode.value) {
-    if (password.value !== passwordConfirm.value) {
-      error.value = t("login.passwordsDontMatch");
-      return;
-    }
-  }
-
   try {
-    if (createMode.value) {
-      await auth.signup(username.value, password.value);
-    }
-
     await auth.login(username.value, password.value);
     if (authStore.user?.mustChangePassword) {
       knownPassword.value = password.value;

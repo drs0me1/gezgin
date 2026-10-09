@@ -3,7 +3,6 @@ const disableExternal: boolean = window.FileBrowser.DisableExternal;
 const disableUsedPercentage: boolean = window.FileBrowser.DisableUsedPercentage;
 const baseURL: string = window.FileBrowser.BaseURL;
 const staticURL: string = window.FileBrowser.StaticURL;
-const signup: boolean = window.FileBrowser.Signup;
 const version: string = window.FileBrowser.Version;
 const logoURL = `${staticURL}/img/logo.svg`;
 const authMethod = window.FileBrowser.AuthMethod;
@@ -26,7 +25,6 @@ export {
   baseURL,
   staticURL,
   logoURL,
-  signup,
   version,
   authMethod,
   logoutPage,

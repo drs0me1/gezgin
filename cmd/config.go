@@ -30,7 +30,6 @@ func addConfigFlags(flags *pflag.FlagSet) {
 	addServerFlags(flags)
 	addUserFlags(flags)
 
-	flags.BoolP("signup", "s", false, "allow users to signup")
 	flags.Bool("hideLoginButton", false, "hide login button from public pages")
 	flags.Bool("createUserDir", false, "generate user's home directory automatically")
 	flags.Uint("minimumPasswordLength", settings.DefaultMinimumPasswordLength, "minimum password length for new users")
@@ -40,8 +39,7 @@ func addConfigFlags(flags *pflag.FlagSet) {
 	flags.String("fileMode", fmt.Sprintf("%O", settings.DefaultFileMode), "mode bits that new files are created with")
 	flags.String("dirMode", fmt.Sprintf("%O", settings.DefaultDirMode), "mode bits that new directories are created with")
 
-	flags.String("auth.method", string(auth.MethodJSONAuth), "authentication type (json or proxy)")
-	flags.String("auth.header", "", "HTTP header for auth.method=proxy")
+	flags.String("auth.method", string(auth.MethodJSONAuth), "authentication type (json)")
 	flags.String("auth.logoutPage", "", "url of custom logout page")
 
 	flags.String("branding.name", "", "replace 'File Browser' by this name")
@@ -55,81 +53,42 @@ func addConfigFlags(flags *pflag.FlagSet) {
 	flags.Uint16("tus.retryCount", settings.DefaultTusRetryCount, "the tus retry count")
 }
 
-func getAuthMethod(flags *pflag.FlagSet, defaults ...interface{}) (settings.AuthMethod, map[string]interface{}, error) {
+func getAuthMethod(flags *pflag.FlagSet, defaults ...interface{}) (settings.AuthMethod, error) {
 	methodStr, err := flags.GetString("auth.method")
 	if err != nil {
-		return "", nil, err
+		return "", err
 	}
 	method := settings.AuthMethod(methodStr)
 
-	var defaultAuther map[string]interface{}
 	if len(defaults) > 0 {
 		if hasAuth := defaults[0]; hasAuth != true {
 			for _, arg := range defaults {
-				switch def := arg.(type) {
-				case *settings.Settings:
+				if def, ok := arg.(*settings.Settings); ok {
 					method = def.AuthMethod
-				case auth.Auther:
-					ms, err := json.Marshal(def)
-					if err != nil {
-						return "", nil, err
-					}
-					err = json.Unmarshal(ms, &defaultAuther)
-					if err != nil {
-						return "", nil, err
-					}
 				}
 			}
 		}
 	}
 
-	return method, defaultAuther, nil
-}
-
-func getProxyAuth(flags *pflag.FlagSet, defaultAuther map[string]interface{}) (auth.Auther, error) {
-	header, err := flags.GetString("auth.header")
-	if err != nil {
-		return nil, err
-	}
-
-	if header == "" && defaultAuther != nil {
-		header = defaultAuther["header"].(string)
-	}
-
-	if header == "" {
-		return nil, errors.New("you must set the flag 'auth.header' for method 'proxy'")
-	}
-
-	return &auth.ProxyAuth{Header: header}, nil
+	return method, nil
 }
 
 func getAuthentication(flags *pflag.FlagSet, defaults ...interface{}) (settings.AuthMethod, auth.Auther, error) {
-	method, defaultAuther, err := getAuthMethod(flags, defaults...)
+	method, err := getAuthMethod(flags, defaults...)
 	if err != nil {
 		return "", nil, err
 	}
 
-	var auther auth.Auther
-	switch method {
-	case auth.MethodProxyAuth:
-		auther, err = getProxyAuth(flags, defaultAuther)
-	case auth.MethodJSONAuth:
-		auther = &auth.JSONAuth{}
-	default:
+	if method != auth.MethodJSONAuth {
 		return "", nil, fberrors.ErrInvalidAuthMethod
 	}
 
-	if err != nil {
-		return "", nil, err
-	}
-
-	return method, auther, nil
+	return method, &auth.JSONAuth{}, nil
 }
 
 func printSettings(ser *settings.Server, set *settings.Settings, auther auth.Auther) error {
 	w := tabwriter.NewWriter(os.Stdout, 0, 0, 2, ' ', 0)
 
-	fmt.Fprintf(w, "Sign up:\t%t\n", set.Signup)
 	fmt.Fprintf(w, "Hide Login Button:\t%t\n", set.HideLoginButton)
 	fmt.Fprintf(w, "Create User Dir:\t%t\n", set.CreateUserDir)
 	fmt.Fprintf(w, "Logout Page:\t%s\n", set.LogoutPage)
@@ -240,8 +199,6 @@ func getSettings(flags *pflag.FlagSet, set *settings.Settings, ser *settings.Ser
 			ser.WebDAVPort, err = flags.GetString(flag.Name)
 
 		// Settings flags from [addConfigFlags]
-		case "signup":
-			set.Signup, err = flags.GetBool(flag.Name)
 		case "hideLoginButton":
 			set.HideLoginButton, err = flags.GetBool(flag.Name)
 		case "createUserDir":

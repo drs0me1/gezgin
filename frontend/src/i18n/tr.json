@@ -120,12 +120,8 @@
     "help": "Yardım"
   },
   "login": {
-    "createAnAccount": "Bir hesap oluşturun",
-    "loginInstead": "Zaten hesabınız var mı",
     "password": "Şifre",
-    "passwordConfirm": "Şifre tekrarı",
     "passwordsDontMatch": "Şifreler uyuşmuyor",
-    "signup": "Üye Ol",
     "submit": "Giriş",
     "username": "Kullanıcı adı",
     "usernameTaken": "Kullanıcı adı mevcut",
@@ -241,7 +237,6 @@
     "allowEdit": "Dosyaları veya dizinleri düzenleyin, yeniden adlandırın ve silin",
     "allowNew": "Yeni dosyalar ve dizinler oluşturun",
     "allowPublish": "Yeni linkler ve sayfaları yayınlayın",
-    "allowSignup": "Kullanıcıların kaydolmasına izin ver",
     "hideLoginButton": "Hide the login button from public pages",
     "avoidChanges": "(değişiklikleri önlemek için boş bırakın)",
     "branding": "Marka",
@@ -332,7 +327,6 @@
     "newFolder": "Yeni klasör",
     "preview": "Önizleme",
     "settings": "Ayarlar",
-    "signup": "Kayıt",
     "siteSettings": "Site ayarları!"
   },
   "success": {

@@ -2,7 +2,7 @@ import { useAuthStore } from "@/stores/auth";
 import router from "@/router";
 import type { JwtPayload } from "jwt-decode";
 import { jwtDecode } from "jwt-decode";
-import { authMethod, baseURL, logoutPage } from "./constants";
+import { baseURL, logoutPage } from "./constants";
 import { LoginLimitError, StatusError } from "@/api/utils";
 import { setSafeTimeout } from "@/api/utils";
 
@@ -17,12 +17,6 @@ export function parseToken(token: string) {
   const authStore = useAuthStore();
   authStore.jwt = token;
   authStore.setUser(data.user);
-
-  // proxy auth with custom logout subject to unknown external timeout
-  if (logoutPage !== "/login" && authMethod === "proxy") {
-    console.warn("idle timeout disabled with proxy auth and custom logout");
-    return;
-  }
 
   if (authStore.logoutTimer) {
     clearTimeout(authStore.logoutTimer);
@@ -86,26 +80,6 @@ export async function renew(jwt: string) {
   if (res.status === 200) {
     parseToken(body);
   } else {
-    throw new StatusError(
-      body || `${res.status} ${res.statusText}`,
-      res.status
-    );
-  }
-}
-
-export async function signup(username: string, password: string) {
-  const data = { username, password };
-
-  const res = await fetch(`${baseURL}/api/signup`, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify(data),
-  });
-
-  if (res.status !== 200) {
-    const body = await res.text();
     throw new StatusError(
       body || `${res.status} ${res.statusText}`,
       res.status

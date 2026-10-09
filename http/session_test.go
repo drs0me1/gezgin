@@ -167,7 +167,7 @@ func stamplessToken(t *testing.T, id uint) string {
 
 func TestRemovedAuthMethodsAreRefused(t *testing.T) {
 	env := newSessionEnv(t)
-	for _, method := range []settings.AuthMethod{"noauth", "hook"} {
+	for _, method := range []settings.AuthMethod{"noauth", "hook", "proxy"} {
 		if _, err := env.st.Auth.Get(method); !errors.Is(err, fberrors.ErrInvalidAuthMethod) {
 			t.Errorf("auth method %s: err = %v; want ErrInvalidAuthMethod", method, err)
 		}

@@ -1,14 +1,7 @@
-## Self-Registration (Signup)
+## Accounts
 
-File Browser allows you to enable user self-registration (signup). This can be enabled via **Settings → Global Settings**, or with `filebrowser config set --signup`. Self-registered users inherit the configured **user defaults**, including the scope.
-
-> [!WARNING]
->
-> By default, the user scope is the server's root, so a self-registered user could read,
-> modify, and delete every file File Browser serves. To prevent this, either:
->
-> a. Enable `createUserDir` so each user gets their own directory; or
-> b. If users are meant to share files, set the default scope to something other than the root.
+Gezgin has no self-registration: an admin creates every account, in **Settings → User Management** or
+with `filebrowser users add`.
 
 ## Fail2ban
 
