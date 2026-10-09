@@ -1,0 +1,40 @@
+# Gezgin: copies the image's two bases, unchanged, from Docker Hub to ghcr.io/drs0me1/gezgin-base
+# (K135), so that the image's build pulls only from GitHub and never meets Docker Hub's limit on
+# anonymous pulls. Run it by hand when a base changes; the Dockerfile pins each copy by the digest
+# of the official image, which the copy keeps.
+name: Gezgin base images
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  packages: write
+
+jobs:
+  copy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Copy the bases
+        env:
+          GHCR_USER: ${{ github.actor }}
+          GHCR_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          set -euo pipefail
+          copy() {
+            src="docker://docker.io/library/$1"
+            dst="docker://ghcr.io/drs0me1/gezgin-base:$2"
+            # Docker Hub may refuse anonymous pulls for a while (429): try again later.
+            for try in 1 2 3 4 5; do
+              if skopeo copy --all --preserve-digests \
+                --dest-creds "$GHCR_USER:$GHCR_TOKEN" "$src" "$dst"; then
+                digest="$(skopeo inspect --raw --creds "$GHCR_USER:$GHCR_TOKEN" "$dst" | sha256sum | cut -d' ' -f1)"
+                echo "$2 sha256:$digest" | tee -a "$GITHUB_STEP_SUMMARY"
+                return 0
+              fi
+              sleep $((try * 60))
+            done
+            return 1
+          }
+          copy alpine:3.23 alpine-3.23
+          copy busybox:1.37.0-musl busybox-1.37.0-musl
