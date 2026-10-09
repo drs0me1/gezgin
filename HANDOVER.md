@@ -661,7 +661,11 @@ so the API (400) and `config set` refuse the same; unset values take the default
   empty part gave "Tümünü geri yükle", "Tümünü sil", "Bilgi"; the first asked "Çöpteki 3 öğe
   eski yerlerine geri yüklensin mi?" and put three test files back; the second asked in red and
   emptied the trash; the phone's ⋮ had both; the disk use over "Çöp" on the shares page, and at
-  340 pixels of height the top and bottom parts stayed with "Dosyalarım" scrolling between.
+  340 pixels of height the top and bottom parts stayed with "Dosyalarım" scrolling between. Live
+  on nrm (`d2a48090`, the operator's session in a tab of its own, looking only): the trash page
+  read "2 öğe · 1.64 GiB" with no buttons; a right click on its empty part gave "Tümünü geri
+  yükle", "Tümünü sil", "Bilgi" (closed unused, the trash untouched); the sidebar showed
+  "5.4 GiB / 251 GiB kullanıldı" on the trash page.
 
 ### 4.4 New decisions to put to the operator
 
