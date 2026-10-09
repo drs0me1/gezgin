@@ -50,7 +50,7 @@ Commit messages and README's "Changes from File Browser" describe each change.
 
 ## 3. Decisions taken
 
-The next decision number is **K135**. "Recommended" means the operator accepted the recommendation
+The next decision number is **K136**. "Recommended" means the operator accepted the recommendation
 made in the report.
 
 **Stage B (start).** Multi-user with an admin; File Browser's forms stay even where Konsol has its
@@ -389,6 +389,15 @@ so the API (400) and `config set` refuse the same; unset values take the default
 - K133 (operator): Info gives a share's name, place, kind with access and WebDAV user, address,
   end with its date, password or none, and owner (`prompts/ShareInfo.vue`).
 - K134 (operator): on a phone a tap selects, and the bottom bar has copy, settings, remove, Info.
+- K135 (operator: "let us take them into our own repository", then "a source other than
+  Docker"): the image's two bases, Docker's official `alpine:3.23` and `busybox:1.37.0-musl`, are
+  copied unchanged to `ghcr.io/drs0me1/gezgin-base` (tags `alpine-3.23`,
+  `busybox-1.37.0-musl`) by a workflow run by hand (`base-images.yml`), from Amazon's public
+  mirror of Docker's official images (`public.ecr.aws/docker/library`, the same digests), and
+  the `Dockerfile` pins the copies by the official digests (`85fe1e81…`, `5cec3fc1…`). The
+  build pulls only from GitHub, signed in. When a base changes: update both the workflow and the
+  `Dockerfile`, run the workflow, then push. The package is private, as GitHub makes new ones;
+  the image's build reads it through the repository.
 
 ## 4. Tasks
 
@@ -744,7 +753,12 @@ so the API (400) and `config set` refuse the same; unset values take the default
   tiles took whatever width the folder view had last set, as only it fitted them to the window
   (`utils/columns.ts` now fits them on every folder-like page); inside a folder view the
   right-click menu is a wrapping row, so its line had no width (it now spans the menu); long
-  menu labels wrapped (now one line, the menu up to 300 pixels).
+  menu labels wrapped (now one line, the menu up to 300 pixels). The image of `c5818fbc` failed
+  three times on Docker Hub's limit on anonymous pulls (429 for `busybox`, then `alpine`); after
+  K135 the image of `8e105e0b` built from GitHub's registry. Live on nrm (`8e105e0b`, the
+  operator's session in a tab of its own, looking only): "1 paylaşım", `movies` with its lock,
+  "WebDAV · salt okunur", "Süresiz"; its menu "Adresi kopyala", "Paylaşım ayarları",
+  "Bulunduğu klasörü aç", "Paylaşımı kaldır", "Paylaşım bilgisi", closed unused.
 
 ### 4.4 New decisions to put to the operator
 
@@ -817,6 +831,10 @@ so the API (400) and `config set` refuse the same; unset values take the default
   scripts run against a local `go build` of Gezgin or, through a port forward, against nrm.
 
 ### Image and deployment
+
+The image's bases come from GitHub's registry (`ghcr.io/drs0me1/gezgin-base`, K135), copied there
+from Amazon's mirror of Docker's official images by the `Gezgin base images` workflow, run by hand
+when a base changes; Docker Hub is not used, as its limit on anonymous pulls failed builds.
 
 - A push to `main` builds `ghcr.io/drs0me1/gezgin:main` in about five minutes; the image config's
   `org.opencontainers.image.revision` label names the commit it was built from.
