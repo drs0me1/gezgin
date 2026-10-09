@@ -521,7 +521,7 @@ so the API (400) and `config set` refuse the same; unset values take the default
   address under it; the copy button beside it said "Link kopyalandı!"; the row keeps the gear
   and the bin; no console error.
 
-- [ ] **Back, forward, up and home in the header** (operator, 2026-10-09: beside the search bar,
+- [x] **Back, forward, up and home in the header** (operator, 2026-10-09: beside the search bar,
   arrows that go back and forth as a file manager's do, and a home button; a design first):
   K99-K109 (section 3), after three mock-ups: the second showed every button of the header and,
   measured, two bugs of today (between 737 and 1030 pixels a selection pushed "Sil", download,
@@ -539,8 +539,12 @@ so the API (400) and `config set` refuse the same; unset values take the default
   800 pixels the header fits (the search 315 pixels with an archive selected); at 375 the phone
   shows back, up and home, its ⋮ view, download, upload, Info and multiple selection, and its
   selection bar "1 seçili" in one row for a file and two for an archive, nothing cut; the
-  preview keeps its buttons, drawn thin with a shadow, and no arrows. Waiting: the image and
-  the live check on nrm.
+  preview keeps its buttons, drawn thin with a shadow, and no arrows. Live on nrm (`ee65725e`,
+  the operator's session, looking only): at the top of "Dosyalarım" all four dimmed and the
+  header's right holding view, upload and multiple selection, eleven outline icons in it; in
+  `movies` back, up and home lit; up opened the top with `movies` selected; a right click on the
+  empty part gave "İndir" and "Bilgi" with nothing selected (closed unused); no console error.
+  Not yet seen with the eye there: the browser pane was hidden.
 
 ### 4.4 New decisions to put to the operator
 
