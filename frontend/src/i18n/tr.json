@@ -68,6 +68,7 @@
     "notFound": "Bu konuma ulaşılamıyor.",
     "connection": "Sunucuya ulaşılamıyor.",
     "noSpace": "Diskte yeterli boş alan yok.",
+    "fileUnreadable": "Tarayıcı dosyayı okuyamadı. Dosyayı yeniden seçip yükleyin.",
     "copyUnsupported": "Bu tarayıcı panoya kopyalayamıyor.",
     "copyDenied": "Panoya kopyalamaya izin verilmedi."
   },
@@ -192,6 +193,7 @@
     "upload": "Yükle",
     "uploadFiles": "{files} dosya yükleniyor...",
     "uploadMessage": "Yüklemek için bir seçenek belirleyin.",
+    "uploadPreparing": "Dosyalar hazırlanıyor... Telefonda fotoğraflar birkaç saniye, iCloud'dakiler daha uzun sürebilir.",
     "webdavUser": "Kullanıcı adı",
     "webdavWritable": "Yazmaya izin ver (okuma-yazma)",
     "webdavWritableWarning": "Bu kullanıcı adı ve şifreyle bağlanan herkes bu klasöre dosya ekleyebilir, dosyaları değiştirebilir ve silebilir. Silinen dosyalar çöpünüze gider.",

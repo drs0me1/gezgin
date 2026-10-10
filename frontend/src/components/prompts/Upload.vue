@@ -6,6 +6,10 @@
 
     <div class="card-content">
       <p>{{ t("prompts.uploadMessage") }}</p>
+      <p v-if="preparing" class="upload-preparing" role="status">
+        <i class="material-icons spin">autorenew</i>
+        <span>{{ t("prompts.uploadPreparing") }}</span>
+      </p>
     </div>
 
     <div class="card-action full">
@@ -33,6 +37,7 @@
 </template>
 
 <script setup lang="ts">
+import { inject, ref } from "vue";
 import { useI18n } from "vue-i18n";
 import { useRoute } from "vue-router";
 import { useLayoutStore } from "@/stores/layout";
@@ -42,13 +47,21 @@ import buttons from "@/utils/buttons";
 
 const { t } = useI18n();
 const route = useRoute();
+const $showError = inject<IToastError>("$showError")!;
 
 const layoutStore = useLayoutStore();
+
+// A phone prepares the photos picked from its library before the page gets them, from a few
+// seconds to minutes for originals kept in iCloud, and says nothing meanwhile (Gezgin, K170).
+const preparing = ref(false);
 
 // TODO: this is a copy of the same function in FileListing.vue
 const uploadInput = async (event: Event) => {
   const files = (event.currentTarget as HTMLInputElement)?.files;
-  if (files === null) return;
+  if (files === null || files.length === 0) {
+    preparing.value = false;
+    return;
+  }
 
   const folder_upload = !!files[0].webkitRelativePath;
 
@@ -70,7 +83,15 @@ const uploadInput = async (event: Event) => {
   // Checking the destination hits the server, so show it is working rather
   // than leaving the action looking inert until the upload starts.
   buttons.loading("upload");
-  const conflict = await upload.checkConflict(uploadFiles, path);
+  let conflict: Awaited<ReturnType<typeof upload.checkConflict>>;
+  try {
+    conflict = await upload.checkConflict(uploadFiles, path);
+  } catch (e: any) {
+    buttons.done("upload");
+    preparing.value = false;
+    $showError(e);
+    return;
+  }
 
   if (conflict.length > 0) {
     buttons.done("upload");
@@ -112,7 +133,11 @@ const openUpload = (isFolder: boolean) => {
   input.webkitdirectory = isFolder;
   // TODO: call the function in FileListing.vue instead
   input.onchange = uploadInput;
+  input.addEventListener("cancel", () => {
+    preparing.value = false;
+  });
   input.click();
+  preparing.value = true;
 };
 
 const uploadFile = () => {
@@ -122,3 +147,12 @@ const uploadFolder = () => {
   openUpload(true);
 };
 </script>
+
+<style scoped>
+.upload-preparing {
+  display: flex;
+  align-items: center;
+  gap: 0.5em;
+  color: var(--textSecondary);
+}
+</style>

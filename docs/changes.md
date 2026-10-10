@@ -59,7 +59,12 @@ checks behind each change are in [HANDOVER.md](../HANDOVER.md).
   and leaves the destination as it was, and an unfinished upload is never listed, downloaded or
   found. Cancelling takes the create permission instead of delete. An upload that does not fit on
   the disk is refused at the start (HTTP 507, "Diskte yeterli boş alan yok"). The Redis upload
-  cache option (`redisCacheUrl`) is removed.
+  cache option (`redisCacheUrl`) is removed. An upload no longer hangs: a request that moves no
+  bytes and gets no answer for 45 seconds is cut and the upload goes on from what the server
+  holds, and the server ends a chunk whose bytes stop for 30 seconds (408). Chunks up to 64 MiB
+  are read into memory before they are sent, as Safari on an iPhone stopped for good before the
+  second chunk of a photo from the library; a file the browser does not hand over fails with a
+  reason. While a phone prepares the picked photos, the upload window says so.
 - Search: every word has to be in the name; letter case, Turkish letters and accents do not
   matter (`ışık`, `isik` and `IŞIK` find `Işık notları.txt`; `case:sensitive` still matches
   exactly); `type:` matches extensions in any case; folders the rules refuse are not searched.

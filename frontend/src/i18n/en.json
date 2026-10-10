@@ -68,6 +68,7 @@
     "notFound": "This location can't be reached.",
     "connection": "The server can't be reached.",
     "noSpace": "There is not enough free space on the disk.",
+    "fileUnreadable": "The browser could not read the file. Select it again and upload it.",
     "copyUnsupported": "This browser cannot copy to the clipboard.",
     "copyDenied": "Copying to the clipboard was not allowed."
   },
@@ -192,6 +193,7 @@
     "upload": "Upload",
     "uploadFiles": "Uploading {files} file... | Uploading {files} files...",
     "uploadMessage": "Choose what to upload.",
+    "uploadPreparing": "Preparing the files... On a phone, photos can take a few seconds, longer when they are in iCloud.",
     "webdavUser": "Username",
     "webdavWritable": "Allow writing (read-write)",
     "webdavWritableWarning": "Anyone who connects with this username and password can add, change and delete files in this folder. Deleted files go to your trash.",

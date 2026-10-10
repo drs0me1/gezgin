@@ -31,6 +31,24 @@ import (
 // beyond that the body is not worth reading just to throw away.
 const maxPatchDrainBytes = 32 << 20 // 32MB
 
+// chunkStallTimeout ends a chunk whose bytes stop coming (Gezgin, K169). The server has no time
+// limit on a request's body, so a client that stalls in the middle of one would hold the upload
+// for ever, and its own retry would wait behind it.
+var chunkStallTimeout = 30 * time.Second
+
+// stallReader moves the request's read deadline on before every read: a chunk may take any time
+// as long as its bytes keep coming.
+type stallReader struct {
+	body io.Reader
+	rc   *http.ResponseController
+}
+
+func (s stallReader) Read(p []byte) (int, error) {
+	// A writer without deadlines (a test's recorder) reads as before.
+	_ = s.rc.SetReadDeadline(time.Now().Add(chunkStallTimeout))
+	return s.body.Read(p)
+}
+
 // drainRequestBody discards what the client already put on the wire for a
 // request the handler answered without reading. net/http only drains 256KiB on
 // its own before giving up and closing the connection, and a connection closed
@@ -289,7 +307,14 @@ func tusPatchUpload(w http.ResponseWriter, r *http.Request, d *data, cache *Uplo
 	// PATCH could stream arbitrary data to disk regardless of the length the
 	// client declared when the upload was created.
 	remaining := up.length - uploadOffset
-	bytesWritten, err := io.Copy(staged, io.LimitReader(r.Body, remaining+1))
+	body := stallReader{body: r.Body, rc: http.NewResponseController(w)}
+	bytesWritten, err := io.Copy(staged, io.LimitReader(body, remaining+1))
+	if errors.Is(err, os.ErrDeadlineExceeded) {
+		// What came is kept: the client resumes from the offset a HEAD reports. The deadline
+		// stays, so the rest of the stalled body is not waited for either.
+		return http.StatusRequestTimeout, fmt.Errorf("%s: no data for %s, the chunk ends at offset %d",
+			r.URL.Path, chunkStallTimeout, uploadOffset+bytesWritten)
+	}
 	if err == nil {
 		// Sync the file to ensure all data is written to storage
 		// to prevent file corruption.

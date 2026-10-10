@@ -51,7 +51,7 @@ short tables (features, and what changed from File Browser), kept so since K166.
 
 ## 3. Decisions taken
 
-The next decision number is **K168**. "Recommended" means the operator accepted the recommendation
+The next decision number is **K171**. "Recommended" means the operator accepted the recommendation
 made in the report.
 
 **Stage B (start).** Multi-user with an admin; File Browser's forms stay even where Konsol has its
@@ -589,6 +589,41 @@ project's page):
   and WebDAV sharing, archives and folder sizes. A fork of File Browser." and `file-manager`,
   `self-hosted`, `webdav`, `filebrowser`, `golang`, `vuejs`, `podman`, `turkish`, `english`.
 
+**Uploads from an iPhone** (operator, 2026-10-10: uploads from the phone always stopped at the
+same place, 20.97 MB of 36.52, and the first selection seemed to do nothing; a screen recording,
+then tests in the iOS Simulator and from the phone, watched on nrm):
+
+- Found: on the iPhone (Safari, through Tailscale to nrm) every file stopped after its first
+  10 MiB chunk. The server answered the chunk (204, which the phone's TCP acknowledged) and the
+  phone sent nothing more, on the open connections or on new ones; 3 minutes later the server
+  dropped the uploads as abandoned, and the browser's requests failed minutes after that. Before
+  it, the phone took one to two minutes to hand the picked photos (DNGs of 18 to 52 MB) to the
+  page, with nothing on the screen. In the iOS 27 Simulator (Safari, the same DNGs in its photo
+  library) every upload went through, on the Mac and through the Mac's Tailscale to nrm: neither
+  the network nor the server is the cause, but Safari on the device not sending a later slice of
+  the picked file (WebKit has open bugs on picked files sent without their data, 319985).
+- K168: chunks up to 64 MiB are read into memory by the page (`memoryFileReader` in
+  `api/tus.ts`) and sent from there, not from the file. A chunk the browser refuses, or does not
+  hand over in 20 seconds, is read once more and then fails with "Tarayıcı dosyayı okuyamadı.
+  Dosyayı yeniden seçip yükleyin." Larger chunks (an admin may set up to 1 GiB) go from the file
+  as before, so that five uploads at a time hold at most 320 MiB.
+- K169: a request that sends no bytes and gets no answer for 45 seconds is aborted
+  (`WatchdogHttpStack` around tus' own), and tus asks the server for the offset and goes on; the
+  browser's requests had no limit at all. The server ends a chunk whose bytes stop for 30 seconds
+  (408, `chunkStallTimeout`), keeping what came, so the retry does not wait behind it.
+- K170: the upload window says "Dosyalar hazırlanıyor... Telefonda fotoğraflar birkaç saniye,
+  iCloud'dakiler daha uzun sürebilir." from the picker's opening until the files come, and not
+  after the picker is cancelled; a failure to check the folder for conflicts shows instead of
+  leaving the window as it was.
+- Not taken: fewer uploads at a time on phones (2 instead of 5).
+- Checked: Go tests for a stalled chunk (it ends, keeps its 1000 bytes, and the resumed PATCH
+  completes the file) and for an idle connection (not closed by the deadline); vitest for the
+  watchdog, the memory reader and the read timeout. In the Simulator, through a proxy that held
+  each upload's second chunk once: held before the server, the browser gave up after 45 s, asked
+  (HEAD, 10485760) and finished; held after its headers, the server answered 408 after 30 s and
+  the browser finished at once; the files were byte-identical to the originals, and the
+  preparing line showed and went on cancel. Still to check on the iPhone, after the push.
+
 ## 4. Tasks
 
 ### 4.1 Close heading 7: archive creation follow-ups (commit `601ddbaa`)
@@ -981,6 +1016,9 @@ project's page):
   passed every job, the race tests on Linux included.
 - [x] The old `filebrowser` test container: removed from nrm (K63).
 - [x] Konsol's Podman page suggestions: later (4.5).
+- [ ] Seen while watching the iPhone's uploads: on nrm every request reaches Gezgin from the
+  Podman network's gateway, not from the client's address, so the per-address limits (K3, K35)
+  already count all clients as one, as 4.5 expected only behind Caddy. To put to the operator.
 
 ### 4.5 Later ("ileride")
 
