@@ -5,8 +5,10 @@ import buttons from "@/utils/buttons";
 import { computed, inject, markRaw, ref } from "vue";
 import * as tus from "@/api/tus";
 
-// TODO: make this into a user setting
-const UPLOADS_LIMIT = 5;
+// Three uploads at a time (Gezgin, K172): more do not go faster, the upload line is shared, and
+// a browser opens six connections to a server over HTTP/1.1, so the page's own requests (the
+// listing, thumbnails) keep room beside the uploads.
+const UPLOADS_LIMIT = 3;
 
 const beforeUnload = (event: Event) => {
   event.preventDefault();

@@ -51,7 +51,7 @@ short tables (features, and what changed from File Browser), kept so since K166.
 
 ## 3. Decisions taken
 
-The next decision number is **K171**. "Recommended" means the operator accepted the recommendation
+The next decision number is **K173**. "Recommended" means the operator accepted the recommendation
 made in the report.
 
 **Stage B (start).** Multi-user with an admin; File Browser's forms stay even where Konsol has its
@@ -606,7 +606,7 @@ then tests in the iOS Simulator and from the phone, watched on nrm):
   `api/tus.ts`) and sent from there, not from the file. A chunk the browser refuses, or does not
   hand over in 20 seconds, is read once more and then fails with "Tarayıcı dosyayı okuyamadı.
   Dosyayı yeniden seçip yükleyin." Larger chunks (an admin may set up to 1 GiB) go from the file
-  as before, so that five uploads at a time hold at most 320 MiB.
+  as before, so that the uploads at a time (three since K172) hold at most 192 MiB.
 - K169: a request that sends no bytes and gets no answer for 45 seconds is aborted
   (`WatchdogHttpStack` around tus' own), and tus asks the server for the offset and goes on; the
   browser's requests had no limit at all. The server ends a chunk whose bytes stop for 30 seconds
@@ -615,14 +615,23 @@ then tests in the iOS Simulator and from the phone, watched on nrm):
   iCloud'dakiler daha uzun sürebilir." from the picker's opening until the files come, and not
   after the picker is cancelled; a failure to check the folder for conflicts shows instead of
   leaving the window as it was.
-- Not taken: fewer uploads at a time on phones (2 instead of 5).
+- Not taken: fewer uploads at a time on phones only (2 instead of 5); K172 lowers it for all.
 - Checked: Go tests for a stalled chunk (it ends, keeps its 1000 bytes, and the resumed PATCH
   completes the file) and for an idle connection (not closed by the deadline); vitest for the
   watchdog, the memory reader and the read timeout. In the Simulator, through a proxy that held
   each upload's second chunk once: held before the server, the browser gave up after 45 s, asked
   (HEAD, 10485760) and finished; held after its headers, the server answered 408 after 30 s and
   the browser finished at once; the files were byte-identical to the originals, and the
-  preparing line showed and went on cancel. Still to check on the iPhone, after the push.
+  preparing line showed and went on cancel. Live on nrm (`27930a58`), from the iPhone through
+  Tailscale: 4 DNGs (to 52 MB), then 13 (478 MB in about 80 s, to 63 MB), then 7 with a video
+  (210 MB in 32 s), each complete, nothing stalled or abandoned; the phone sends about 4.5 MB/s
+  alone and 6 MB/s for several files, so its line sets the speed, not the number of requests. A
+  long wait before an upload starts is the phone preparing the picked items (a video is
+  converted first); the preparing line shows meanwhile.
+- K172: three uploads at a time, not five (`UPLOADS_LIMIT`): more do not go faster on a shared
+  line, and over HTTP/1.1 a browser opens six connections to a server, so the page's own
+  requests (the listing, thumbnails, the conflict check) keep room. Checked in the Simulator:
+  six DNGs, at most three at once, all complete.
 
 ## 4. Tasks
 
@@ -1023,6 +1032,10 @@ then tests in the iOS Simulator and from the phone, watched on nrm):
 ### 4.5 Later ("ileride")
 
 - [ ] K52: retire Konsol's own ZIP/RAR (myserver repository) once Gezgin's has proven itself.
+- [ ] K171 (proposed 2026-10-10, not now): WebDAV for a user's whole space with their own name
+  and password, not only per share, so that Finder, Windows or an iPhone WebDAV app can upload
+  large videos natively and in the background. A browser has no WebDAV of its own, and a page's
+  WebDAV PUT is one request per file with no resume, so it would not help uploads in the page.
 - [ ] WebDAV shares from the internet through Konsol's HTTPS (port 8092 is plain HTTP, tailnet
   only); then perhaps retire Konsol's own WebDAV (port 61010).
 - [ ] Video transcoding for formats browsers cannot play.

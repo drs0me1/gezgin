@@ -64,7 +64,8 @@ checks behind each change are in [HANDOVER.md](../HANDOVER.md).
   holds, and the server ends a chunk whose bytes stop for 30 seconds (408). Chunks up to 64 MiB
   are read into memory before they are sent, as Safari on an iPhone stopped for good before the
   second chunk of a photo from the library; a file the browser does not hand over fails with a
-  reason. While a phone prepares the picked photos, the upload window says so.
+  reason. While a phone prepares the picked photos, the upload window says so. Three files upload
+  at a time, which leaves the page's own requests room beside them.
 - Search: every word has to be in the name; letter case, Turkish letters and accents do not
   matter (`ışık`, `isik` and `IŞIK` find `Işık notları.txt`; `case:sensitive` still matches
   exactly); `type:` matches extensions in any case; folders the rules refuse are not searched.
