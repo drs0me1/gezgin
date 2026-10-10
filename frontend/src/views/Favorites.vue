@@ -65,7 +65,7 @@
     <!-- The page's line: the count, the view and "Seç", fixed as the folder's path is (K137). -->
     <div v-if="!loading && !error" class="page-bar">
       <span class="page-bar-text">
-        {{ t("files.itemCount", { count: items.length }) }}
+        {{ t("files.itemCount", { count: items.length }, items.length) }}
       </span>
       <listing-tools v-if="items.length > 0" />
     </div>

@@ -10,15 +10,15 @@
       :default="index === 0"
     />
     <p class="vjs-no-js">
-      Sorry, your browser doesn't support embedded videos, but don't worry, you
-      can <a :href="source">download it</a>
-      and watch it with your favorite video player!
+      {{ t("files.videoUnsupported") }}
+      <a :href="source">{{ t("files.videoDownload") }}</a>
     </p>
   </video>
 </template>
 
 <script setup lang="ts">
 import { ref, onMounted, onBeforeUnmount, nextTick } from "vue";
+import { useI18n } from "vue-i18n";
 import videojs from "video.js";
 import type Player from "video.js/dist/types/player";
 import "videojs-mobile-ui";
@@ -26,6 +26,7 @@ import "videojs-hotkeys";
 import "video.js/dist/video-js.min.css";
 import "videojs-mobile-ui/dist/videojs-mobile-ui.css";
 
+const { t } = useI18n();
 const videoPlayer = ref<HTMLElement | null>(null);
 const player = ref<Player | null>(null);
 

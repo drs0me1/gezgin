@@ -133,7 +133,7 @@
       >
         <h2 class="message">
           <i class="material-icons">sentiment_dissatisfied</i>
-          <span>{{ t("files.lonely") }}</span>
+          <span>{{ t("files.emptyFolder") }}</span>
         </h2>
         <input
           style="display: none"

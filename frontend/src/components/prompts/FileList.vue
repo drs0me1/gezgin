@@ -63,8 +63,9 @@ export default {
   computed: {
     ...mapState(useAuthStore, ["user"]),
     ...mapState(useFileStore, ["req"]),
+    // The folder as the user knows it ("/Belgeler/"), not its address ("/files/Belgeler/").
     nav() {
-      return decodeURIComponent(this.current);
+      return decodeURIComponent(this.current).replace(/^\/files/, "") || "/";
     },
   },
   mounted() {

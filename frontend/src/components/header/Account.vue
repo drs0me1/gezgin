@@ -14,7 +14,7 @@
     <div v-if="open" class="account-menu" role="menu">
       <button class="action" role="menuitem" @click="go('/settings/profile')">
         <icon name="person" />
-        <span>{{ t("settings.profileSettings") }}</span>
+        <span>{{ t("settings.tabs.account") }}</span>
       </button>
       <button
         v-if="user?.perm.admin"

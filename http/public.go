@@ -144,7 +144,7 @@ func publicDlHandler(limiter *loginLimiter) handleFunc {
 		hash, _ := ifPathWithName(r)
 		key := linkDownloads(hash)
 		if !running.begin(key) {
-			return tooMany(w, r, tooManyDownloads)
+			return tooMany(w, r, tooManyDownloads.For(r.Header.Get("Accept-Language")))
 		}
 		defer running.end(key)
 
@@ -153,7 +153,7 @@ func publicDlHandler(limiter *loginLimiter) handleFunc {
 			return rawFileHandler(w, r, file)
 		}
 
-		return rawDirHandler(w, r, d, file)
+		return rawDirHandler(w, r, d, file, r.Header.Get("Accept-Language"))
 	})
 }
 

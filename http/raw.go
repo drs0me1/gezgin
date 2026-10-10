@@ -98,7 +98,7 @@ var rawHandler = withUser(func(w http.ResponseWriter, r *http.Request, d *data) 
 	}
 	key := userDownloads(d.user.ID)
 	if !running.begin(key) {
-		return tooMany(w, r, tooManyDownloads)
+		return tooMany(w, r, tooManyDownloads.For(d.user.Locale))
 	}
 	defer running.end(key)
 
@@ -122,13 +122,14 @@ var rawHandler = withUser(func(w http.ResponseWriter, r *http.Request, d *data) 
 		return rawFileHandler(w, r, file)
 	}
 
-	return rawDirHandler(w, r, d, file)
+	return rawDirHandler(w, r, d, file, d.user.Locale)
 })
 
-// rawDirHandler packs a folder, or the items chosen in it, as the user sees them: what the
+// rawDirHandler packs a folder, or the items chosen in it, as the user sees them, and words its
+// refusal in language (a user's locale, or a share visitor's browser language): what the
 // rules refuse, links that lead out of the scope, special files and Gezgin's own files are left
 // out. A ZIP keeps media and other compressed files as they are and compresses the rest.
-func rawDirHandler(w http.ResponseWriter, r *http.Request, d *data, file *files.FileInfo) (int, error) {
+func rawDirHandler(w http.ResponseWriter, r *http.Request, d *data, file *files.FileInfo, language string) (int, error) {
 	filenames, err := parseQueryFiles(r, file, d.user)
 	if err != nil {
 		return http.StatusInternalServerError, err
@@ -178,7 +179,7 @@ func rawDirHandler(w http.ResponseWriter, r *http.Request, d *data, file *files.
 	}
 	out := &sentWriter{Writer: w}
 	if _, err := pack.Write(r.Context(), newPackSource(d), items, out, opt); err != nil {
-		return downloadFailed(w, err, out.sent)
+		return downloadFailed(w, err, out.sent, language)
 	}
 	return 0, nil
 }
@@ -197,7 +198,7 @@ func (s *sentWriter) Write(p []byte) (int, error) {
 // downloadFailed answers a download that failed. Before anything was sent it answers with an
 // error instead of the attachment; once the archive is under way it breaks the connection, so
 // that the browser does not take what came, with an error appended, for a whole archive.
-func downloadFailed(w http.ResponseWriter, err error, sent bool) (int, error) {
+func downloadFailed(w http.ResponseWriter, err error, sent bool, language string) (int, error) {
 	if sent {
 		if !errors.Is(err, context.Canceled) {
 			log.Printf("a download was cut short: %v", err)
@@ -207,7 +208,7 @@ func downloadFailed(w http.ResponseWriter, err error, sent bool) (int, error) {
 	w.Header().Del("Content-Disposition")
 	var packErr *pack.Error
 	if errors.As(err, &packErr) && packErr.Code == pack.CodeEntries {
-		http.Error(w, tooManyEntries, http.StatusUnprocessableEntity)
+		http.Error(w, tooManyEntries.For(language), http.StatusUnprocessableEntity)
 		return 0, nil
 	}
 	return http.StatusInternalServerError, err

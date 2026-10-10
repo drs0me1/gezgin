@@ -60,10 +60,10 @@
                 {{ t("archive.open") }}
               </router-link>
               <span v-if="job.skipped" class="archive-job__note">
-                {{ t("archive.skipped", { count: job.skipped }) }}
+                {{ t("archive.skipped", { count: job.skipped }, job.skipped) }}
               </span>
               <span v-if="job.windows" class="archive-job__note">
-                {{ t("archive.windows", { count: job.windows }) }}
+                {{ t("archive.windows", { count: job.windows }, job.windows) }}
               </span>
             </template>
             <template v-else-if="job.state === 'done'">
@@ -87,6 +87,7 @@
 import { computed, inject, onMounted, watch } from "vue";
 import { useI18n } from "vue-i18n";
 import { useArchiveStore } from "@/stores/archive";
+import { useAuthStore } from "@/stores/auth";
 import { useFileStore } from "@/stores/file";
 import { useUploadStore } from "@/stores/upload";
 import { filesize } from "@/utils";
@@ -97,6 +98,7 @@ import type { ArchiveJob } from "@/api/archive";
 
 const { t, te } = useI18n();
 const archiveStore = useArchiveStore();
+const authStore = useAuthStore();
 const fileStore = useFileStore();
 const uploadStore = useUploadStore();
 const $showError = inject<IToastError>("$showError")!;
@@ -115,17 +117,18 @@ const icon = (job: ArchiveJob) =>
 
 const progress = (job: ArchiveJob) => {
   if (job.kind !== "create") {
-    return t("archive.running", {
-      size: filesize(job.bytes),
-      count: job.entries,
-    });
+    return t(
+      "archive.running",
+      { size: filesize(job.bytes), count: job.entries },
+      job.entries
+    );
   }
   if (!job.planned) {
-    return t("archive.planning", { count: job.files ?? 0 });
+    return t("archive.planning", { count: job.files ?? 0 }, job.files ?? 0);
   }
   const total = job.total ?? 0;
   return t("archive.creating", {
-    percent: `%${total > 0 ? Math.floor((job.bytes * 100) / total) : 100}`,
+    percent: total > 0 ? Math.floor((job.bytes * 100) / total) : 100,
     size: filesize(job.bytes),
     total: filesize(total),
   });
@@ -178,7 +181,8 @@ watch(
   }
 );
 
+// A share's visitor has no jobs, and asking would send them to the login page (Gezgin, K167).
 onMounted(() => {
-  archiveStore.refresh().catch(() => {});
+  if (authStore.isLoggedIn) archiveStore.refresh().catch(() => {});
 });
 </script>

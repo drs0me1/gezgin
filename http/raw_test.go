@@ -26,12 +26,15 @@ func TestFailedDownloads(t *testing.T) {
 	answer := func(err error) (*httptest.ResponseRecorder, int) {
 		rec := httptest.NewRecorder()
 		rec.Header().Set("Content-Disposition", "attachment; filename*=utf-8''k.zip")
-		status, _ := downloadFailed(rec, err, false)
+		status, _ := downloadFailed(rec, err, false, "en")
 		return rec, status
 	}
 	rec, status := answer(&pack.Error{Code: pack.CodeEntries})
 	if status != 0 || rec.Code != http.StatusUnprocessableEntity || rec.Header().Get("Content-Disposition") != "" {
 		t.Errorf("too many entries: status %d, answered %d %q", status, rec.Code, rec.Header().Get("Content-Disposition"))
+	}
+	if !strings.Contains(rec.Body.String(), "more than 10,000 files") {
+		t.Errorf("too many entries in English: %q", rec.Body.String())
 	}
 	if rec, status = answer(errors.New("unreadable")); status != http.StatusInternalServerError ||
 		rec.Header().Get("Content-Disposition") != "" {
@@ -42,7 +45,7 @@ func TestFailedDownloads(t *testing.T) {
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
 		_, _ = w.Write([]byte("PK\x03\x04 the archive's start"))
 		w.(http.Flusher).Flush()
-		_, _ = downloadFailed(w, errors.New("a file got shorter"), true)
+		_, _ = downloadFailed(w, errors.New("a file got shorter"), true, "en")
 	}))
 	defer server.Close()
 	res, err := http.Get(server.URL)

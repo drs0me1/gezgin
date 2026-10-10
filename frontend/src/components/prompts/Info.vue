@@ -6,7 +6,13 @@
 
     <div class="card-content">
       <p v-if="selected.length > 1">
-        {{ $t("prompts.filesSelected", { count: selected.length }) }}
+        {{
+          $t(
+            "prompts.filesSelected",
+            { count: selected.length },
+            selected.length
+          )
+        }}
       </p>
 
       <p class="break-word" v-if="selected.length < 2">

@@ -51,7 +51,7 @@ short tables (features, and what changed from File Browser), kept so since K166.
 
 ## 3. Decisions taken
 
-The next decision number is **K167**. "Recommended" means the operator accepted the recommendation
+The next decision number is **K168**. "Recommended" means the operator accepted the recommendation
 made in the report.
 
 **Stage B (start).** Multi-user with an admin; File Browser's forms stay even where Konsol has its
@@ -541,6 +541,33 @@ with a wrong one); the share removed after the question; the last link removed, 
 1-day link with a password, "bir gün sonra bitiyor · şifreli", its public API 401 without the
 password and 200 with it; at 375 pixels the list (the 1-day end amber) and the WebDAV form; the
 test shares removed.
+
+**The English interface** (operator, 2026-10-10: every text of the project to be checked, the
+English choice to be complete, wrong or missing translations and thin descriptions fixed):
+
+- K167: the two languages were compared key by key (532 each, the same placeholders) and every
+  text read. English was fixed where it was File Browser's and no longer said what Gezgin does
+  ("Display Name", "directory", "transfert", "Something really went wrong", "The destination
+  folder there are…"), where it shouted ("!") or used title case, and where a count came out
+  as "1 items": counted texts now have a singular and a plural, and their calls pass the
+  count. Turkish was fixed where it was wrong or uneven ("Gönder" for upload, "İsim" beside
+  "Ad", the help's mixed verb forms, "Link kopyalandı"), and the forced change's message no
+  longer says the password is in the server log, which since K145 is true only for the first
+  admin. 37 texts no code used (Hugo, scheduling, the old search chips) are gone. Texts written
+  in the code went into the translations: the video player's fallback (English in both
+  languages before), the clipboard's errors, the browser's "no connection"; the archive's
+  percent stands where each language puts it ("%50", "50%"). The server's limit messages
+  (K64, K65) were Turkish only: they now come in the reader's language, the user's or a share
+  visitor's browser's (`limitMessage.For`). An empty folder says "Bu klasör boş." / "This
+  folder is empty.". Found on the way: a share link's visitor was sent to the login page, as
+  the share page asked for the disk use (K122) and the archive jobs, both refused without a
+  session (401, which signs out); they are asked only when signed in now. A shared folder's
+  size read its item count bare ("Size: 2"); it reads "2 öğe" / "2 items". Checked on the Mac
+  with headless Chromium in English and in Turkish, through the login page, the files, both
+  right-click menus, the Info, archive, share, rename, copy, move, download, delete, help and
+  upload windows, the editor, an image, the favourites, shares, trash, search results, every
+  settings tab and a visitor's share page: no Turkish left in English but the sample file's own
+  text, and no English in Turkish.
 
 **The project page** (operator, 2026-10-10: GitHub's texts too long and technical; lists and
 tables with short descriptions, the changes and added features above all, after a successful

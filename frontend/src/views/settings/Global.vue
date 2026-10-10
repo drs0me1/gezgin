@@ -37,10 +37,11 @@
         v-if="trashUsage"
         :label="t('trash.allUsers')"
         :help="
-          t('trash.usageShort', {
-            count: trashUsage.count,
-            size: filesize(trashUsage.size),
-          })
+          t(
+            'trash.usageShort',
+            { count: trashUsage.count, size: filesize(trashUsage.size) },
+            trashUsage.count
+          )
         "
         stack
       >
@@ -314,9 +315,11 @@ const emptyAllTrash = () => {
   layoutStore.showHover({
     prompt: "confirm",
     props: {
-      message: t("trash.emptyAllConfirm", {
-        count: trashUsage.value?.count ?? 0,
-      }),
+      message: t(
+        "trash.emptyAllConfirm",
+        { count: trashUsage.value?.count ?? 0 },
+        trashUsage.value?.count ?? 0
+      ),
       confirm: t("trash.emptyAll"),
       danger: true,
     },

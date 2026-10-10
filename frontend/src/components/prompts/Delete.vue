@@ -5,7 +5,13 @@
         {{ $t("prompts.deleteMessageSingle") }}
       </p>
       <p v-else>
-        {{ $t("prompts.deleteMessageMultiple", { count: selectedCount }) }}
+        {{
+          $t(
+            "prompts.deleteMessageMultiple",
+            { count: selectedCount },
+            selectedCount
+          )
+        }}
       </p>
       <p class="small">{{ $t("trash.deleteHint") }}</p>
     </div>

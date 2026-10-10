@@ -115,7 +115,9 @@ export default {
       const route = this.$route.name === "Files" ? this.$route.path : "/files/";
       const path = route.endsWith("/") ? route : route + "/";
       let usageStats = USAGE_DEFAULT;
-      if (this.disableUsedPercentage) {
+      // A share's visitor is not signed in: asking would answer 401 and send them to the login
+      // page, away from the share (Gezgin, K167).
+      if (this.disableUsedPercentage || !this.isLoggedIn) {
         return Object.assign(this.usage, usageStats);
       }
       try {

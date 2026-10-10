@@ -62,7 +62,7 @@
          also when the trash is empty (Gezgin, K137). -->
     <div v-if="!loading && !error" class="page-bar">
       <span class="page-bar-text">
-        {{ t("trash.summary", { count: summary.count }) }} ·
+        {{ t("trash.summary", { count: summary.count }, summary.count) }} ·
         {{ filesize(summary.size) }}
       </span>
       <listing-tools v-if="items.length > 0" />
@@ -301,7 +301,7 @@ const restoreSelected = async () => {
   isContextMenuVisible.value = false;
   try {
     const done = await api.restore(selectedIds());
-    $showSuccess(t("trash.restored", { count: done.length }));
+    $showSuccess(t("trash.restored", { count: done.length }, done.length));
   } catch (e: any) {
     $showError(e);
   }
@@ -325,14 +325,18 @@ const restoreAll = () => {
   layoutStore.showHover({
     prompt: "confirm",
     props: {
-      message: t("trash.restoreAllConfirm", { count: summary.value.count }),
+      message: t(
+        "trash.restoreAllConfirm",
+        { count: summary.value.count },
+        summary.value.count
+      ),
       confirm: t("trash.restore"),
     },
     confirm: async () => {
       layoutStore.closeHovers();
       try {
         const done = await api.restore(list.value.items.map((i) => i.id));
-        $showSuccess(t("trash.restored", { count: done.length }));
+        $showSuccess(t("trash.restored", { count: done.length }, done.length));
       } catch (e: any) {
         $showError(e);
       }
@@ -346,7 +350,11 @@ const deleteAll = () => {
   layoutStore.showHover({
     prompt: "confirm",
     props: {
-      message: t("trash.deleteAllConfirm", { count: summary.value.count }),
+      message: t(
+        "trash.deleteAllConfirm",
+        { count: summary.value.count },
+        summary.value.count
+      ),
       confirm: t("trash.confirmEmpty"),
       danger: true,
     },

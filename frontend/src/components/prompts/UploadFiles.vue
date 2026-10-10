@@ -8,9 +8,11 @@
       <div class="card-title">
         <h2>
           {{
-            $t("prompts.uploadFiles", {
-              files: uploadStore.pendingUploadCount,
-            })
+            $t(
+              "prompts.uploadFiles",
+              { files: uploadStore.pendingUploadCount },
+              uploadStore.pendingUploadCount
+            )
           }}
         </h2>
         <div class="upload-info">

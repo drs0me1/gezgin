@@ -73,7 +73,8 @@ checks behind each change are in [HANDOVER.md](../HANDOVER.md).
   archive job does; a larger one is refused (422, with a message) before anything is sent.
 - Transfers at the same time: at most 10 downloads (a file, a folder as an archive, a video being
   played) and 10 uploads per user, 10 downloads per share link and 10 transfers (GET or PUT) per
-  WebDAV share. One more answers 429 with a message, which a download's tab shows; an upload
+  WebDAV share. One more answers 429 with a message in the reader's language (the user's, or a
+  share visitor's browser's), which a download's tab shows; an upload
   retries by itself. Previews, thumbnails, subtitles and listings are not counted.
 - Share links: a link follows the item it shares; a rename or move takes the links of every user
   along (a link whose owner cannot reach the new place ends), and a delete ends them all, so that

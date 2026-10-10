@@ -226,9 +226,8 @@
               :src="raw"
               controls
             >
-              Sorry, your browser doesn't support embedded videos, but don't
-              worry, you can <a :href="raw">download it</a>
-              and watch it with your favorite video player!
+              {{ t("files.videoUnsupported") }}
+              <a :href="raw">{{ t("files.videoDownload") }}</a>
             </video>
             <i
               v-else-if="
@@ -300,7 +299,7 @@
         >
           <h2 class="message">
             <i class="material-icons">sentiment_dissatisfied</i>
-            <span>{{ t("files.lonely") }}</span>
+            <span>{{ t("files.emptyFolder") }}</span>
           </h2>
         </div>
       </div>
@@ -381,10 +380,15 @@ const raw = computed(() => {
 const inlineLink = computed(() =>
   req.value ? api.getDownloadURL(req.value, true) : ""
 );
+// A folder's size reads as its item count ("2 öğe", "2 items"), as in the listings (Gezgin).
 const humanSize = computed(() => {
   if (req.value) {
     return req.value.isDir
-      ? req.value.items.length
+      ? t(
+          "files.itemCount",
+          { count: req.value.items.length },
+          req.value.items.length
+        )
       : filesize(req.value.size ?? 0);
   } else {
     return "";

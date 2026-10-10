@@ -83,7 +83,13 @@
         <div class="csv-info" v-if="parsed.rows.length > 100">
           <i class="material-icons">info</i>
           <span>
-            {{ $t("files.showingRows", { count: parsed.rows.length }) }}
+            {{
+              $t(
+                "files.showingRows",
+                { count: parsed.rows.length },
+                parsed.rows.length
+              )
+            }}
           </span>
         </div>
       </div>

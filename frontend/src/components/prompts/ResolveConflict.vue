@@ -94,7 +94,13 @@
       </template>
       <template v-else>
         <p>
-          {{ $t("prompts.fastConflictResolve", { count: conflict.length }) }}
+          {{
+            $t(
+              "prompts.fastConflictResolve",
+              { count: conflict.length },
+              conflict.length
+            )
+          }}
         </p>
 
         <div class="result-buttons">

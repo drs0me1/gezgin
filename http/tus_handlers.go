@@ -207,7 +207,7 @@ func tusPatchHandler(cache *UploadCache, fileCache FileCache) handleFunc {
 		key := userUploads(d.user.ID)
 		if !running.begin(key) {
 			drainRequestBody(r)
-			return tooMany(w, r, tooManyUploads)
+			return tooMany(w, r, tooManyUploads.For(d.user.Locale))
 		}
 		defer running.end(key)
 

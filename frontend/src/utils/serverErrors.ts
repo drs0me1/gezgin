@@ -40,6 +40,11 @@ const known: [RegExp, (m: RegExpMatchArray) => string][] = [
     () => i18n.global.t("settings.errors.reservedScope"),
   ],
   [/a share lasts at most 10 years/, () => i18n.global.t("shares.tooLong")],
+  // The browser's own: the server could not be reached, or the connection broke.
+  [
+    /^00[01] (No connection|Connection aborted)/,
+    () => i18n.global.t("errors.connection"),
+  ],
   [
     /at most (\d+) favourites/,
     (m) => i18n.global.t("favorites.tooMany", { max: m[1] }),

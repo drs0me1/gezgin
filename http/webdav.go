@@ -141,7 +141,7 @@ func (s *davServer) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	if r.Method == http.MethodGet || r.Method == http.MethodPut {
 		key := davTransfers(hash)
 		if !running.begin(key) {
-			_, _ = tooMany(w, r, tooManyTransfers)
+			_, _ = tooMany(w, r, tooManyTransfers.For(r.Header.Get("Accept-Language")))
 			return
 		}
 		defer running.end(key)

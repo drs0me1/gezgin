@@ -66,10 +66,11 @@
       <setting-row v-if="trashUsage" :label="t('settings.server.trash')">
         <span class="setting-value">
           {{
-            t("trash.usageShort", {
-              count: trashUsage.count,
-              size: filesize(trashUsage.size),
-            })
+            t(
+              "trash.usageShort",
+              { count: trashUsage.count, size: filesize(trashUsage.size) },
+              trashUsage.count
+            )
           }}
         </span>
       </setting-row>

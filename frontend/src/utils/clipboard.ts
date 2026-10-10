@@ -1,3 +1,5 @@
+import i18n from "@/i18n";
+
 // Based on code by the following links:
 // https://stackoverflow.com/a/74528564
 // https://web.dev/articles/async-clipboard
@@ -44,9 +46,7 @@ export function copy(data: ClipboardArgs, opts?: ClipboardOpts) {
         body.removeChild(textarea);
       }
     } else {
-      reject(
-        new Error("None of copying methods are supported by this browser!")
-      );
+      reject(new Error(i18n.global.t("errors.copyUnsupported")));
     }
   });
 }
@@ -75,7 +75,7 @@ function getPermission(name: string) {
           if (permission.state === "granted" || permission.state === "prompt") {
             resolve();
           } else {
-            reject(new Error("Permission denied!"));
+            reject(new Error(i18n.global.t("errors.copyDenied")));
           }
         });
   });

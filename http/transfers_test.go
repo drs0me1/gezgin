@@ -57,9 +57,10 @@ func TestDownloadsAreLimited(t *testing.T) {
 		t.Fatal(err)
 	}
 
+	// The test users have no language set, so the messages come in English (K167).
 	release := fill(t, userDownloads(root.ID))
 	rec := env.call(http.MethodGet, "/api/raw/a.txt", "")
-	if rec.Code != http.StatusTooManyRequests || !strings.Contains(rec.Body.String(), "en fazla 10 indirme") {
+	if rec.Code != http.StatusTooManyRequests || !strings.Contains(rec.Body.String(), "At most 10 downloads") {
 		t.Errorf("an eleventh download: %d %q", rec.Code, rec.Body.String())
 	}
 	// Previews are not counted.
@@ -74,7 +75,7 @@ func TestDownloadsAreLimited(t *testing.T) {
 	// A share link's downloads are counted by link, whoever makes them.
 	hash := env.mustShare("/a.txt", "{}")
 	release = fill(t, linkDownloads(hash))
-	if code, body := env.download(hash); code != http.StatusTooManyRequests || !strings.Contains(body, "en fazla 10 indirme") {
+	if code, body := env.download(hash); code != http.StatusTooManyRequests || !strings.Contains(body, "At most 10 downloads") {
 		t.Errorf("an eleventh download through the link: %d %q", code, body)
 	}
 	if rec := env.call(http.MethodGet, "/api/raw/a.txt", ""); rec.Code != http.StatusOK {
@@ -95,7 +96,7 @@ func TestUploadsAreLimited(t *testing.T) {
 
 	release := fill(t, userUploads(root.ID))
 	rec := env.call(http.MethodPatch, "/api/tus/a.bin", "chunk")
-	if rec.Code != http.StatusTooManyRequests || !strings.Contains(rec.Body.String(), "en fazla 10 yükleme") {
+	if rec.Code != http.StatusTooManyRequests || !strings.Contains(rec.Body.String(), "At most 10 uploads") {
 		t.Errorf("an eleventh upload: %d %q", rec.Code, rec.Body.String())
 	}
 	release()
@@ -138,7 +139,7 @@ func TestDownloadEntriesAreLimited(t *testing.T) {
 	}
 	rec := env.call(http.MethodGet, "/api/raw/k?algo=zip", "")
 	if rec.Code != http.StatusUnprocessableEntity || rec.Header().Get("Content-Disposition") != "" ||
-		!strings.Contains(rec.Body.String(), "fazla dosya ve klasör") {
+		!strings.Contains(rec.Body.String(), "files and folders") {
 		t.Errorf("a download of 4 entries over a limit of 3: %d %q %q", rec.Code,
 			rec.Header().Get("Content-Disposition"), rec.Body.String())
 	}
@@ -150,5 +151,23 @@ func TestDownloadEntriesAreLimited(t *testing.T) {
 	zr, err := zip.NewReader(bytes.NewReader(rec.Body.Bytes()), int64(rec.Body.Len()))
 	if err != nil || len(zr.File) != 2 {
 		t.Errorf("the ZIP within the limit: %v, %d entries", err, len(zr.File))
+	}
+}
+
+// A limit's message is in the reader's language: Turkish for Turkish, English otherwise (K167).
+func TestLimitMessagesFollowTheLanguage(t *testing.T) {
+	for language, want := range map[string]string{
+		"tr":                      tooManyDownloads.tr,
+		"tr-TR,tr;q=0.9,en;q=0.8": tooManyDownloads.tr,
+		"en":                      tooManyDownloads.en,
+		"en-US,en;q=0.9,tr;q=0.8": tooManyDownloads.en,
+		"":                        tooManyDownloads.en,
+	} {
+		if got := tooManyDownloads.For(language); got != want {
+			t.Errorf("For(%q) = %q; want %q", language, got, want)
+		}
+	}
+	if !strings.Contains(tooManyEntries.en, "10,000") || !strings.Contains(tooManyEntries.tr, "10.000") {
+		t.Errorf("the entry limit reads %q and %q; want 10,000 and 10.000", tooManyEntries.en, tooManyEntries.tr)
 	}
 }
