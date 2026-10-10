@@ -567,7 +567,10 @@ English choice to be complete, wrong or missing translations and thin descriptio
   right-click menus, the Info, archive, share, rename, copy, move, download, delete, help and
   upload windows, the editor, an image, the favourites, shares, trash, search results, every
   settings tab and a visitor's share page: no Turkish left in English but the sample file's own
-  text, and no English in Turkish.
+  text, and no English in Turkish. Live on nrm (`8fdfb563`, a visitor's browser, nothing
+  made): a share address stays on its page (a made-up one answers "This location can't be
+  reached." from the public API's 404, with no call for the disk use or the archive jobs), and
+  the login page reads "Username", "Password", "Sign in" in an English browser.
 
 **The project page** (operator, 2026-10-10: GitHub's texts too long and technical; lists and
 tables with short descriptions, the changes and added features above all, after a successful
