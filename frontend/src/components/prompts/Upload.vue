@@ -131,9 +131,17 @@ const openUpload = (isFolder: boolean) => {
   input.type = "file";
   input.multiple = true;
   input.webkitdirectory = isFolder;
+  // The input stays in the page until its files come or the picker is closed (Gezgin, K173):
+  // a detached one may be collected while the picker is open, and its files are then lost
+  // without a word.
+  input.hidden = true;
+  document.body.appendChild(input);
   // TODO: call the function in FileListing.vue instead
-  input.onchange = uploadInput;
+  input.onchange = (event) => {
+    uploadInput(event).finally(() => input.remove());
+  };
   input.addEventListener("cancel", () => {
+    input.remove();
     preparing.value = false;
   });
   input.click();

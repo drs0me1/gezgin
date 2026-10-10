@@ -51,7 +51,7 @@ short tables (features, and what changed from File Browser), kept so since K166.
 
 ## 3. Decisions taken
 
-The next decision number is **K173**. "Recommended" means the operator accepted the recommendation
+The next decision number is **K175**. "Recommended" means the operator accepted the recommendation
 made in the report.
 
 **Stage B (start).** Multi-user with an admin; File Browser's forms stay even where Konsol has its
@@ -632,6 +632,13 @@ then tests in the iOS Simulator and from the phone, watched on nrm):
   line, and over HTTP/1.1 a browser opens six connections to a server, so the page's own
   requests (the listing, thumbnails, the conflict check) keep room. Checked in the Simulator:
   six DNGs, at most three at once, all complete.
+- K173: the upload picker's input is put in the page, hidden, until its files come or the
+  picker is cancelled, and removed then. A selection of six DNGs in the Simulator never reached
+  the page in one of two tries, though Safari's log shows it handed all six over within 0.3 s; a
+  trace (`FinalizationRegistry`) showed the detached input collected 80 ms after its change
+  event, so one collected before its files come loses them without a word: the "first selection
+  does nothing" of the morning. Checked: three tries of six DNGs after the change, each started
+  at once and completed.
 
 ## 4. Tasks
 
@@ -1028,6 +1035,10 @@ then tests in the iOS Simulator and from the phone, watched on nrm):
 - [ ] Seen while watching the iPhone's uploads: on nrm every request reaches Gezgin from the
   Podman network's gateway, not from the client's address, so the per-address limits (K3, K35)
   already count all clients as one, as 4.5 expected only behind Caddy. To put to the operator.
+- [ ] K174 (proposed 2026-10-10, before Gezgin is open to the internet): take a request's client
+  address from `X-Forwarded-For` when it comes from a trusted proxy (Konsol's Caddy), so that a
+  stranger's wrong passwords lock only the stranger and not the admin for everyone. The
+  operator chose to open Gezgin through HTTPS for a test first and to close it again after.
 
 ### 4.5 Later ("ileride")
 
